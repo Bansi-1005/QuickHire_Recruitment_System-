@@ -4,6 +4,7 @@
  */
 package Entity;
 
+import jakarta.json.bind.annotation.JsonbTransient;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -44,7 +45,11 @@ import java.util.Date;
     @NamedQuery(name = "Tblcandidates.findByCandidateGender", query = "SELECT t FROM Tblcandidates t WHERE t.candidateGender = :candidateGender"),
     @NamedQuery(name = "Tblcandidates.findByCandidateExperience", query = "SELECT t FROM Tblcandidates t WHERE t.candidateExperience = :candidateExperience"),
     @NamedQuery(name = "Tblcandidates.findByCandidateResume", query = "SELECT t FROM Tblcandidates t WHERE t.candidateResume = :candidateResume"),
-    @NamedQuery(name = "Tblcandidates.findByResumeUploadDate", query = "SELECT t FROM Tblcandidates t WHERE t.resumeUploadDate = :resumeUploadDate")})
+    @NamedQuery(name = "Tblcandidates.findByResumeUploadDate", query = "SELECT t FROM Tblcandidates t WHERE t.resumeUploadDate = :resumeUploadDate"),
+
+    @NamedQuery(name = "Tblcandidates.findByUser", query = "SELECT t FROM Tblcandidates t WHERE t.userId.userId = :userId"),
+    @NamedQuery(name="Tblcandidates.count", query="SELECT COUNT(t) FROM Tblcandidates t")
+})
 public class Tblcandidates implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -173,6 +178,7 @@ public class Tblcandidates implements Serializable {
     }
 
     @XmlTransient
+    @JsonbTransient
     public Collection<Tblskills> getTblskillsCollection() {
         return tblskillsCollection;
     }
@@ -182,6 +188,7 @@ public class Tblcandidates implements Serializable {
     }
 
     @XmlTransient
+    @JsonbTransient
     public Collection<Tbljob> getTbljobCollection() {
         return tbljobCollection;
     }
@@ -191,6 +198,7 @@ public class Tblcandidates implements Serializable {
     }
 
     @XmlTransient
+    @JsonbTransient
     public Collection<Tblrecruiters> getTblrecruitersCollection() {
         return tblrecruitersCollection;
     }
@@ -208,6 +216,7 @@ public class Tblcandidates implements Serializable {
     }
 
     @XmlTransient
+    @JsonbTransient
     public Collection<Tblapplication> getTblapplicationCollection() {
         return tblapplicationCollection;
     }

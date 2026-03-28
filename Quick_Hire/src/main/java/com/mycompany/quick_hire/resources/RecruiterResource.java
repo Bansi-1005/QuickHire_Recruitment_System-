@@ -4,7 +4,9 @@
  */
 package com.mycompany.quick_hire.resources;
 
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Response;
 
 /**
  *
@@ -13,5 +15,10 @@ import jakarta.ws.rs.Path;
 
 @Path("recruiter")
 public class RecruiterResource {
-    
+     @GET
+    public Response ping(){
+        return Response
+                .ok("ping Jakarta EE")
+                .build();
+    }
 }

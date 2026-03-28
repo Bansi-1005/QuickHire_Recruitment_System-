@@ -4,6 +4,7 @@
  */
 package Entity;
 
+import jakarta.json.bind.annotation.JsonbTransient;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,7 +41,13 @@ import java.util.Date;
     @NamedQuery(name = "Tblrecruiters.findByDesignation", query = "SELECT t FROM Tblrecruiters t WHERE t.designation = :designation"),
     @NamedQuery(name = "Tblrecruiters.findByRecruiterPhone", query = "SELECT t FROM Tblrecruiters t WHERE t.recruiterPhone = :recruiterPhone"),
     @NamedQuery(name = "Tblrecruiters.findByRecruiterStatus", query = "SELECT t FROM Tblrecruiters t WHERE t.recruiterStatus = :recruiterStatus"),
-    @NamedQuery(name = "Tblrecruiters.findByCreatedDate", query = "SELECT t FROM Tblrecruiters t WHERE t.createdDate = :createdDate")})
+    @NamedQuery(name = "Tblrecruiters.findByCreatedDate", query = "SELECT t FROM Tblrecruiters t WHERE t.createdDate = :createdDate"),
+
+    @NamedQuery(
+        name = "Tblrecruiters.findByUser",
+        query = "SELECT t FROM Tblrecruiters t WHERE t.userId.userId = :userId"
+    )
+})
 public class Tblrecruiters implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -127,6 +134,7 @@ public class Tblrecruiters implements Serializable {
     }
 
     @XmlTransient
+    @JsonbTransient
     public Collection<Tblcandidates> getTblcandidatesCollection() {
         return tblcandidatesCollection;
     }
@@ -136,6 +144,7 @@ public class Tblrecruiters implements Serializable {
     }
 
     @XmlTransient
+    @JsonbTransient
     public Collection<Tbljob> getTbljobCollection() {
         return tbljobCollection;
     }

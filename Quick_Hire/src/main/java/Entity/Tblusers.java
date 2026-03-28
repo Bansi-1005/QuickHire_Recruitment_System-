@@ -4,6 +4,7 @@
  */
 package Entity;
 
+import jakarta.json.bind.annotation.JsonbTransient;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -43,7 +44,14 @@ import java.util.Date;
     @NamedQuery(name = "Tblusers.findByUserStatus", query = "SELECT t FROM Tblusers t WHERE t.userStatus = :userStatus"),
     @NamedQuery(name = "Tblusers.findByCreatedDate", query = "SELECT t FROM Tblusers t WHERE t.createdDate = :createdDate"),
     @NamedQuery(name = "Tblusers.findByUpdatedDate", query = "SELECT t FROM Tblusers t WHERE t.updatedDate = :updatedDate"),
-    @NamedQuery(name = "Tblusers.findByLastLoginDate", query = "SELECT t FROM Tblusers t WHERE t.lastLoginDate = :lastLoginDate")})
+    @NamedQuery(name = "Tblusers.findByLastLoginDate", query = "SELECT t FROM Tblusers t WHERE t.lastLoginDate = :lastLoginDate"),
+    
+    @NamedQuery(name = "Tblusers.loginByRole", query = "SELECT t FROM Tblusers t WHERE t.userEmail = :email AND t.userPassword = :password AND t.roleId.roleId = :roleId"),
+    @NamedQuery(name = "Tblusers.findByRole", query = "SELECT t FROM Tblusers t WHERE t.roleId.roleId = :roleId"),
+        
+    //@NamedQuery(name="Tblusers.searchUsers", query="SELECT t FROM Tblusers t WHERE t.email LIKE :keyword"),
+    @NamedQuery(name="Tblusers.count", query="SELECT COUNT(t) FROM Tblusers t")
+})
 public class Tblusers implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -170,6 +178,7 @@ public class Tblusers implements Serializable {
     }
 
     @XmlTransient
+    @JsonbTransient
     public Collection<Tblinterview> getTblinterviewCollection() {
         return tblinterviewCollection;
     }
@@ -179,6 +188,7 @@ public class Tblusers implements Serializable {
     }
 
     @XmlTransient
+    @JsonbTransient
     public Collection<Tblcandidates> getTblcandidatesCollection() {
         return tblcandidatesCollection;
     }
@@ -196,6 +206,7 @@ public class Tblusers implements Serializable {
     }
 
     @XmlTransient
+    @JsonbTransient
     public Collection<Tblrecruiters> getTblrecruitersCollection() {
         return tblrecruitersCollection;
     }
@@ -205,6 +216,7 @@ public class Tblusers implements Serializable {
     }
 
     @XmlTransient
+    @JsonbTransient
     public Collection<Tblnotification> getTblnotificationCollection() {
         return tblnotificationCollection;
     }

@@ -4,6 +4,7 @@
  */
 package Entity;
 
+import jakarta.json.bind.annotation.JsonbTransient;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -39,7 +40,10 @@ import java.util.Date;
     @NamedQuery(name = "Tblcompany.findByCompanyEmail", query = "SELECT t FROM Tblcompany t WHERE t.companyEmail = :companyEmail"),
     @NamedQuery(name = "Tblcompany.findByCompanyWebsite", query = "SELECT t FROM Tblcompany t WHERE t.companyWebsite = :companyWebsite"),
     @NamedQuery(name = "Tblcompany.findByCompanyStatus", query = "SELECT t FROM Tblcompany t WHERE t.companyStatus = :companyStatus"),
-    @NamedQuery(name = "Tblcompany.findByCreatedDate", query = "SELECT t FROM Tblcompany t WHERE t.createdDate = :createdDate")})
+    @NamedQuery(name = "Tblcompany.findByCreatedDate", query = "SELECT t FROM Tblcompany t WHERE t.createdDate = :createdDate"),
+
+    @NamedQuery(name="Tblcompany.count", query="SELECT COUNT(t) FROM Tblcompany t")
+})
 public class Tblcompany implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -140,6 +144,7 @@ public class Tblcompany implements Serializable {
     }
 
     @XmlTransient
+    @JsonbTransient
     public Collection<Tblrecruiters> getTblrecruitersCollection() {
         return tblrecruitersCollection;
     }

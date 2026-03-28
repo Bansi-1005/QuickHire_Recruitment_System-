@@ -4,6 +4,7 @@
  */
 package Entity;
 
+import jakarta.json.bind.annotation.JsonbTransient;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -51,7 +52,23 @@ import java.util.Date;
     @NamedQuery(name = "Tbljob.findByJobVacancies", query = "SELECT t FROM Tbljob t WHERE t.jobVacancies = :jobVacancies"),
     @NamedQuery(name = "Tbljob.findByJobStatus", query = "SELECT t FROM Tbljob t WHERE t.jobStatus = :jobStatus"),
     @NamedQuery(name = "Tbljob.findByJobPostedDate", query = "SELECT t FROM Tbljob t WHERE t.jobPostedDate = :jobPostedDate"),
-    @NamedQuery(name = "Tbljob.findByJobExpiryDate", query = "SELECT t FROM Tbljob t WHERE t.jobExpiryDate = :jobExpiryDate")})
+    @NamedQuery(name = "Tbljob.findByJobExpiryDate", query = "SELECT t FROM Tbljob t WHERE t.jobExpiryDate = :jobExpiryDate"),
+    
+    @NamedQuery(name = "Tbljob.findActiveJobs", query = "SELECT t FROM Tbljob t WHERE t.jobStatus = 'Open'"),
+    @NamedQuery(name = "Tbljob.findByRecruiter", query = "SELECT t FROM Tbljob t WHERE t.recruiterId.recruiterId = :recruiterId"),
+    @NamedQuery(name = "Tbljob.findByLocation", query = "SELECT t FROM Tbljob t WHERE t.jobLocation LIKE :jobLocation"),
+    @NamedQuery(name = "Tbljob.findBySkill", query = "SELECT t FROM Tbljob t JOIN t.tblskillsCollection s WHERE s.skillName LIKE :skillName"),
+    
+    @NamedQuery(name="Tbljob.count", query="SELECT COUNT(t) FROM Tbljob t"),
+    @NamedQuery(
+        name = "Tbljob.countByCompany",
+        query = "SELECT COUNT(j) FROM Tbljob j WHERE j.companyId.companyId = :companyId"
+    ),
+    @NamedQuery(
+        name = "Tbljob.jobWiseApplications",
+        query = "SELECT j.jobTitle, COUNT(a) FROM Tbljob j LEFT JOIN j.tblapplicationCollection a GROUP BY j.jobTitle"
+    )
+})
 public class Tbljob implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -237,6 +254,7 @@ public class Tbljob implements Serializable {
     }
 
     @XmlTransient
+    @JsonbTransient
     public Collection<Tblskills> getTblskillsCollection() {
         return tblskillsCollection;
     }
@@ -246,6 +264,7 @@ public class Tbljob implements Serializable {
     }
 
     @XmlTransient
+    @JsonbTransient
     public Collection<Tblcandidates> getTblcandidatesCollection() {
         return tblcandidatesCollection;
     }
@@ -263,6 +282,7 @@ public class Tbljob implements Serializable {
     }
 
     @XmlTransient
+    @JsonbTransient
     public Collection<Tblapplication> getTblapplicationCollection() {
         return tblapplicationCollection;
     }

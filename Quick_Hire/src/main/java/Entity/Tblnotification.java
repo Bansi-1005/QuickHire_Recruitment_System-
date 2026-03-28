@@ -35,7 +35,10 @@ import java.util.Date;
     @NamedQuery(name = "Tblnotification.findByNotificationId", query = "SELECT t FROM Tblnotification t WHERE t.notificationId = :notificationId"),
     @NamedQuery(name = "Tblnotification.findByMessage", query = "SELECT t FROM Tblnotification t WHERE t.message = :message"),
     @NamedQuery(name = "Tblnotification.findByCreatedDate", query = "SELECT t FROM Tblnotification t WHERE t.createdDate = :createdDate"),
-    @NamedQuery(name = "Tblnotification.findByNotificationStatus", query = "SELECT t FROM Tblnotification t WHERE t.notificationStatus = :notificationStatus")})
+    @NamedQuery(name = "Tblnotification.findByNotificationStatus", query = "SELECT t FROM Tblnotification t WHERE t.notificationStatus = :notificationStatus"),
+    
+    @NamedQuery(name = "Tblnotification.findByUser", query = "SELECT t FROM Tblnotification t WHERE t.userId.userId = :userId")
+})
 public class Tblnotification implements Serializable {
 
     private static final long serialVersionUID = 1L;

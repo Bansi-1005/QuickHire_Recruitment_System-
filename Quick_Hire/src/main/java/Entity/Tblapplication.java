@@ -4,6 +4,7 @@
  */
 package Entity;
 
+import jakarta.json.bind.annotation.JsonbTransient;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -39,7 +40,27 @@ import java.util.Date;
     @NamedQuery(name = "Tblapplication.findByApplicationAppliedDate", query = "SELECT t FROM Tblapplication t WHERE t.applicationAppliedDate = :applicationAppliedDate"),
     @NamedQuery(name = "Tblapplication.findByApplicationStatus", query = "SELECT t FROM Tblapplication t WHERE t.applicationStatus = :applicationStatus"),
     @NamedQuery(name = "Tblapplication.findByResumeSnapshot", query = "SELECT t FROM Tblapplication t WHERE t.resumeSnapshot = :resumeSnapshot"),
-    @NamedQuery(name = "Tblapplication.findByLastUpdatedDate", query = "SELECT t FROM Tblapplication t WHERE t.lastUpdatedDate = :lastUpdatedDate")})
+    @NamedQuery(name = "Tblapplication.findByLastUpdatedDate", query = "SELECT t FROM Tblapplication t WHERE t.lastUpdatedDate = :lastUpdatedDate"),
+
+    @NamedQuery(name = "Tblapplication.findByCandidate", query = "SELECT t FROM Tblapplication t WHERE t.candidateId.candidateId = :candidateId"),
+    @NamedQuery(name = "Tblapplication.findByJob", query = "SELECT t FROM Tblapplication t WHERE t.jobId.jobId = :jobId"),
+    
+    @NamedQuery(name="Tblapplication.count", query="SELECT COUNT(t) FROM Tblapplication t"),
+    @NamedQuery(
+        name = "Tblapplication.countByJob",
+        query = "SELECT COUNT(a) FROM Tblapplication a WHERE a.jobId.jobId = :jobId"
+    ),
+    @NamedQuery(
+        name = "Tblapplication.countSelected",
+        query = "SELECT COUNT(a) FROM Tblapplication a WHERE a.applicationStatus = 'Selected'"
+    ),
+    
+    @NamedQuery(
+        name = "Tblapplication.findTopCandidates",
+        query = "SELECT t FROM Tblapplication t JOIN t.tblscreeningscoreCollection s WHERE t.jobId.jobId = :jid ORDER BY s.matchingScore DESC"
+    )
+       
+})
 public class Tblapplication implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -131,6 +152,7 @@ public class Tblapplication implements Serializable {
     }
 
     @XmlTransient
+    @JsonbTransient
     public Collection<Tblinterview> getTblinterviewCollection() {
         return tblinterviewCollection;
     }
@@ -140,6 +162,7 @@ public class Tblapplication implements Serializable {
     }
 
     @XmlTransient
+    @JsonbTransient
     public Collection<Tblapplicationstatushistory> getTblapplicationstatushistoryCollection() {
         return tblapplicationstatushistoryCollection;
     }
@@ -149,6 +172,7 @@ public class Tblapplication implements Serializable {
     }
 
     @XmlTransient
+    @JsonbTransient
     public Collection<Tblscreeningscore> getTblscreeningscoreCollection() {
         return tblscreeningscoreCollection;
     }
