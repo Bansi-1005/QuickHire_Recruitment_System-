@@ -62,7 +62,7 @@ import java.util.Date;
     @NamedQuery(name="Tbljob.count", query="SELECT COUNT(t) FROM Tbljob t"),
     @NamedQuery(
         name = "Tbljob.countByCompany",
-        query = "SELECT COUNT(j) FROM Tbljob j WHERE j.companyId.companyId = :companyId"
+        query = "SELECT COUNT(j) FROM Tbljob j WHERE j.recruiterId.companyId.companyId = :companyId"
     ),
     @NamedQuery(
         name = "Tbljob.jobWiseApplications",
