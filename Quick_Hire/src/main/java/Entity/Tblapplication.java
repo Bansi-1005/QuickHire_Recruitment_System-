@@ -57,13 +57,16 @@ import java.util.Date;
   
     @NamedQuery(
         name = "Tblapplication.findTopCandidates",
-        query = "SELECT t FROM Tblapplication t JOIN t.tblscreeningscoreCollection s WHERE t.jobId.jobId = :jid ORDER BY s.matchingScore DESC"
+        query = "SELECT t FROM Tblapplication t JOIN t.tblscreeningscoreCollection s WHERE t.jobId.jobId = :jobid ORDER BY s.matchingScore DESC"
     ),
     @NamedQuery(
         name = "Tblapplication.countByCandidateAndJob",
         query = "SELECT COUNT(a) FROM Tblapplication a WHERE a.candidateId.candidateId = :candidateId AND a.jobId.jobId = :jobId"
+    ),
+     @NamedQuery(
+    name = "Tblapplication.filterByScore",
+    query = "SELECT t FROM Tblapplication t JOIN t.tblscreeningscoreCollection s WHERE t.jobId.jobId = :jobid AND s.matchingScore >= :score"
     )
-       
 })
 public class Tblapplication implements Serializable {
 

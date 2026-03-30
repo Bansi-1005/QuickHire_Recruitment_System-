@@ -42,7 +42,10 @@ import java.util.Date;
     @NamedQuery(name = "Tblcompany.findByCompanyStatus", query = "SELECT t FROM Tblcompany t WHERE t.companyStatus = :companyStatus"),
     @NamedQuery(name = "Tblcompany.findByCreatedDate", query = "SELECT t FROM Tblcompany t WHERE t.createdDate = :createdDate"),
 
-    @NamedQuery(name="Tblcompany.count", query="SELECT COUNT(t) FROM Tblcompany t")
+    @NamedQuery(name="Tblcompany.count", query="SELECT COUNT(t) FROM Tblcompany t"),
+    @NamedQuery(
+    name = "Tblcompany.findByRecruiterId",
+    query = "SELECT r.companyId FROM Tblrecruiters r WHERE r.recruiterId = :recruiterId")
 })
 public class Tblcompany implements Serializable {
 

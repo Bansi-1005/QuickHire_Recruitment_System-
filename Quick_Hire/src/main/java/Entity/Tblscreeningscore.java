@@ -40,9 +40,7 @@ import java.util.Date;
     @NamedQuery(name = "Tblscreeningscore.findByScoreDate", query = "SELECT t FROM Tblscreeningscore t WHERE t.scoreDate = :scoreDate"),
     
     @NamedQuery(name = "Tblscreeningscore.findByApplication", query = "SELECT t FROM Tblscreeningscore t WHERE t.applicationId.applicationId = :applicationId"),
-    
-    @NamedQuery(name = "Tblscreeningscore.findByApplication", query = "SELECT t FROM Tblscreeningscore t WHERE t.applicationId.applicationId = :applicationId")
-})
+    })
 public class Tblscreeningscore implements Serializable {
 
     private static final long serialVersionUID = 1L;

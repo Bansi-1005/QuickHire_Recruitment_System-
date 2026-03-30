@@ -46,7 +46,12 @@ import java.util.Date;
     @NamedQuery(
         name = "Tblrecruiters.findByUser",
         query = "SELECT t FROM Tblrecruiters t WHERE t.userId.userId = :userId"
-    )
+    ),
+        
+        @NamedQuery(
+    name = "Tblrecruiters.findCompanyByRecruiterId",
+    query = "SELECT r.companyId FROM Tblrecruiters r WHERE r.recruiterId = :recruiterId"
+)
 })
 public class Tblrecruiters implements Serializable {
 
