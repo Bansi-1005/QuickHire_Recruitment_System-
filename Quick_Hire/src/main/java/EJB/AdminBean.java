@@ -8,6 +8,7 @@ import Entity.*;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
@@ -36,106 +37,171 @@ public class AdminBean implements AdminBeanLocal {
        // ================= ROLE =================
     @Override
     public void addRole(Tblrolemaster role) {
-        em.persist(role);
+        try {
+            if (role == null) return;
+            role.setCreatedDate(new Date());
+            em.persist(role);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public Collection<Tblrolemaster> getRoles() {
-        return em.createNamedQuery("Tblrolemaster.findAll", Tblrolemaster.class)
-                .getResultList();
+        try {
+            return em.createNamedQuery("Tblrolemaster.findAll", Tblrolemaster.class)
+                    .getResultList();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 
     // ================= USER =================
     @Override
     public Collection<Tblusers> getAllUsers() {
-        return em.createNamedQuery("Tblusers.findAll", Tblusers.class)
-                .getResultList();
+        try {
+            return em.createNamedQuery("Tblusers.findAll", Tblusers.class)
+                    .getResultList();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 
     @Override
     public void updateUserStatus(int userId, String userStatus) {
-        Tblusers user = em.find(Tblusers.class, userId);
-        if (user != null) {
-            user.setUserStatus(userStatus);
-            user.setUpdatedDate(new Date());
-            em.merge(user);
+        try {
+            if (userStatus == null || userStatus.trim().isEmpty()) return;
+
+            Tblusers user = em.find(Tblusers.class, userId);
+            if (user != null) {
+                user.setUserStatus(userStatus);
+                user.setUpdatedDate(new Date());
+                em.merge(user);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     @Override
     public Collection<Tblusers> searchUsersByEmail(String userEmail) {
-        return em.createNamedQuery("Tblusers.findByUserEmail", Tblusers.class)
-//                .setParameter("userEmail", "%" + userEmail + "%")
-                .setParameter("userEmail", userEmail)
-                .getResultList();
+        try {
+            if (userEmail == null || userEmail.trim().isEmpty()) {
+                return new ArrayList<>();
+            }
 
-//        return em.createQuery(
+            return em.createNamedQuery("Tblusers.findByUserEmail", Tblusers.class)
+                    .setParameter("userEmail", userEmail)
+                    .getResultList();
+            
+//            return em.createQuery(
 //            "SELECT u FROM Tblusers u WHERE u.userEmail LIKE :email",
 //            Tblusers.class)
 //            .setParameter("email", "%" + userEmail + "%")
 //            .getResultList();
+
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 
     // ================= CANDIDATE =================
     @Override
     public Collection<Tblcandidates> getAllCandidates() {
-        return em.createNamedQuery("Tblcandidates.findAll", Tblcandidates.class)
-                .getResultList();
+        try {
+            return em.createNamedQuery("Tblcandidates.findAll", Tblcandidates.class)
+                    .getResultList();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 
     @Override
     public void deleteCandidate(int candidateId) {
-        Tblcandidates c = em.find(Tblcandidates.class, candidateId);
-        if (c != null) {
-            em.remove(c);
+        try {
+            Tblcandidates c = em.find(Tblcandidates.class, candidateId);
+            if (c != null) {
+                em.remove(c);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     // ================= COMPANY =================
     @Override
     public void addCompany(Tblcompany company) {
-        company.setCreatedDate(new Date());
-        company.setCompanyStatus("Pending");
-        em.persist(company);
+        try {
+            if (company == null) return;
+
+            company.setCreatedDate(new Date());
+            company.setCompanyStatus("Pending");
+
+            em.persist(company);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public Collection<Tblcompany> getAllCompanies() {
-        return em.createNamedQuery("Tblcompany.findAll", Tblcompany.class)
-                .getResultList();
+        try {
+            return em.createNamedQuery("Tblcompany.findAll", Tblcompany.class)
+                    .getResultList();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 
     @Override
     public void approveCompany(int companyId) {
-        Tblcompany c = em.find(Tblcompany.class, companyId);
-        if (c != null) {
-            c.setCompanyStatus("Approved");
-            em.merge(c);
+        try {
+            Tblcompany c = em.find(Tblcompany.class, companyId);
+            if (c != null) {
+                c.setCompanyStatus("Approved");
+                em.merge(c);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     @Override
     public void rejectCompany(int companyId) {
-        Tblcompany c = em.find(Tblcompany.class, companyId);
-        if (c != null) {
-            c.setCompanyStatus("Rejected");
-            em.merge(c);
+        try {
+            Tblcompany c = em.find(Tblcompany.class, companyId);
+            if (c != null) {
+                c.setCompanyStatus("Rejected");
+                em.merge(c);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     // ================= JOB =================
     @Override
     public Collection<Tbljob> getAllJobs() {
-        return em.createNamedQuery("Tbljob.findAll", Tbljob.class)
-                .getResultList();
+        try {
+            return em.createNamedQuery("Tbljob.findAll", Tbljob.class)
+                    .getResultList();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 
     @Override
     public void updateJobStatus(int jobId, String jobStatus) {
-        Tbljob job = em.find(Tbljob.class, jobId);
-        if (job != null) {
-            job.setJobStatus(jobStatus);
-            em.merge(job);
+        try {
+            if (jobStatus == null || jobStatus.trim().isEmpty()) return;
+
+            Tbljob job = em.find(Tbljob.class, jobId);
+            if (job != null) {
+                job.setJobStatus(jobStatus);
+                em.merge(job);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -151,97 +217,163 @@ public class AdminBean implements AdminBeanLocal {
 
     @Override
     public Collection<Tbljob> searchJobsByTitle(String jobTitle) {
-        return em.createNamedQuery("Tbljob.findByJobTitle", Tbljob.class)
-//                .setParameter("jobTitle", "%" + jobTitle + "%")
-                .setParameter("jobTitle", jobTitle)
-                .getResultList();
+        try {
+            if (jobTitle == null || jobTitle.trim().isEmpty()) {
+                return new ArrayList<>();
+            }
 
-//        return em.createQuery(
-//            "SELECT j FROM Tbljob j WHERE j.jobTitle LIKE :title",
-//            Tbljob.class)
-//            .setParameter("jobTitle", "%" + jobTitle + "%")
-//            .getResultList();
+            return em.createNamedQuery("Tbljob.findByJobTitle", Tbljob.class)
+                    .setParameter("jobTitle", jobTitle)
+                    .getResultList();
+            
+//            return em.createQuery("SELECT j FROM Tbljob j WHERE j.jobTitle LIKE :title", Tbljob.class)
+//                .setParameter("jobTitle", "%" + jobTitle + "%")
+//                .getResultList();
+
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 
     // ================= APPLICATION =================
     @Override
     public Collection<Tblapplication> getAllApplications() {
-        return em.createNamedQuery("Tblapplication.findAll", Tblapplication.class)
-                .getResultList();
+        try {
+            return em.createNamedQuery("Tblapplication.findAll", Tblapplication.class)
+                    .getResultList();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 
     @Override
     public void updateApplicationStatus(int applicationId, String applicationStatus) {
-        Tblapplication app = em.find(Tblapplication.class, applicationId);
-        if (app != null) {
-            app.setApplicationStatus(applicationStatus);
-            app.setLastUpdatedDate(new Date());
-            em.merge(app);
+        try {
+            if (applicationStatus == null || applicationStatus.trim().isEmpty()) return;
+
+            Tblapplication app = em.find(Tblapplication.class, applicationId);
+            if (app != null) {
+                app.setApplicationStatus(applicationStatus);
+                app.setLastUpdatedDate(new Date());
+                em.merge(app);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     // ================= NOTIFICATION =================
     @Override
     public void sendNotification(Tblnotification notification) {
-        notification.setCreatedDate(new Date());
-        em.persist(notification);
+        try {
+            if (notification == null) return;
+
+            notification.setCreatedDate(new Date());
+            em.persist(notification);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     // ================= DASHBOARD =================
     @Override
     public int totalUsers() {
-        return ((Long) em.createNamedQuery("Tblusers.count").getSingleResult()).intValue();
+        try {
+            return ((Long) em.createNamedQuery("Tblusers.count")
+                    .getSingleResult()).intValue();
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     @Override
     public int totalJobs() {
-        return ((Long) em.createNamedQuery("Tbljob.count").getSingleResult()).intValue();
+        try {
+            return ((Long) em.createNamedQuery("Tbljob.count")
+                    .getSingleResult()).intValue();
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     @Override
     public int totalApplications() {
-        return ((Long) em.createNamedQuery("Tblapplication.count").getSingleResult()).intValue();
+        try {
+            return ((Long) em.createNamedQuery("Tblapplication.count")
+                    .getSingleResult()).intValue();
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     @Override
     public int totalCandidates() {
-        return ((Long) em.createNamedQuery("Tblcandidates.count").getSingleResult()).intValue();
+        try {
+            return ((Long) em.createNamedQuery("Tblcandidates.count")
+                    .getSingleResult()).intValue();
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     @Override
     public int totalCompanies() {
-        return ((Long) em.createNamedQuery("Tblcompany.count").getSingleResult()).intValue();
+        try {
+            return ((Long) em.createNamedQuery("Tblcompany.count")
+                    .getSingleResult()).intValue();
+        } catch (Exception e) {
+            return 0;
+        }
     }
     
     // ================= REPORTS =================
 
     // Total applications for a specific job
     @Override
-    public long applicationsPerJob(int jobId) {
-        return em.createNamedQuery("Tblapplication.countByJob", Long.class)
-                 .setParameter("jobId", jobId)
-                 .getSingleResult();
+    public Collection<Tblapplication> applicationsPerJob(int jobId) {
+        try {
+//            return em.createNamedQuery("Tblapplication.countByJob", Long.class)
+            return em.createNamedQuery("Tblapplication.FindApplicationsByJob", Tblapplication.class)
+                    .setParameter("jobId", jobId)
+                    .getResultList();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 
     // Total jobs posted by a company
     @Override
-    public long jobsPerCompany(int companyId) {
-        return em.createNamedQuery("Tbljob.countByCompany", Long.class)
-                 .setParameter("companyId", companyId)
-                 .getSingleResult();
+    public Collection<Tbljob> jobsPerCompany(int companyId) {
+        try {
+//            return em.createNamedQuery("Tbljob.countByCompany", Long.class)
+            return em.createNamedQuery("Tbljob.findJobsByCompany", Tbljob.class)
+                    .setParameter("companyId", companyId)
+                    .getResultList();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 
     // Total selected candidates
     @Override
-    public long selectedApplicationsCount() {
-        return em.createNamedQuery("Tblapplication.countSelected", Long.class)
-                 .getSingleResult();
+    public Collection<Tblapplication> selectedApplications() {
+        try {
+//            return em.createNamedQuery("Tblapplication.countSelected", Long.class)
+            return em.createNamedQuery("Tblapplication.findSelectedApplication", Tblapplication.class)
+                .getResultList();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 
     // Job-wise application report
     @Override
     public Collection<Object[]> jobWiseApplicationReport() {
-        return em.createNamedQuery("Tbljob.jobWiseApplications", Object[].class)
-                 .getResultList();
+        try {
+            return em.createNamedQuery("Tbljob.jobWiseApplications", Object[].class)
+                    .getResultList();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }  
 }

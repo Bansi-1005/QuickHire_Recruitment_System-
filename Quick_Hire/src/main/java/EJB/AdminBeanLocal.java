@@ -58,8 +58,8 @@ public interface AdminBeanLocal {
     int totalCompanies();
     
     // ================= REPORTS =================
-    long applicationsPerJob(int jobId);
-    long jobsPerCompany(int companyId);
-    long selectedApplicationsCount();
+    Collection<Tblapplication> applicationsPerJob(int jobId);
+    Collection<Tbljob> jobsPerCompany(int companyId);
+    Collection<Tblapplication> selectedApplications();
     Collection<Object[]> jobWiseApplicationReport();
 }

@@ -7,6 +7,7 @@ package com.mycompany.quick_hire.resources;
 import EJB.CandidateBeanLocal;
 import Entity.Tblapplication;
 import Entity.Tblcandidates;
+import Entity.Tblscreeningscore;
 import Entity.Tblskills;
 import Entity.Tblusers;
 import jakarta.ejb.EJB;
@@ -20,6 +21,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -59,26 +61,19 @@ public class CandidateResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response registerCandidate(Tblcandidates candidate) {
         try {
-            
-            Tblusers user = candidate.getUserId();
-
-            if (user == null) {
+            if (candidate == null || candidate.getUserId() == null) {
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity("User data is missing").build();
             }
 
-            user.setCreatedDate(new java.util.Date());
-            user.setUpdatedDate(new java.util.Date());
-            user.setLastLoginDate(new java.util.Date());
+            Tblusers user = candidate.getUserId();
 
             ejb.registerCandidate(user, candidate);
 
             return Response.ok("Candidate Registered Successfully").build();
 
         } catch (Exception e) {
-            e.printStackTrace(); 
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(e.toString()).build();
+            return Response.status(500).entity(e.getMessage()).build();
         }
     }
     
@@ -98,7 +93,6 @@ public class CandidateResource {
             return Response.ok(c).build();
 
         } catch (Exception e) {
-            e.printStackTrace();
             return Response.status(500).entity(e.toString()).build();
         }
     }
@@ -119,7 +113,6 @@ public class CandidateResource {
             return Response.ok("Profile Updated Successfully").build();
 
         } catch (Exception e) {
-            e.printStackTrace();
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
@@ -131,7 +124,7 @@ public class CandidateResource {
     public Response uploadResume(@QueryParam("candidateId") int candidateId,
                                  @QueryParam("resume") String resume) {
         try {
-            if (resume == null || resume.isEmpty()) {
+            if (resume == null || resume.trim().isEmpty()) {
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity("Resume cannot be empty").build();
             }
@@ -140,7 +133,6 @@ public class CandidateResource {
             return Response.ok("Resume Uploaded").build();
 
         } catch (Exception e) {
-            e.printStackTrace();
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
@@ -159,7 +151,6 @@ public class CandidateResource {
             return Response.ok(res).build();
 
         } catch (Exception e) {
-            e.printStackTrace();
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
@@ -175,7 +166,6 @@ public class CandidateResource {
             return Response.ok("Skill Added").build();
 
         } catch (Exception e) {
-            e.printStackTrace();
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
@@ -183,11 +173,22 @@ public class CandidateResource {
     @PUT
     @Path("updateSkillToCandidate")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateSkill(@QueryParam("candidateId") int candidateId,
-                                @QueryParam("skillId") int skillId) {
-        try {
-            ejb.updateSkillToCandidate(candidateId, skillId);
-            return Response.ok("Skill Updated").build();
+    public Response updateSkillToCandidate(@QueryParam("candidateId") int candidateId,
+                                           @QueryParam("skillId") String skillIdsStr) {
+       try {
+            // 🔥 Convert "3,1" → List<Integer>
+            Collection<Integer> skillIds = new ArrayList<>();
+
+            if (skillIdsStr != null && !skillIdsStr.isEmpty()) {
+                String[] parts = skillIdsStr.split(",");
+                for (String p : parts) {
+                    skillIds.add(Integer.parseInt(p.trim()));
+                }
+            }
+
+            ejb.updateSkillToCandidate(candidateId, skillIds);
+
+            return Response.ok("Skills Updated").build();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -205,7 +206,6 @@ public class CandidateResource {
             return Response.ok("Skill Removed").build();
 
         } catch (Exception e) {
-            e.printStackTrace();
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
@@ -224,7 +224,6 @@ public class CandidateResource {
             return Response.ok(skills).build();
 
         } catch (Exception e) {
-            e.printStackTrace();
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
@@ -238,7 +237,6 @@ public class CandidateResource {
             return Response.ok(ejb.getAllJobs()).build();
 
         } catch (Exception e) {
-            e.printStackTrace();
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
@@ -251,7 +249,6 @@ public class CandidateResource {
             return Response.ok(ejb.searchJobsByLocation(jobLocation)).build();
 
         } catch (Exception e) {
-            e.printStackTrace();
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
@@ -264,7 +261,6 @@ public class CandidateResource {
             return Response.ok(ejb.searchJobsBySkill(skill)).build();
 
         } catch (Exception e) {
-            e.printStackTrace();
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
@@ -275,16 +271,31 @@ public class CandidateResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response applyForJob(Tblapplication application) {
         try {
-            if (application == null) {
+            if (application == null 
+                || application.getCandidateId() == null 
+                || application.getJobId() == null) {
+
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Application data missing").build();
+                        .entity("Application missing").build();
             }
-            
-            ejb.applyForJob(application);
-            return Response.ok("Applied Successfully").build();
+
+            String result = ejb.applyForJob(application);
+
+            // Handle responses properly
+            if (result.equals("Already Applied")) {
+                return Response.status(Response.Status.CONFLICT) // 409
+                        .entity(result).build();
+            }
+
+            if (result.equals("Applied Successfully")) {
+                return Response.ok(result).build();
+            }
+
+            // Other cases
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(result).build();
 
         } catch (Exception e) {
-            e.printStackTrace();
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
@@ -298,7 +309,17 @@ public class CandidateResource {
             return Response.ok(ejb.getCandidateApplications(candidateId)).build();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            return Response.status(500).entity(e.getMessage()).build();
+        }
+    }
+    
+    @DELETE
+    @Path("deleteApplication")
+    public Response deleteApplication(@QueryParam("applicationId") int applicationId) {
+        try {
+            ejb.deleteApplication(applicationId);
+            return Response.ok("Application Deleted").build();
+        } catch (Exception e) {
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
@@ -319,7 +340,6 @@ public class CandidateResource {
             return Response.ok(app).build();
 
         } catch (Exception e) {
-            e.printStackTrace();
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
@@ -331,17 +351,29 @@ public class CandidateResource {
         try {
             String status = ejb.getApplicationStatus(applicationId);
 
-            if (status == null) {
+            if (status == null || status.isEmpty()) {
                 return Response.status(404).entity("Status not found").build();
             }
 
             return Response.ok(status).build();
 
         } catch (Exception e) {
-            e.printStackTrace();
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
+    
+    @PUT
+    @Path("updateApplicationStatus")
+    public Response updateApplicationStatus(@QueryParam("applicationId") int applicationId,
+                                 @QueryParam("status") String status) {
+        try {
+            ejb.updateApplicationStatus(applicationId, status);
+            return Response.ok("Status Updated").build();
+        } catch (Exception e) {
+            return Response.status(500).entity(e.getMessage()).build();
+        }
+    }
+
 
     // ================= SCREENING =================
     @GET
@@ -349,7 +381,7 @@ public class CandidateResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getScreeningScore(@QueryParam("applicationId") int applicationId) {
         try {
-            Object score = ejb.getScreeningScore(applicationId);
+            Tblscreeningscore score = ejb.getScreeningScore(applicationId);
 
             if (score == null) {
                 return Response.status(404).entity("Score not found").build();
@@ -358,7 +390,6 @@ public class CandidateResource {
             return Response.ok(score).build();
 
         } catch (Exception e) {
-            e.printStackTrace();
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
@@ -372,7 +403,6 @@ public class CandidateResource {
             return Response.ok(ejb.getCandidateInterviews(applicationId)).build();
 
         } catch (Exception e) {
-            e.printStackTrace();
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
@@ -386,9 +416,10 @@ public class CandidateResource {
             return Response.ok(ejb.getCandidateNotifications(userId)).build();
 
         } catch (Exception e) {
-            e.printStackTrace();
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
+
+    
 
 }

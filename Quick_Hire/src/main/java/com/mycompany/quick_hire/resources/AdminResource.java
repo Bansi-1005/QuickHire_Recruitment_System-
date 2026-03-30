@@ -29,13 +29,6 @@ public class AdminResource {
     @EJB
     AdminBeanLocal ejb;
     
-    @GET
-    public Response ping(){
-        return Response
-                .ok("Admin API Working")
-                .build();
-    }
-    
      // ================= ROLE =================
     @POST
     @Path("addRole")
@@ -73,12 +66,18 @@ public class AdminResource {
     }
 
     @PUT
-    @Path("updateUserStatus/{userId}/{userStatus}")
-    public Response updateUserStatus(@PathParam("userId") int userId,
-                                     @PathParam("userStatus") String userStatus) {
+    @Path("updateUserStatus")
+    public Response updateUserStatus(@QueryParam("userId") int userId,
+                                     @QueryParam("userStatus") String userStatus) {
         try {
+            if (userStatus == null || userStatus.trim().isEmpty()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Status is required").build();
+            }
+
             ejb.updateUserStatus(userId, userStatus);
             return Response.ok("User Updated").build();
+
         } catch (Exception e) {
             return Response.status(500).entity(e.getMessage()).build();
         }
@@ -111,6 +110,10 @@ public class AdminResource {
     @Path("deleteCandidate/{candidateId}")
     public Response deleteCandidate(@PathParam("candidateId") int candidateId) {
         try {
+            if (candidateId <= 0) {
+                return Response.status(400).entity("Invalid ID").build();
+            }
+             
             ejb.deleteCandidate(candidateId);
             return Response.ok("Candidate Deleted").build();
         } catch (Exception e) {
@@ -122,8 +125,13 @@ public class AdminResource {
     @POST
     @Path("addCompany")
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response addCompany(Tblcompany company) {
         try {
+            if (company == null) {
+                return Response.status(400).entity("Company data required").build();
+            }
+            
             ejb.addCompany(company);
             return Response.ok("Company Added").build();
         } catch (Exception e) {
@@ -215,6 +223,10 @@ public class AdminResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchJobsByTitle(@QueryParam("jobTitle") String jobTitle) {
         try {
+            if (jobTitle == null || jobTitle.trim().isEmpty()) {
+                return Response.status(400).entity("Job title required").build();
+            }
+            
             return Response.ok(ejb.searchJobsByTitle(jobTitle)).build();
         } catch (Exception e) {
             return Response.status(500).entity(e.getMessage()).build();
@@ -314,7 +326,13 @@ public class AdminResource {
     @Path("report/applicationsPerJob/{jobId}")
     public Response applicationsPerJob(@PathParam("jobId") int jobId) {
         try {
+            if (jobId <= 0) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid Job ID").build();
+            }
+
             return Response.ok(ejb.applicationsPerJob(jobId)).build();
+
         } catch (Exception e) {
             return Response.status(500).entity(e.getMessage()).build();
         }
@@ -324,17 +342,24 @@ public class AdminResource {
     @Path("report/jobsPerCompany/{companyId}")
     public Response jobsPerCompany(@PathParam("companyId") int companyId) {
         try {
+            if (companyId <= 0) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid Company ID").build();
+            }
+
             return Response.ok(ejb.jobsPerCompany(companyId)).build();
+
         } catch (Exception e) {
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
 
     @GET
-    @Path("report/selectedApplicationsCount")
-    public Response selectedApplicationsCount() {
+    @Path("report/selectedApplications")
+    public Response selectedApplications() {
         try {
-            return Response.ok(ejb.selectedApplicationsCount()).build();
+            return Response.ok(ejb.selectedApplications()).build();
+
         } catch (Exception e) {
             return Response.status(500).entity(e.getMessage()).build();
         }
@@ -346,6 +371,7 @@ public class AdminResource {
     public Response jobWiseApplicationReport() {
         try {
             return Response.ok(ejb.jobWiseApplicationReport()).build();
+
         } catch (Exception e) {
             return Response.status(500).entity(e.getMessage()).build();
         }

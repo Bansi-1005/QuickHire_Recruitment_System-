@@ -42,7 +42,7 @@ import java.util.Date;
     @NamedQuery(name = "Tbljob.findAll", query = "SELECT t FROM Tbljob t"),
     @NamedQuery(name = "Tbljob.findByJobId", query = "SELECT t FROM Tbljob t WHERE t.jobId = :jobId"),
     @NamedQuery(name = "Tbljob.findByJobTitle", query = "SELECT t FROM Tbljob t WHERE t.jobTitle = :jobTitle"),
-    @NamedQuery(name = "Tbljob.findByJobLocation", query = "SELECT t FROM Tbljob t WHERE t.jobLocation = :jobLocation"),
+    //@NamedQuery(name = "Tbljob.findByJobLocation", query = "SELECT t FROM Tbljob t WHERE t.jobLocation = :jobLocation"),
     @NamedQuery(name = "Tbljob.findByExperienceRequired", query = "SELECT t FROM Tbljob t WHERE t.experienceRequired = :experienceRequired"),
     @NamedQuery(name = "Tbljob.findByJobType", query = "SELECT t FROM Tbljob t WHERE t.jobType = :jobType"),
     @NamedQuery(name = "Tbljob.findByJobCompensationType", query = "SELECT t FROM Tbljob t WHERE t.jobCompensationType = :jobCompensationType"),
@@ -61,8 +61,8 @@ import java.util.Date;
     
     @NamedQuery(name="Tbljob.count", query="SELECT COUNT(t) FROM Tbljob t"),
     @NamedQuery(
-        name = "Tbljob.countByCompany",
-        query = "SELECT COUNT(j) FROM Tbljob j WHERE j.recruiterId.companyId.companyId = :companyId"
+        name = "Tbljob.findJobsByCompany",
+        query = "SELECT j FROM Tbljob j JOIN j.recruiterId r JOIN r.companyId c WHERE c.companyId = :companyId"
     ),
     @NamedQuery(
         name = "Tbljob.jobWiseApplications",

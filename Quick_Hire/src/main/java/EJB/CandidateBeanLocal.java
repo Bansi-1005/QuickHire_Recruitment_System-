@@ -17,7 +17,7 @@ public interface CandidateBeanLocal {
 
     // AUTH
    // Tblusers candidateLogin(String email,String password,int roleId);
-    void registerCandidate(Tblusers user,Tblcandidates candidate);
+    void registerCandidate(Tblusers user, Tblcandidates candidate);
 
     // PROFILE
     Tblcandidates getCandidateProfile(int userId);
@@ -29,7 +29,7 @@ public interface CandidateBeanLocal {
 
     // ---------- Candidate Skills ----------
     void addSkillToCandidate(int candidateId, int skillId);
-    void updateSkillToCandidate(int candidateId, int skillId);
+    void updateSkillToCandidate(int candidateId, Collection<Integer> skillIds);
     void removeSkillFromCandidate(int candidateId, int skillId);
     Collection<Tblskills> getCandidateSkills(int candidateId);
 
@@ -39,12 +39,15 @@ public interface CandidateBeanLocal {
     Collection<Tbljob> searchJobsBySkill(String skill);
 
     // Job APPLICATION
-    void applyForJob(Tblapplication application);
+    String applyForJob(Tblapplication application);
     Collection<Tblapplication> getCandidateApplications(int candidateId);
-    
+    public boolean alreadyApplied(int candidateId, int jobId);
+    public void deleteApplication(int applicationId);
+            
     //  Application Status 
     Tblapplication getApplicationDetails(int applicationId);
     String getApplicationStatus(int applicationId);
+    public void updateApplicationStatus(int applicationId, String status);
 
     // SCREENING
     Tblscreeningscore getScreeningScore(int applicationId);
@@ -54,4 +57,7 @@ public interface CandidateBeanLocal {
 
     // NOTIFICATION
     Collection<Tblnotification> getCandidateNotifications(int userId);
+    
+    
+  
 }

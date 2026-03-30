@@ -47,17 +47,21 @@ import java.util.Date;
     
     @NamedQuery(name="Tblapplication.count", query="SELECT COUNT(t) FROM Tblapplication t"),
     @NamedQuery(
-        name = "Tblapplication.countByJob",
-        query = "SELECT COUNT(a) FROM Tblapplication a WHERE a.jobId.jobId = :jobId"
+        name = "Tblapplication.FindApplicationsByJob",
+        query = "SELECT a FROM Tblapplication a WHERE a.jobId.jobId = :jobId"
     ),
     @NamedQuery(
-        name = "Tblapplication.countSelected",
-        query = "SELECT COUNT(a) FROM Tblapplication a WHERE a.applicationStatus = 'Selected'"
+        name = "Tblapplication.findSelectedApplication",
+        query = "SELECT a FROM Tblapplication a WHERE a.applicationStatus = 'Selected'"
     ),
-    
+  
     @NamedQuery(
         name = "Tblapplication.findTopCandidates",
         query = "SELECT t FROM Tblapplication t JOIN t.tblscreeningscoreCollection s WHERE t.jobId.jobId = :jid ORDER BY s.matchingScore DESC"
+    ),
+    @NamedQuery(
+        name = "Tblapplication.countByCandidateAndJob",
+        query = "SELECT COUNT(a) FROM Tblapplication a WHERE a.candidateId.candidateId = :candidateId AND a.jobId.jobId = :jobId"
     )
        
 })
