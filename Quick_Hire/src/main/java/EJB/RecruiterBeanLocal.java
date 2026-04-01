@@ -16,7 +16,6 @@ import java.util.Collection;
 public interface RecruiterBeanLocal {
 
     // ================= AUTH =================
-//    Tblusers recruiterLogin(String email, String password, int roleId);
     void registerRecruiter(Tblusers user, Tblrecruiters recruiter);
 
     // ================= PROFILE =================
@@ -29,7 +28,9 @@ public interface RecruiterBeanLocal {
     // ================= JOB MANAGEMENT =================
     void createJob(Tbljob job);
     void updateJob(Tbljob job);
-    void deleteJob(int jobId);
+    void deleteJob(int jobId,int recruiterId);
+     //single,multiple,all job delete logic:
+    //public void deleteJob(Integer jobId, Collection<Integer> jobIds, int recruiterId);
     void updateJobStatus(int jobId, String status);
     Collection<Tbljob> getJobs(int recruiterId);
 

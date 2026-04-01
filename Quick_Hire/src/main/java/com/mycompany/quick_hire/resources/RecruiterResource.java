@@ -18,6 +18,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 /**
  *
@@ -167,26 +168,6 @@ public class RecruiterResource {
         }
     }
 
-    @PUT
-    @Path("updateJob")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response updateJob(Tbljob job) {
-        try {
-            if (job == null || job.getJobId() == null) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Job ID required")
-                        .build();
-            }
-
-            ejb.updateJob(job);
-
-            return Response.ok("Job Updated Successfully").build();
-
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-        }
 //    @PUT
 //    @Path("updateJob")
 //    @Consumes(MediaType.APPLICATION_JSON)
@@ -199,36 +180,49 @@ public class RecruiterResource {
 //                        .build();
 //            }
 //
-//            // ✅ IMPORTANT VALIDATION
-//            if (job.getRecruiterId() == null) {
-//                return Response.status(Response.Status.BAD_REQUEST)
-//                        .entity("Recruiter ID is required")
-//                        .build();
-//            }
-//
 //            ejb.updateJob(job);
 //
 //            return Response.ok("Job Updated Successfully").build();
 //
 //        } catch (Exception e) {
-//            e.printStackTrace(); // 🔴 important for debugging
 //            return Response.status(500).entity(e.getMessage()).build();
 //        }
 //    }
+    @PUT
+    @Path("updateJob")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response updateJob(Tbljob job) {
+        try {
+            if (job == null || job.getJobId() == null) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Job ID is required")
+                        .build();
+            }
+            ejb.updateJob(job);
 
-    //r
+            return Response.ok("Job Updated Successfully").build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error updating job: " + e.getMessage())
+                    .build();
+        }
+    }
     @DELETE
     @Path("deleteJob")
     @Produces(MediaType.TEXT_PLAIN)
-    public Response deleteJob(@QueryParam("jobId") int jobId) {
+    public Response deleteJob(@QueryParam("jobId") int jobId,
+                              @QueryParam("recruiterId") int recruiterId) {
         try {
-            if (jobId <= 0) {
+            if (jobId <= 0 || recruiterId <= 0) {
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Invalid Job ID")
+                        .entity("Invalid IDs")
                         .build();
             }
 
-            ejb.deleteJob(jobId);
+            ejb.deleteJob(jobId, recruiterId);
 
             return Response.ok("Job Deleted Successfully").build();
 
@@ -237,7 +231,40 @@ public class RecruiterResource {
         }
     }
 
-    
+    //multiple,single and all job delete logic
+//    @DELETE
+//@Path("deleteJob")
+//@Produces(MediaType.TEXT_PLAIN)
+//public Response deleteJob(@QueryParam("jobId") Integer jobId,
+//                          @QueryParam("jobIds") List<Integer> jobIds,
+//                          @QueryParam("recruiterId") int recruiterId) {
+//    try {
+//
+//        if (recruiterId <= 0) {
+//            return Response.status(Response.Status.BAD_REQUEST)
+//                    .entity("Recruiter ID required")
+//                    .build();
+//        }
+//
+//        ejb.deleteJob(jobId, jobIds, recruiterId);
+//
+//        // Response messages
+//        if (jobId != null && jobId == 0) {
+//            return Response.ok("All Jobs Deleted Successfully").build();
+//        } else if (jobIds != null && !jobIds.isEmpty()) {
+//            return Response.ok("Multiple Jobs Deleted Successfully").build();
+//        } else if (jobId != null && jobId > 0) {
+//            return Response.ok("Single Job Deleted Successfully").build();
+//        } else {
+//            return Response.status(Response.Status.BAD_REQUEST)
+//                    .entity("Provide jobId or jobIds")
+//                    .build();
+//        }
+//
+//    } catch (Exception e) {
+//        return Response.status(500).entity(e.getMessage()).build();
+//    }
+//}
     @PUT
     @Path("updateJobStatus")
     @Produces(MediaType.TEXT_PLAIN)
@@ -290,7 +317,7 @@ public class RecruiterResource {
     @POST
     @Path("addSkillToJob")
     @Produces(MediaType.TEXT_PLAIN)
-    public Response addSkill(@QueryParam("jobId") int jobId,
+    public Response addSkillToJob(@QueryParam("jobId") int jobId,
                              @QueryParam("skillId") int skillId) {
         try {
             if (jobId <= 0 || skillId <= 0) {
@@ -312,7 +339,7 @@ public class RecruiterResource {
     @DELETE
     @Path("removeSkillFromJob")
     @Produces(MediaType.TEXT_PLAIN)
-    public Response removeSkill(@QueryParam("jobId") int jobId,
+    public Response removeSkillFromJob(@QueryParam("jobId") int jobId,
                                 @QueryParam("skillId") int skillId) {
         try {
             if (jobId <= 0 || skillId <= 0) {
@@ -333,7 +360,7 @@ public class RecruiterResource {
     @GET
     @Path("getJobSkills")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getSkills(@QueryParam("jobId") int jobId) {
+    public Response getJobSkills(@QueryParam("jobId") int jobId) {
         try {
             if (jobId <= 0) {
                 return Response.status(Response.Status.BAD_REQUEST)
@@ -388,7 +415,7 @@ public class RecruiterResource {
     @PUT
     @Path("updateApplicationStatus")
     @Produces(MediaType.TEXT_PLAIN)
-    public Response updateStatus(@QueryParam("applicationId") int id,
+    public Response updateApplicationStatus(@QueryParam("applicationId") int id,
                                  @QueryParam("status") String status) {
         try {
             if (id <= 0 || status == null || status.isEmpty()) {

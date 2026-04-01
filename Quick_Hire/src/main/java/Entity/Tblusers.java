@@ -50,8 +50,8 @@ import java.util.Date;
     @NamedQuery(name = "Tblusers.findByRole", query = "SELECT t FROM Tblusers t WHERE t.roleId.roleId = :roleId"),
         
     //@NamedQuery(name="Tblusers.searchUsers", query="SELECT t FROM Tblusers t WHERE t.email LIKE :keyword"),
-    @NamedQuery(name="Tblusers.count", query="SELECT COUNT(t) FROM Tblusers t")
-})
+    @NamedQuery(name="Tblusers.count", query="SELECT COUNT(t) FROM Tblusers t"),
+    @NamedQuery(name = "Tblusers.findByuserName",query = "SELECT u FROM Tblusers u WHERE u.userName = :userName")})
 public class Tblusers implements Serializable {
 
     private static final long serialVersionUID = 1L;

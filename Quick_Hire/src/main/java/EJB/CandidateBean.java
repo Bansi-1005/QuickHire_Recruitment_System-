@@ -6,11 +6,15 @@ package EJB;
 
 import jakarta.ejb.Stateless;
 import Entity.*;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.security.enterprise.identitystore.Pbkdf2PasswordHash;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -22,7 +26,7 @@ public class CandidateBean implements CandidateBeanLocal {
 
     @PersistenceContext(unitName="jpu")
     EntityManager em;
-
+    @Inject Pbkdf2PasswordHash hash;
     // ================= AUTH =================
 //    @Override
 //    public Tblusers candidateLogin(String email, String password, int roleId) {
@@ -43,7 +47,18 @@ public class CandidateBean implements CandidateBeanLocal {
              if (user == null || candidate == null) return;
 
             Date now = new Date();
+            // 🔐 STEP 1: Initialize hash (IMPORTANT)
+            Map<String, String> params = new HashMap<>();
+            params.put("Pbkdf2PasswordHash.Iterations", "3072");
+            params.put("Pbkdf2PasswordHash.Algorithm", "PBKDF2WithHmacSHA256");
 
+            hash.initialize(params);
+
+            // 🔐 STEP 2: Hash password
+            String hashedPassword = hash.generate(user.getUserPassword().toCharArray());
+
+            // 🔐 STEP 3: Set hashed password
+            user.setUserPassword(hashedPassword);
             user.setCreatedDate(now);
             user.setUpdatedDate(now);
             user.setLastLoginDate(now);
