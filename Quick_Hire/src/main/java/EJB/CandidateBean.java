@@ -6,6 +6,7 @@ package EJB;
 
 import jakarta.ejb.Stateless;
 import Entity.*;
+import jakarta.ejb.EJB;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -15,6 +16,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import util.EmailServiceLocal;
 
 /**
  *
@@ -26,6 +28,9 @@ public class CandidateBean implements CandidateBeanLocal {
 
     @PersistenceContext(unitName="jpu")
     EntityManager em;
+    
+    @EJB EmailServiceLocal emailService;
+    
     @Inject Pbkdf2PasswordHash hash;
     // ================= AUTH =================
 //    @Override
@@ -69,6 +74,18 @@ public class CandidateBean implements CandidateBeanLocal {
             candidate.setResumeUploadDate(now);
 
             em.persist(candidate);
+            
+            // send email to candidate 
+            String email = user.getUserEmail();
+
+            String subject = "Welcome to QuickHire";
+
+            String message = "Hello " + user.getUserName() + ",\n\n"
+                    + "Your account has been successfully created.\n"
+                    + "You can now apply for jobs.\n\n"
+                    + "Thank you!";
+
+            emailService.sendEmail(email, subject, message);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -279,6 +296,7 @@ public class CandidateBean implements CandidateBeanLocal {
             }
 
             application.setCandidateId(candidate);
+            application.setResumeSnapshot(candidate.getCandidateResume());
             application.setJobId(job);
 
             application.setApplicationAppliedDate(new Date());
@@ -287,7 +305,36 @@ public class CandidateBean implements CandidateBeanLocal {
 
             em.persist(application);
             em.flush();
+            
+           // notified recruiter
+            Tblrecruiters recruiter = job.getRecruiterId();
 
+            if (recruiter != null && recruiter.getUserId() != null) {
+
+                Tblusers recruiterUser = recruiter.getUserId();
+                Tblusers candidateUser = candidate.getUserId();
+
+                if (recruiterUser.getUserEmail() != null && candidateUser != null) {
+
+                    String recruiterEmail = job.getRecruiterId().getUserId().getUserEmail();
+
+                    String subject = "New Job Application";
+
+                    String message = "Dear Recruiter " + recruiterUser.getUserName() + ",\n\n"
+                                    + "We are pleased to inform you that a new candidate has applied for your job posting on QuickHire.\n\n"
+                                    + "Job Details:\n"
+                                    + "Job Title: " + job.getJobTitle() + "\n\n"
+                                    + "Candidate Details:\n"
+                                    + "Name: " + candidateUser.getUserName() + "\n"
+                                    + "Candidate ID: " + candidate.getCandidateId() + "\n"
+                                    + "Resume: " + candidate.getCandidateResume() + "\n\n"
+                                    + "Please log in to your recruiter dashboard to review the application and take further action.\n\n"
+                                    + "Best Regards,\n"
+                                    + "QuickHire Team";
+
+                    emailService.sendEmail(recruiterEmail, subject, message);
+                }
+            }
             return "Applied Successfully";
 
         } catch (Exception e) {

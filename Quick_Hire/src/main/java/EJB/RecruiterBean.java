@@ -7,6 +7,7 @@ package EJB;
 import Entity.*;
 import jakarta.annotation.security.DeclareRoles;
 import jakarta.annotation.security.RolesAllowed;
+import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -17,6 +18,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import util.EmailServiceLocal;
 
 /**
  *
@@ -29,7 +31,11 @@ public class RecruiterBean implements RecruiterBeanLocal {
 
     @PersistenceContext(unitName = "jpu")
     EntityManager em;
+    
+    @EJB private EmailServiceLocal emailService;
+    
     @Inject Pbkdf2PasswordHash hash;
+    
     @Override
     public void registerRecruiter(Tblusers user, Tblrecruiters recruiter) {
         try {
@@ -59,6 +65,17 @@ public class RecruiterBean implements RecruiterBeanLocal {
             recruiter.setCreatedDate(now);
 
             em.persist(recruiter);
+            
+            // Send Welcome Email
+            if (user.getUserEmail() != null) {
+                String subject = "Welcome to QuickHire";
+                String message = "Hello " + user.getUserName() + ",\n\n"
+                        + "Your recruiter account has been created successfully.\n"
+                        + "You can now post jobs and manage candidates.\n\n"
+                        + "Regards,\nQuickHire Team";
+
+                emailService.sendEmail(user.getUserEmail(), subject, message);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -106,7 +123,28 @@ public class RecruiterBean implements RecruiterBeanLocal {
     public void createJob(Tbljob job) {
         try {
             job.setJobPostedDate(new Date());
+            
+            // Fetch full recruiter from DB
+            Tblrecruiters recruiter = em.find(Tblrecruiters.class, job.getRecruiterId().getRecruiterId());
+
+            if (recruiter != null) {
+                job.setRecruiterId(recruiter); // attach full object
+            }
+            
             em.persist(job);
+            
+           // Notify Recruiter
+            if (recruiter != null && recruiter.getUserId() != null) {
+
+                String email = recruiter.getUserId().getUserEmail();
+
+                String subject = "Job Posted Successfully";
+                String message = "Your job has been posted successfully.\n\n"
+                        + "Job Title: " + job.getJobTitle() + "\n"
+                        + "Location: " + job.getJobLocation();
+
+                emailService.sendEmail(email, subject, message);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -459,7 +497,7 @@ public class RecruiterBean implements RecruiterBeanLocal {
         }
     }
 
-    @Override
+@Override
     public void updateApplicationStatus(int applicationId, String newStatus) {
         try {
             Tblapplication app = em.find(Tblapplication.class, applicationId);
@@ -472,6 +510,26 @@ public class RecruiterBean implements RecruiterBeanLocal {
                 em.merge(app);
 
                 addApplicationStatusHistory(applicationId, oldStatus, newStatus);
+                
+                // Notify Candidate
+                
+                // ✅ Fetch fresh from DB (safe)
+                Tblapplication freshApp = em.find(Tblapplication.class, applicationId);
+
+                if (freshApp.getCandidateId() != null && freshApp.getCandidateId().getUserId() != null) {
+                    Tblusers candidateUser = freshApp.getCandidateId().getUserId();
+
+                    String subject = "Application Status Updated";
+
+                    String message = "Hello " + candidateUser.getUserName() + ",\n\n"
+                            + "Your application status has been updated.\n\n"
+                            + "Job: " + freshApp.getJobId().getJobTitle() + "\n"
+                            + "Old Status: " + oldStatus + "\n"
+                            + "New Status: " + newStatus + "\n\n"
+                            + "Regards,\nQuickHire Team";
+
+                    emailService.sendEmail(candidateUser.getUserEmail(), subject, message);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -573,8 +631,31 @@ public class RecruiterBean implements RecruiterBeanLocal {
     @Override
     public void scheduleInterview(Tblinterview interview) {
         try {
-            
+            // Attach full application from DB
+            Tblapplication app = em.find(Tblapplication.class, interview.getApplicationId().getApplicationId());
+
+            if (app != null) {
+                interview.setApplicationId(app);
+            }
+
             em.persist(interview);
+            
+            // Notify Candidate
+            if (app != null && app.getCandidateId() != null && app.getCandidateId().getUserId() != null) {
+
+                Tblusers candidateUser = app.getCandidateId().getUserId();
+
+                String subject = "Interview Scheduled";
+
+                String message = "Hello " + candidateUser.getUserName() + ",\n\n"
+                        + "Your interview has been scheduled.\n\n"
+                        + "Job: " + app.getJobId().getJobTitle() + "\n"
+                        + "Date: " + interview.getInterviewDate() + "\n\n"
+                        + "Please be prepared.\n\n"
+                        + "Regards,\nQuickHire Team";
+
+                emailService.sendEmail(candidateUser.getUserEmail(), subject, message);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -597,11 +678,30 @@ public class RecruiterBean implements RecruiterBeanLocal {
                 interview.setFeedback(feedback);
                 interview.setResult(result);
                 em.merge(interview);
+                
+                // Notify Candidate
+                 // ✅ Fetch fresh application safely
+                Tblapplication app = em.find(Tblapplication.class, interview.getApplicationId().getApplicationId());
+
+                if (app != null && app.getCandidateId() != null && app.getCandidateId().getUserId() != null) {
+                    Tblusers candidateUser = app.getCandidateId().getUserId();
+
+                    String subject = "Interview Result";
+
+                    String message = "Hello " + candidateUser.getUserName() + ",\n\n"
+                            + "Your interview result is now available.\n\n"
+                            + "Result: " + result + "\n"
+                            + "Feedback: " + feedback + "\n\n"
+                            + "Regards,\nQuickHire Team";
+
+                    emailService.sendEmail(candidateUser.getUserEmail(), subject, message);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
 
     // ================= NOTIFICATION =================
     @Override
