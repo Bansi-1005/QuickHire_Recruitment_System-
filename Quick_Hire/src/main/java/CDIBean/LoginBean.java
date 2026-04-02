@@ -117,9 +117,9 @@ public class LoginBean implements Serializable {
 
             // Remove "Bearer " prefix
             if (fullToken != null && fullToken.startsWith("Bearer ")) {
-                token = fullToken.substring(7).trim(); // ✅ remove spaces
+                token = fullToken.substring(7).trim();  
             } else {
-                token = null; // ✅ safety
+                token = null; 
             }
             // Read JSON response
             String jsonResponse = response.readEntity(String.class);
