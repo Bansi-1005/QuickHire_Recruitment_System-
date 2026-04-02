@@ -5,6 +5,7 @@
 package EJB;
 
 import Entity.*;
+import jakarta.annotation.security.DeclareRoles;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -17,6 +18,7 @@ import java.util.Date;
  * @author tejan
  */
 @Stateless
+@DeclareRoles({"Admin","Recruiter","Candidate"})
 public class AdminBean implements AdminBeanLocal {
     @PersistenceContext(unitName = "jpu")
     EntityManager em;

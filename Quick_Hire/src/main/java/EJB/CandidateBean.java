@@ -6,6 +6,7 @@ package EJB;
 
 import jakarta.ejb.Stateless;
 import Entity.*;
+import jakarta.annotation.security.DeclareRoles;
 import jakarta.ejb.EJB;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -24,6 +25,7 @@ import util.EmailServiceLocal;
  */
 
 @Stateless
+@DeclareRoles({"Admin","Recruiter","Candidate"})
 public class CandidateBean implements CandidateBeanLocal {
 
     @PersistenceContext(unitName="jpu")

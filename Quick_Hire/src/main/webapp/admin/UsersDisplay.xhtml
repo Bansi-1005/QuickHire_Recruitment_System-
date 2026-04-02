@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:f="jakarta.faces.core">
+    <h:head>
+        <title>Facelet Title</title>
+    </h:head>
+    <h:body>
+        <h2>All Users</h2>
+
+        <h:dataTable value="#{userDisplayAdminCDIBean.users}" var="u" border="1">
+
+            <h:column>
+                <f:facet name="header">ID</f:facet>
+                #{u.userId}
+            </h:column>
+
+            <h:column>
+                <f:facet name="header">Name</f:facet>
+                #{u.userName}
+            </h:column>
+
+            <h:column>
+                <f:facet name="header">Email</f:facet>
+                #{u.userEmail}
+            </h:column>
+
+            <h:column>
+                <f:facet name="header">Role</f:facet>
+                #{u.roleId.roleName}
+            </h:column>
+
+        </h:dataTable>
+    </h:body>
+</html>

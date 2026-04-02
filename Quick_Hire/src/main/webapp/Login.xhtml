@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+<h:head>
+    <title>Login</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f9;
+        }
+
+        .login-box {
+            width: 350px;
+            margin: 100px auto;
+            padding: 25px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+
+        .error {
+            color: red;
+            font-size: 13px;
+        }
+
+        .server-error {
+            color: red;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+
+</h:head>
+
+    <h:body>
+
+    <div class="login-box">
+
+        <h:form>
+
+            <h2>Login</h2>
+
+            <!-- GLOBAL MESSAGES -->
+            <h:messages globalOnly="true" styleClass="error"/>
+
+            <!-- USERNAME -->
+            <h:outputLabel value="Username"/>
+            <h:inputText value="#{loginBean.username}" styleClass="input-field" id="username" required="true"
+                         requiredMessage="Username is required">
+            </h:inputText>
+            <h:message for="username" styleClass="error"/>
+
+            <br/><br/>
+
+            <!-- PASSWORD -->
+            <h:outputLabel value="Password"/>
+            <h:inputSecret value="#{loginBean.password}" styleClass="input-field" id="password" required="true"
+                           requiredMessage="Password is required">
+            </h:inputSecret>
+            <h:message for="password" styleClass="error"/>
+
+            <!-- LOGIN BUTTON -->
+            <h:commandButton value="Login" action="#{loginBean.login()}" styleClass="btn"/>
+
+            <!-- INVALID LOGIN MESSAGE -->
+            <h:outputText value="#{loginBean.message}" styleClass="server-error"/>
+
+        </h:form>
+
+    </div>
+
+    </h:body>
+</html>

@@ -16,6 +16,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jwt.TokenProvider;
+import org.json.JSONObject;
 
 /**
  *
@@ -34,7 +35,8 @@ public class AuthResource {
     @POST
     @Path("login")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces(MediaType.TEXT_PLAIN)
+    //@Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)   
     public Response login(@FormParam("userName") String userName,
                           @FormParam("password") String password) {
 
@@ -54,6 +56,13 @@ public class AuthResource {
 
         System.out.println("TOKEN GENERATED: " + token);
 
-        return Response.ok(token).build();
+        String json = new JSONObject()
+        .put("token", token)
+        .put("role", role)
+        .toString();
+
+        return Response.ok(json)
+        .header("Authorization", "Bearer " + token)
+        .build();
     }
 }
