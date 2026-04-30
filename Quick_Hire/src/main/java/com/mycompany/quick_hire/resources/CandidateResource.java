@@ -9,7 +9,6 @@ import Entity.Tblapplication;
 import Entity.Tblcandidates;
 import Entity.Tblscreeningscore;
 import Entity.Tblskills;
-import Entity.Tblusers;
 import jakarta.ejb.EJB;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -55,27 +54,27 @@ public class CandidateResource {
 //    }
     
     // ================= REGISTER =================
-    @POST
-    @Path("registerCandidate")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response registerCandidate(Tblcandidates candidate) {
-        try {
-            if (candidate == null || candidate.getUserId() == null) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("User data is missing").build();
-            }
-
-            Tblusers user = candidate.getUserId();
-
-            ejb.registerCandidate(user, candidate);
-
-            return Response.ok("Candidate Registered Successfully").build();
-
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
+//    @POST
+//    @Path("registerCandidate")
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response registerCandidate(Tblcandidates candidate) {
+//        try {
+//            if (candidate == null || candidate.getUserId() == null) {
+//                return Response.status(Response.Status.BAD_REQUEST)
+//                        .entity("User data is missing").build();
+//            }
+//
+//            Tblusers user = candidate.getUserId();
+//
+//            ejb.registerCandidate(user, candidate);
+//
+//            return Response.ok("Candidate Registered Successfully").build();
+//
+//        } catch (Exception e) {
+//            return Response.status(500).entity(e.getMessage()).build();
+//        }
+//    }
     
     // ================= PROFILE =================
     @GET

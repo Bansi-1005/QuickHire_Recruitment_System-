@@ -17,7 +17,7 @@ public interface CandidateBeanLocal {
 
     // AUTH
    // Tblusers candidateLogin(String email,String password,int roleId);
-    void registerCandidate(Tblusers user, Tblcandidates candidate);
+//    void registerCandidate(Tblusers user, Tblcandidates candidate);
 
     // PROFILE
     Tblcandidates getCandidateProfile(int userId);

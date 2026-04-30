@@ -49,30 +49,30 @@ public class RecruiterResource {
 
 
 
-    @POST
-    @Path("registerRecruiter")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response registerRecruiter(Tblrecruiters recruiter) {
-        try {
-
-            if (recruiter == null || recruiter.getUserId() == null) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("User data is missing").build();
-            }
-
-            Tblusers user = recruiter.getUserId();
-            
-
-            ejb.registerRecruiter(user, recruiter);
-
-            return Response.ok("Recruiter Registered Successfully").build();
-
-        } catch (Exception e) {
-            e.printStackTrace();   
-            return Response.status(500).entity(e.toString()).build();
-        }
-    }
+//    @POST
+//    @Path("registerRecruiter")
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response registerRecruiter(Tblrecruiters recruiter) {
+//        try {
+//
+//            if (recruiter == null || recruiter.getUserId() == null) {
+//                return Response.status(Response.Status.BAD_REQUEST)
+//                        .entity("User data is missing").build();
+//            }
+//
+//            Tblusers user = recruiter.getUserId();
+//            
+//
+//            ejb.registerRecruiter(user, recruiter);
+//
+//            return Response.ok("Recruiter Registered Successfully").build();
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();   
+//            return Response.status(500).entity(e.toString()).build();
+//        }
+//    }
 
         // ================= PROFILE =================
     @GET

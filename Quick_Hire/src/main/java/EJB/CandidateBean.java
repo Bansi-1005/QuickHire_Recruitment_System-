@@ -48,50 +48,50 @@ public class CandidateBean implements CandidateBeanLocal {
 //        }
 //    }
 
-    @Override
-    public void registerCandidate(Tblusers user, Tblcandidates candidate) {
-         try {
-             if (user == null || candidate == null) return;
-
-            Date now = new Date();
-            //  STEP 1: Initialize hash (IMPORTANT)
-            Map<String, String> params = new HashMap<>();
-            params.put("Pbkdf2PasswordHash.Iterations", "3072");
-            params.put("Pbkdf2PasswordHash.Algorithm", "PBKDF2WithHmacSHA256");
-
-            hash.initialize(params);
-
-            //  STEP 2: Hash password
-            String hashedPassword = hash.generate(user.getUserPassword().toCharArray());
-
-            //  STEP 3: Set hashed password
-            user.setUserPassword(hashedPassword);
-            user.setCreatedDate(now);
-            user.setUpdatedDate(now);
-            user.setLastLoginDate(now);
-
-            em.persist(user);
-
-            candidate.setUserId(user);
-            candidate.setResumeUploadDate(now);
-
-            em.persist(candidate);
-            
-            // send email to candidate 
-            String email = user.getUserEmail();
-
-            String subject = "Welcome to QuickHire";
-
-            String message = "Hello " + user.getUserName() + ",\n\n"
-                    + "Your account has been successfully created.\n"
-                    + "You can now apply for jobs.\n\n"
-                    + "Thank you!";
-
-            emailService.sendEmail(email, subject, message);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+//    @Override
+//    public void registerCandidate(Tblusers user, Tblcandidates candidate) {
+//         try {
+//             if (user == null || candidate == null) return;
+//
+//            Date now = new Date();
+//            //  STEP 1: Initialize hash (IMPORTANT)
+//            Map<String, String> params = new HashMap<>();
+//            params.put("Pbkdf2PasswordHash.Iterations", "3072");
+//            params.put("Pbkdf2PasswordHash.Algorithm", "PBKDF2WithHmacSHA256");
+//
+//            hash.initialize(params);
+//
+//            //  STEP 2: Hash password
+//            String hashedPassword = hash.generate(user.getUserPassword().toCharArray());
+//
+//            //  STEP 3: Set hashed password
+//            user.setUserPassword(hashedPassword);
+//            user.setCreatedDate(now);
+//            user.setUpdatedDate(now);
+//            user.setLastLoginDate(now);
+//
+//            em.persist(user);
+//
+//            candidate.setUserId(user);
+//            candidate.setResumeUploadDate(now);
+//
+//            em.persist(candidate);
+//            
+//            // send email to candidate 
+//            String email = user.getUserEmail();
+//
+//            String subject = "Welcome to QuickHire";
+//
+//            String message = "Hello " + user.getUserName() + ",\n\n"
+//                    + "Your account has been successfully created.\n"
+//                    + "You can now apply for jobs.\n\n"
+//                    + "Thank you!";
+//
+//            emailService.sendEmail(email, subject, message);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     // ================= PROFILE =================
     @Override

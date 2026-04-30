@@ -36,51 +36,51 @@ public class RecruiterBean implements RecruiterBeanLocal {
     
     @Inject Pbkdf2PasswordHash hash;
     
-    @Override
-    public void registerRecruiter(Tblusers user, Tblrecruiters recruiter) {
-        try {
-            Date now = new Date();
-            
-            //  STEP 1: Initialize hash (IMPORTANT)
-            Map<String, String> params = new HashMap<>();
-            params.put("Pbkdf2PasswordHash.Iterations", "3072");
-            params.put("Pbkdf2PasswordHash.Algorithm", "PBKDF2WithHmacSHA256");
-
-            hash.initialize(params);
-
-            //  STEP 2: Hash password
-            String hashedPassword = hash.generate(user.getUserPassword().toCharArray());
-
-            //  STEP 3: Set hashed password
-            user.setUserPassword(hashedPassword);
-            
-            
-            user.setCreatedDate(now);
-            user.setUpdatedDate(now);
-            user.setLastLoginDate(now);
-
-            em.persist(user);
-
-            recruiter.setUserId(user);
-            recruiter.setCreatedDate(now);
-
-            em.persist(recruiter);
-            
-            // Send Welcome Email
-            if (user.getUserEmail() != null) {
-                String subject = "Welcome to QuickHire";
-                String message = "Hello " + user.getUserName() + ",\n\n"
-                        + "Your recruiter account has been created successfully.\n"
-                        + "You can now post jobs and manage candidates.\n\n"
-                        + "Regards,\nQuickHire Team";
-
-                emailService.sendEmail(user.getUserEmail(), subject, message);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+//    @Override
+//    public void registerRecruiter(Tblusers user, Tblrecruiters recruiter) {
+//        try {
+//            Date now = new Date();
+//            
+//            //  STEP 1: Initialize hash (IMPORTANT)
+//            Map<String, String> params = new HashMap<>();
+//            params.put("Pbkdf2PasswordHash.Iterations", "3072");
+//            params.put("Pbkdf2PasswordHash.Algorithm", "PBKDF2WithHmacSHA256");
+//
+//            hash.initialize(params);
+//
+//            //  STEP 2: Hash password
+//            String hashedPassword = hash.generate(user.getUserPassword().toCharArray());
+//
+//            //  STEP 3: Set hashed password
+//            user.setUserPassword(hashedPassword);
+//            
+//            
+//            user.setCreatedDate(now);
+//            user.setUpdatedDate(now);
+//            user.setLastLoginDate(now);
+//
+//            em.persist(user);
+//
+//            recruiter.setUserId(user);
+//            recruiter.setCreatedDate(now);
+//
+//            em.persist(recruiter);
+//            
+//            // Send Welcome Email
+//            if (user.getUserEmail() != null) {
+//                String subject = "Welcome to QuickHire";
+//                String message = "Hello " + user.getUserName() + ",\n\n"
+//                        + "Your recruiter account has been created successfully.\n"
+//                        + "You can now post jobs and manage candidates.\n\n"
+//                        + "Regards,\nQuickHire Team";
+//
+//                emailService.sendEmail(user.getUserEmail(), subject, message);
+//            }
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     // ================= PROFILE =================
     @Override

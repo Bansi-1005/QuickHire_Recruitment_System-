@@ -7,6 +7,7 @@ package CDIBean;
 import Client.RegistrationJerseyClient;
 import EJB.RegistrationBeanLocal;
 import Entity.*;
+import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.inject.Named;
 import jakarta.enterprise.context.RequestScoped;
@@ -31,7 +32,10 @@ public class RegistrationJSFManagedBean {
 
     Integer roleId;
     
-
+    @PostConstruct
+    public void init() {
+        recruiter.setCompanyId(new Tblcompany());
+    }
     public RegistrationBeanLocal getEjb() {
         return ejb;
     }
@@ -107,7 +111,7 @@ public String registerUser() {
                 candMap.put("candidateExperience", candidate.getCandidateExperience());
                 candMap.put("candidateResume", "");
 
-                // ✅ DATE FIX (WITHOUT UTIL)
+                //  DATE FIX (WITHOUT UTIL)
                 if (candidate.getCandidateDOB() != null) {
                     String dob = new java.text.SimpleDateFormat("yyyy-MM-dd")
                             .format(candidate.getCandidateDOB());
@@ -123,14 +127,14 @@ public String registerUser() {
                 recMap.put("designation", recruiter.getDesignation());
                 recMap.put("recruiterPhone", recruiter.getRecruiterPhone());
                 recMap.put("recruiterStatus", "Active");
-                
-                // Company ID (REQUIRED if DB has FK)
-                if (recruiter.getCompanyId() != null) {
+       
+                if (recruiter.getCompanyId() != null &&
+                    recruiter.getCompanyId().getCompanyId() != null) {
+
                     Map<String, Object> compMap = new HashMap<>();
                     compMap.put("companyId", recruiter.getCompanyId().getCompanyId());
                     recMap.put("companyId", compMap);
                 }
-                
                 body.put("recruiter", recMap);
             }
 
@@ -141,7 +145,7 @@ public String registerUser() {
 
             client.close();
 
-            return "login.xhtml?faces-redirect=true";
+            return "Login?faces-redirect=true";
 
         } catch (Exception e) {
             e.printStackTrace();

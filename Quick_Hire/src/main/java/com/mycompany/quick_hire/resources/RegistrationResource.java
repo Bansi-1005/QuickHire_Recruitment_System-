@@ -114,11 +114,21 @@ public class RegistrationResource {
                     candidate.setCandidatePhone((String) candMap.get("candidatePhone"));
                     candidate.setCandidateLocation((String) candMap.get("candidateLocation"));
                     candidate.setCandidateGender((String) candMap.get("candidateGender"));
-                    candidate.setCandidateExperience(((Number) candMap.get("candidateExperience")).intValue());
+                    
+                    Object expObj = candMap.get("candidateExperience");
+
+                    if (expObj != null) {
+                        candidate.setCandidateExperience(((Number) expObj).intValue());
+                    } else {
+                        candidate.setCandidateExperience(0); // or default value
+                    }
                     candidate.setCandidateResume((String) candMap.get("candidateResume"));
 
-                    // Date conversion
-                    candidate.setCandidateDOB(java.sql.Date.valueOf((String) candMap.get("candidateDOB")));
+                    String dobStr = (String) candMap.get("candidateDOB");
+                    if (dobStr != null && !dobStr.isEmpty()) {
+                        candidate.setCandidateDOB(java.sql.Date.valueOf(dobStr));
+                    }
+                    System.out.println("Candidate Map: " + candMap);
                 }
             }
             else if(role.getRoleId() == 3){
@@ -131,21 +141,31 @@ public class RegistrationResource {
                 recruiter.setRecruiterPhone((String) recMap.get("recruiterPhone"));
                 recruiter.setRecruiterStatus((String) recMap.get("recruiterStatus"));
 
-                // COMPANY FIX
                 if (recMap.get("companyId") != null) {
-                    Map<String, Object> compMap = (Map<String, Object>) recMap.get("companyId");
+
+                Map<String, Object> compMap = (Map<String, Object>) recMap.get("companyId");
+
+                if (compMap != null && compMap.get("companyId") != null) {
 
                     Tblcompany company = new Tblcompany();
                     company.setCompanyId(((Number) compMap.get("companyId")).intValue());
 
                     recruiter.setCompanyId(company);
+
+                } else {
+                    return Response.status(400)
+                            .entity("Company ID is missing or invalid")
+                            .build();
                 }
             }
-
+        }
+            
             // ================= CALL EJB =================
             ejb.registerUser(user, role, candidate, recruiter);
 
             return Response.ok("User Registered Successfully").build();
+            
+            
 
         } catch (Exception e) {
             e.printStackTrace();

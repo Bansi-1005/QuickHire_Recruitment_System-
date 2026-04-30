@@ -16,7 +16,7 @@ import java.util.Collection;
 public interface RecruiterBeanLocal {
 
     // ================= AUTH =================
-    void registerRecruiter(Tblusers user, Tblrecruiters recruiter);
+//    void registerRecruiter(Tblusers user, Tblrecruiters recruiter);
 
     // ================= PROFILE =================
     Tblrecruiters getProfile(int userId);

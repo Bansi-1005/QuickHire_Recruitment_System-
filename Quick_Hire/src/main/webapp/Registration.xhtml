@@ -139,7 +139,7 @@
     <h:panelGroup id="rolePanel">
 
         <!-- CANDIDATE -->
-        <h:panelGroup rendered="#{registrationJSFManagedBean.roleId eq '2'}">
+        <h:panelGroup rendered="#{registrationJSFManagedBean.roleId eq 2}">
 
             <h3>Candidate Details</h3>
 
@@ -170,16 +170,16 @@
                 <f:selectItem itemLabel="Female" itemValue="Female"/>
             </h:selectOneMenu>
 
+
             <h:inputText id="experience"
-                         value="#{registrationJSFManagedBean.candidate.candidateExperience}"
-                         styleClass="input-field">
-                <f:passThroughAttribute name="placeholder" value="Experience"/>
+             value="#{registrationJSFManagedBean.candidate.candidateExperience}"
+             styleClass="input-field">
+            <f:passThroughAttribute name="placeholder" value="experience"/>
             </h:inputText>
 
         </h:panelGroup>
 
-        <!-- RECRUITER -->
-        <h:panelGroup rendered="#{registrationJSFManagedBean.roleId eq '3'}">
+        <h:panelGroup rendered="#{registrationJSFManagedBean.roleId eq 3 }">
 
             <h3>Recruiter Details</h3>
 
@@ -195,10 +195,9 @@
                 <f:passThroughAttribute name="placeholder" value="Phone"/>
             </h:inputText>
 
-            <h:inputText id="company"
-                         value="#{registrationJSFManagedBean.recruiter.companyId.companyId}"
-                         styleClass="input-field">
-                <f:passThroughAttribute name="placeholder" value="Company ID"/>
+            <h:inputText id="recCompany" value="#{registrationJSFManagedBean.recruiter.companyId.companyId}" styleClass="input-field">
+                <f:convertNumber integerOnly="true"/>
+                <f:passThroughAttribute name="placeholder" value="Company"/>
             </h:inputText>
 
         </h:panelGroup>
@@ -212,7 +211,7 @@
 
     <!-- LOGIN LINK -->
     <h:link value="Already have an account? Login"
-            outcome="/Login.jsf"
+            outcome="Login.jsf"
             styleClass="link"/>
 
 </h:form>
