@@ -41,17 +41,17 @@ public class RecruiterBean implements RecruiterBeanLocal {
         try {
             Date now = new Date();
             
-            // 🔐 STEP 1: Initialize hash (IMPORTANT)
+            //  STEP 1: Initialize hash (IMPORTANT)
             Map<String, String> params = new HashMap<>();
             params.put("Pbkdf2PasswordHash.Iterations", "3072");
             params.put("Pbkdf2PasswordHash.Algorithm", "PBKDF2WithHmacSHA256");
 
             hash.initialize(params);
 
-            // 🔐 STEP 2: Hash password
+            //  STEP 2: Hash password
             String hashedPassword = hash.generate(user.getUserPassword().toCharArray());
 
-            // 🔐 STEP 3: Set hashed password
+            //  STEP 3: Set hashed password
             user.setUserPassword(hashedPassword);
             
             
@@ -119,7 +119,7 @@ public class RecruiterBean implements RecruiterBeanLocal {
 
     // ================= JOB MANAGEMENT =================
     @Override
-    @RolesAllowed("Recruiter")
+    //@RolesAllowed("Recruiter")
     public void createJob(Tbljob job) {
         try {
             job.setJobPostedDate(new Date());
@@ -277,28 +277,28 @@ public class RecruiterBean implements RecruiterBeanLocal {
 
             if (j != null && r != null && r.getTbljobCollection() != null) {
 
-                // ✅ Step 1: Remove Job ↔ Skills (tbljob_skills)
+                // Step 1: Remove Job ↔ Skills (tbljob_skills)
                 if (j.getTblskillsCollection() != null) {
                     j.getTblskillsCollection().clear();
                 }
 
-                // ✅ Step 2: Remove Job ↔ Candidates (candidate_job)
+                // Step 2: Remove Job ↔ Candidates (candidate_job)
                 if (j.getTblcandidatesCollection() != null) {
                     j.getTblcandidatesCollection().clear();
                 }
 
-                // ✅ Step 3: Delete Applications (VERY IMPORTANT)
+                // Step 3: Delete Applications (VERY IMPORTANT)
                 if (j.getTblapplicationCollection() != null) {
                     for (Tblapplication app : j.getTblapplicationCollection()) {
                         em.remove(em.contains(app) ? app : em.merge(app));
                     }
                 }
 
-                // ✅ Step 4: Remove from recruiter
+                // Step 4: Remove from recruiter
                 r.getTbljobCollection().remove(j);
                 em.merge(r);
 
-                // ✅ Step 5: Finally delete job
+                // Step 5: Finally delete job
                 em.remove(em.contains(j) ? j : em.merge(j));
             }
 
@@ -513,7 +513,7 @@ public class RecruiterBean implements RecruiterBeanLocal {
                 
                 // Notify Candidate
                 
-                // ✅ Fetch fresh from DB (safe)
+                // Fetch fresh from DB (safe)
                 Tblapplication freshApp = em.find(Tblapplication.class, applicationId);
 
                 if (freshApp.getCandidateId() != null && freshApp.getCandidateId().getUserId() != null) {
@@ -680,7 +680,7 @@ public class RecruiterBean implements RecruiterBeanLocal {
                 em.merge(interview);
                 
                 // Notify Candidate
-                 // ✅ Fetch fresh application safely
+                 // Fetch fresh application safely
                 Tblapplication app = em.find(Tblapplication.class, interview.getApplicationId().getApplicationId());
 
                 if (app != null && app.getCandidateId() != null && app.getCandidateId().getUserId() != null) {

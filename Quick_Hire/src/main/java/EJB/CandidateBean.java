@@ -54,17 +54,17 @@ public class CandidateBean implements CandidateBeanLocal {
              if (user == null || candidate == null) return;
 
             Date now = new Date();
-            // 🔐 STEP 1: Initialize hash (IMPORTANT)
+            //  STEP 1: Initialize hash (IMPORTANT)
             Map<String, String> params = new HashMap<>();
             params.put("Pbkdf2PasswordHash.Iterations", "3072");
             params.put("Pbkdf2PasswordHash.Algorithm", "PBKDF2WithHmacSHA256");
 
             hash.initialize(params);
 
-            // 🔐 STEP 2: Hash password
+            //  STEP 2: Hash password
             String hashedPassword = hash.generate(user.getUserPassword().toCharArray());
 
-            // 🔐 STEP 3: Set hashed password
+            //  STEP 3: Set hashed password
             user.setUserPassword(hashedPassword);
             user.setCreatedDate(now);
             user.setUpdatedDate(now);

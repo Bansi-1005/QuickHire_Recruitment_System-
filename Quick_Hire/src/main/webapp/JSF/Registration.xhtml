@@ -1,103 +1,224 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="jakarta.faces.html"
-      xmlns:f="jakarta.faces.core">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:head>
-        <title>Facelet Title</title>
-    </h:head>
-    <h:body>
-        <h:form>
+        <title>Register</title>
+        
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial;
+            background: linear-gradient(135deg, #74ebd5, #ACB6E5);
+            margin: 0;
+        }
 
-        <!-- ================== TITLE ================== -->
-        <h2>Registration</h2>
+        .container {
+            display: flex;
+            justify-content: center;
+            padding: 40px 0;
+        }
 
-        <!-- ================= COMMON USER FIELDS ================= -->
-        <h:panelGrid columns="2" columnClasses="labelColumn,valueColumn" styleClass="commonFields" cellpadding="5">
+        .card {
+            width: 450px;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
 
-            <h:outputLabel value="Username:" for="username" />
-            <h:inputText id="username" value="#{registrationJSFManagedBean.user.userName}" required="true" />
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
 
-            <h:outputLabel value="Email:" for="email" />
-            <h:inputText id="email" value="#{registrationJSFManagedBean.user.userEmail}" required="true" />
+        h3 {
+            margin-top: 25px;
+            border-left: 4px solid #28a745;
+            padding-left: 10px;
+            color: #333;
+        }
 
-            <h:outputLabel value="Password:" for="password" />
-            <h:inputSecret id="password" value="#{registrationJSFManagedBean.user.userPassword}" required="true" />
+        label {
+            font-weight: 600;
+            font-size: 14px;
+        }
 
-            <h:outputLabel value="Role:" for="role" />
-            <h:selectOneMenu id="role" value="#{registrationJSFManagedBean.roleId}" required="true" requiredMessage="Please select a role.">
-                <f:selectItem itemLabel="-- Select Role --" itemValue="#{null}" />
-                <f:selectItem itemLabel="Candidate" itemValue="2" />
-                <f:selectItem itemLabel="Recruiter" itemValue="3" />
-                <f:ajax render="rolePanel" />
+        .input-field {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        .input-field:focus {
+            border-color: #28a745;
+            outline: none;
+            box-shadow: 0 0 5px rgba(40,167,69,0.4);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #218838;
+        }
+
+        .error {
+            color: red;
+            font-size: 12px;
+        }
+
+        .link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #007bff;
+        }
+    </style>
+
+</h:head>
+
+<h:body>
+
+<div class="container">
+<div class="card">
+
+<h:form>
+
+    <h2>Create Account</h2>
+
+    <h:messages globalOnly="true" styleClass="error"/>
+
+    <!-- BASIC INFO -->
+    <h3>Basic Information</h3>
+
+    <h:outputLabel for="username" value="Username"/>
+    <h:inputText id="username"
+                 value="#{registrationJSFManagedBean.user.userName}"
+                 styleClass="input-field"
+                 required="true"/>
+    <h:message for="username" styleClass="error"/>
+
+    <h:outputLabel for="email" value="Email"/>
+    <h:inputText id="email"
+                 value="#{registrationJSFManagedBean.user.userEmail}"
+                 styleClass="input-field"
+                 required="true"/>
+    <h:message for="email" styleClass="error"/>
+
+    <h:outputLabel for="password" value="Password"/>
+    <h:inputSecret id="password"
+                   value="#{registrationJSFManagedBean.user.userPassword}"
+                   styleClass="input-field"
+                   required="true"/>
+    <h:message for="password" styleClass="error"/>
+
+    <!-- ROLE -->
+    <h:outputLabel for="role" value="Role"/>
+    <h:selectOneMenu id="role"
+                     value="#{registrationJSFManagedBean.roleId}"
+                     styleClass="input-field">
+        <f:selectItem itemLabel="Select Role" itemValue="#{null}" />
+        <f:selectItem itemLabel="Candidate" itemValue="2" />
+        <f:selectItem itemLabel="Recruiter" itemValue="3" />
+        <f:ajax render="rolePanel"/>
+    </h:selectOneMenu>
+
+    <!-- ROLE BASED -->
+    <h:panelGroup id="rolePanel">
+
+        <!-- CANDIDATE -->
+        <h:panelGroup rendered="#{registrationJSFManagedBean.roleId eq '2'}">
+
+            <h3>Candidate Details</h3>
+
+            <h:inputText id="phone"
+                         value="#{registrationJSFManagedBean.candidate.candidatePhone}"
+                         styleClass="input-field">
+                <f:passThroughAttribute name="placeholder" value="Phone"/>
+            </h:inputText>
+
+            <h:inputText id="location"
+                         value="#{registrationJSFManagedBean.candidate.candidateLocation}"
+                         styleClass="input-field">
+                <f:passThroughAttribute name="placeholder" value="Location"/>
+            </h:inputText>
+
+            <h:inputText id="dob"
+                         value="#{registrationJSFManagedBean.candidate.candidateDOB}"
+                         styleClass="input-field">
+                <f:convertDateTime pattern="yyyy-MM-dd"/>
+                <f:passThroughAttribute name="type" value="date"/>
+            </h:inputText>
+
+            <h:selectOneMenu id="gender"
+                             value="#{registrationJSFManagedBean.candidate.candidateGender}"
+                             styleClass="input-field">
+                <f:selectItem itemLabel="Select Gender" itemValue="" />
+                <f:selectItem itemLabel="Male" itemValue="Male"/>
+                <f:selectItem itemLabel="Female" itemValue="Female"/>
             </h:selectOneMenu>
 
-        </h:panelGrid>
-
-        <br/>
-
-        <!-- ================= ROLE BASED PANELS ================= -->
-        <h:panelGroup id="rolePanel">
-
-            <!-- ================= CANDIDATE DETAILS ================= -->
-            <h:panelGrid columns="2" columnClasses="labelColumn,valueColumn" rendered="#{registrationJSFManagedBean.roleId == 2}" cellpadding="5">
-                <h3>Candidate Details</h3>
-
-                <h:outputLabel value="Phone:" for="candPhone" />
-                <h:inputText id="candPhone" value="#{registrationJSFManagedBean.candidate.candidatePhone}" />
-
-                <h:outputLabel value="Location:" for="location" />
-                <h:inputText id="location" value="#{registrationJSFManagedBean.candidate.candidateLocation}" />
-
-                <h:outputLabel value="Date of Birth:" for="dob" />
-                <h:inputText id="dob" value="#{registrationJSFManagedBean.candidate.candidateDOB}">
-                    <f:convertDateTime pattern="yyyy-MM-dd" />
-                    <f:passThroughAttribute name="type" value="date" />
-                </h:inputText>
-
-                <h:outputLabel value="Gender:" for="gender" />
-                <h:selectOneMenu id="gender" value="#{registrationJSFManagedBean.candidate.candidateGender}">
-                    <f:selectItem itemLabel="Male" itemValue="Male" />
-                    <f:selectItem itemLabel="Female" itemValue="Female" />
-                </h:selectOneMenu>
-
-                <h:outputLabel value="Experience:" for="experience" />
-                <h:inputText id="experience" value="#{registrationJSFManagedBean.candidate.candidateExperience}" />
-
-            </h:panelGrid>
-
-            <!-- ================= RECRUITER DETAILS ================= -->
-            <h:panelGrid columns="2" columnClasses="labelColumn,valueColumn" rendered="#{registrationJSFManagedBean.roleId == 3}" cellpadding="5">
-                <h3>Recruiter Details</h3>
-
-                <h:outputLabel value="Designation:" for="designation" />
-                <h:inputText id="designation" value="#{registrationJSFManagedBean.recruiter.designation}" />
-
-                <h:outputLabel value="Phone:" for="recPhone" />
-                <h:inputText id="recPhone" value="#{registrationJSFManagedBean.recruiter.recruiterPhone}" />
-
-                <h:outputLabel value="Company ID:" for="companyId" />
-                <h:inputText id="companyId" value="#{registrationJSFManagedBean.recruiter.companyId.companyId}" />
-
-            </h:panelGrid>
+            <h:inputText id="experience"
+                         value="#{registrationJSFManagedBean.candidate.candidateExperience}"
+                         styleClass="input-field">
+                <f:passThroughAttribute name="placeholder" value="Experience"/>
+            </h:inputText>
 
         </h:panelGroup>
 
-        <br/>
+        <!-- RECRUITER -->
+        <h:panelGroup rendered="#{registrationJSFManagedBean.roleId eq '3'}">
 
-        <!-- ================= SUBMIT BUTTON ================= -->
-        <h:commandButton value="Register" action="#{registrationJSFManagedBean.registerUser}" style="padding: 8px 20px;" />
+            <h3>Recruiter Details</h3>
 
-    </h:form>
+            <h:inputText id="designation"
+                         value="#{registrationJSFManagedBean.recruiter.designation}"
+                         styleClass="input-field">
+                <f:passThroughAttribute name="placeholder" value="Designation"/>
+            </h:inputText>
 
-    <!-- ================= STYLES ================= -->
-    <style>
-        .labelColumn { font-weight: bold; padding-right: 10px; text-align: right; vertical-align: middle; }
-        .valueColumn { text-align: left; }
-        h3 { margin-top: 20px; color: #2c3e50; }
-        .commonFields { margin-bottom: 20px; }
-        h2 { color: #34495e; }
-    </style>
+            <h:inputText id="recphone"
+                         value="#{registrationJSFManagedBean.recruiter.recruiterPhone}"
+                         styleClass="input-field">
+                <f:passThroughAttribute name="placeholder" value="Phone"/>
+            </h:inputText>
 
-    </h:body>
+            <h:inputText id="company"
+                         value="#{registrationJSFManagedBean.recruiter.companyId.companyId}"
+                         styleClass="input-field">
+                <f:passThroughAttribute name="placeholder" value="Company ID"/>
+            </h:inputText>
+
+        </h:panelGroup>
+
+    </h:panelGroup>
+
+    <!-- BUTTON -->
+    <h:commandButton value="Create Account"
+                     action="#{registrationJSFManagedBean.registerUser}"
+                     styleClass="btn"/>
+
+    <!-- LOGIN LINK -->
+    <h:link value="Already have an account? Login"
+            outcome="/Login.jsf"
+            styleClass="link"/>
+
+</h:form>
+
+</div>
+</div>
+
+</h:body>
 </html>
