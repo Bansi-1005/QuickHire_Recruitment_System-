@@ -21,7 +21,7 @@ import java.util.Map;
  */
 @Named(value = "registrationJSFManagedBean")
 @RequestScoped
-public class RegistrationJSFManagedBean {
+public class RegistrationCDIBean {
 
    @EJB
     RegistrationBeanLocal ejb;
@@ -142,6 +142,11 @@ public String registerUser() {
             String response = client.registerUser(body);
             System.out.println("API RESPONSE: " + response);
             System.out.println("BODY JSON: " + body);
+            
+            
+            System.out.println("PHONE: " + candidate.getCandidatePhone());
+            System.out.println("LOCATION: " + candidate.getCandidateLocation());
+            System.out.println("DESIGNATION: " + recruiter.getDesignation());
 
             client.close();
 

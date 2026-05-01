@@ -75,9 +75,8 @@ public class Tblcandidates implements Serializable {
     @Size(max = 255)
     @Column(name = "candidateResume")
     private String candidateResume;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "resumeUploadDate")
+    @Basic(optional = true)
+    @Column(name = "resumeUploadDate", nullable = true)
     @Temporal(TemporalType.TIMESTAMP)
     private Date resumeUploadDate;
     @JoinTable(name = "tblcandidate_skills", joinColumns = {

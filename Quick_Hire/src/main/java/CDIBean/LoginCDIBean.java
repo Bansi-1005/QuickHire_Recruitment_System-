@@ -26,7 +26,7 @@ import org.json.JSONObject;
  */
 @Named(value = "loginBean")
 @SessionScoped
-public class LoginBean implements Serializable {
+public class LoginCDIBean implements Serializable {
     
     // Stores user credentials from UI
     private String username;
@@ -83,7 +83,7 @@ public class LoginBean implements Serializable {
         this.role = role;
     }
     
-    public LoginBean() {
+    public LoginCDIBean() {
     }
     
     

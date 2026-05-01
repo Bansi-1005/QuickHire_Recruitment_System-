@@ -57,9 +57,7 @@ public class RegistrationBean implements RegistrationBeanLocal {
 
             // SET ROLE
             Tblrolemaster managedRole = em.find(Tblrolemaster.class, role.getRoleId());
-            user.setRoleId(managedRole);
-            //user.setRoleId(role);
-            
+            user.setRoleId(managedRole);            
 
             em.persist(user);
             em.flush();
@@ -69,12 +67,20 @@ public class RegistrationBean implements RegistrationBeanLocal {
             // ============================
 
             // Candidate (Assume roleId = 2)
-//            if (role.getRoleName().equalsIgnoreCase("Candidate") && candidate != null) {
-//            if (role.getRoleId() == 2 && candidate != null) {
+
             if (managedRole.getRoleId() == 2 && candidate != null) {
 
                 candidate.setUserId(user);
-                candidate.setResumeUploadDate(now);
+                if (candidate.getCandidateResume() != null && 
+                    !candidate.getCandidateResume().trim().equals("") &&
+                    !candidate.getCandidateResume().equalsIgnoreCase("null")) {
+
+                    candidate.setResumeUploadDate(now);
+
+                } else {
+                    candidate.setCandidateResume(null);
+                    candidate.setResumeUploadDate(null);
+}
 
                 em.persist(candidate);
 
@@ -91,12 +97,17 @@ public class RegistrationBean implements RegistrationBeanLocal {
             }
 
             // Recruiter (Assume roleId = 3)
-//            else if (role.getRoleName().equalsIgnoreCase("Recruiter") && recruiter != null) {
             else if (managedRole.getRoleId() == 3 && recruiter != null) {
 
                 recruiter.setUserId(user);
                 recruiter.setCreatedDate(now);
+                
+                if (recruiter.getCompanyId() != null) {
+                    Tblcompany managedCompany = em.find(Tblcompany.class,recruiter.getCompanyId().getCompanyId());
+                    recruiter.setCompanyId(managedCompany);
+                }
 
+              
                 em.persist(recruiter);
 
                 // Email

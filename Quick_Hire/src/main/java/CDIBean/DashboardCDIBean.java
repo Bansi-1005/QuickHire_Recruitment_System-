@@ -21,8 +21,8 @@ import java.io.Serializable;
  */
 @Named(value = "dashboardBean")
 @SessionScoped
-public class DashboardBean implements Serializable {
-    @Inject LoginBean loginBean;
+public class DashboardCDIBean implements Serializable {
+    @Inject LoginCDIBean loginBean;
 
     private String result;
 

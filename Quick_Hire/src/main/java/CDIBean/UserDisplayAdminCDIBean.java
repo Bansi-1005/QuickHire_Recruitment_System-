@@ -43,7 +43,7 @@ public class UserDisplayAdminCDIBean implements Serializable {
     public UserDisplayAdminCDIBean() {
     }
     // Inject LoginBean to access stored JWT token
-    @Inject LoginBean loginBean;
+    @Inject LoginCDIBean loginBean;
    // List to store users received from backend API
     private List<Tblusers> users;
 

@@ -132,15 +132,14 @@
         <f:selectItem itemLabel="Select Role" itemValue="#{null}" />
         <f:selectItem itemLabel="Candidate" itemValue="2" />
         <f:selectItem itemLabel="Recruiter" itemValue="3" />
-        <f:ajax render="rolePanel"/>
+        <f:ajax execute="@this" render="rolePanel"/>
     </h:selectOneMenu>
 
     <!-- ROLE BASED -->
     <h:panelGroup id="rolePanel">
 
         <!-- CANDIDATE -->
-        <h:panelGroup rendered="#{registrationJSFManagedBean.roleId eq 2}">
-
+<h:panelGroup style="#{registrationJSFManagedBean.roleId == 2 ? '' : 'display:none;'}">
             <h3>Candidate Details</h3>
 
             <h:inputText id="phone"
@@ -179,8 +178,7 @@
 
         </h:panelGroup>
 
-        <h:panelGroup rendered="#{registrationJSFManagedBean.roleId eq 3 }">
-
+<h:panelGroup style="#{registrationJSFManagedBean.roleId == 3 ? '' : 'display:none;'}">
             <h3>Recruiter Details</h3>
 
             <h:inputText id="designation"
@@ -206,8 +204,8 @@
 
     <!-- BUTTON -->
     <h:commandButton value="Create Account"
-                     action="#{registrationJSFManagedBean.registerUser}"
-                     styleClass="btn"/>
+        action="#{registrationJSFManagedBean.registerUser}"
+        styleClass="btn"/>
 
     <!-- LOGIN LINK -->
     <h:link value="Already have an account? Login"
