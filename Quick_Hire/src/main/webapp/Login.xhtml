@@ -9,95 +9,177 @@
 
     <style>
         body {
-            font-family: Arial;
-            background: #f4f6f9;
+            margin: 0;
+            font-family: 'Segoe UI', Arial;
         }
 
-        .login-box {
-            width: 350px;
-            margin: 100px auto;
-            padding: 25px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+        .container {
+            display: flex;
+            height: 100vh;
         }
 
-        h2 {
-            text-align: center;
+        /* LEFT PANEL */
+        .left {
+            flex: 1;
+            background: linear-gradient(135deg, #0f9b8e, #1f6fdc);
+            color: white;
+            padding: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .logo {
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 40px;
+        }
+
+        .left h1 {
+            font-size: 36px;
             margin-bottom: 20px;
         }
 
-        .input-field {
+        .left p {
+            font-size: 16px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .features {
+            margin-top: 40px;
+            display: flex;
+            gap: 25px;
+            font-size: 14px;
+        }
+
+        /* RIGHT PANEL */
+        .right {
+            flex: 1;
+            background: #f8f9fc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card {
+            width: 380px;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            margin-bottom: 5px;
+        }
+
+        .sub {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 20px;
+        }
+
+        .input {
             width: 100%;
-            padding: 8px;
-            margin-top: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        .input:focus {
+            border-color: #1f6fdc;
+            outline: none;
+            box-shadow: 0 0 5px rgba(31,111,220,0.3);
         }
 
         .btn {
             width: 100%;
-            padding: 10px;
-            background: #007bff;
+            padding: 12px;
+            margin-top: 10px;
+            background: linear-gradient(to right, #0f9b8e, #1f6fdc);
             color: white;
             border: none;
-            border-radius: 5px;
-            margin-top: 15px;
+            border-radius: 6px;
             cursor: pointer;
         }
 
-        .btn:hover {
-            background: #0056b3;
+        .bottom {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .bottom a {
+            color: #1f6fdc;
         }
 
         .error {
             color: red;
-            font-size: 13px;
+            font-size: 12px;
         }
 
-        .server-error {
-            color: red;
-            text-align: center;
-            margin-top: 10px;
-        }
     </style>
-
 </h:head>
 
-    <h:body>
+<h:body>
 
-    <div class="login-box">
+<div class="container">
 
-        <h:form>
+    <!-- LEFT -->
+    <div class="left">
+        <div class="logo">RecruitPro</div>
 
-            <h2>Login</h2>
+        <h1>Streamline Your Hiring Process</h1>
+        <p>
+            AI-powered resume screening, intelligent matching,
+            and seamless interview management — all in one platform.
+        </p>
 
-            <!-- GLOBAL MESSAGES -->
-            <h:messages globalOnly="true" styleClass="error"/>
-
-            <!-- USERNAME -->
-            <h:outputLabel value="Username"/>
-            <h:inputText value="#{loginBean.username}" styleClass="input-field" id="username" required="true"
-                         requiredMessage="Username is required">
-            </h:inputText>
-            <h:message for="username" styleClass="error"/>
-
-            <br/><br/>
-
-            <!-- PASSWORD -->
-            <h:outputLabel value="Password"/>
-            <h:inputSecret value="#{loginBean.password}" styleClass="input-field" id="password" required="true"
-                           requiredMessage="Password is required">
-            </h:inputSecret>
-            <h:message for="password" styleClass="error"/>
-
-            <!-- LOGIN BUTTON -->
-            <h:commandButton value="Login" action="#{loginBean.login()}" styleClass="btn"/>
-
-            <!-- INVALID LOGIN MESSAGE -->
-            <h:outputText value="#{loginBean.message}" styleClass="server-error"/>
-            <h:link value="Register" outcome="Registration.jsf"></h:link>
-        </h:form>
-
+        <div class="features">
+            <span>&#10004; Smart Screening</span>
+            <span>&#10004; Secure &amp; Fast</span>
+            <span>&#10004; Easy Hiring</span>
+        </div>
     </div>
 
-    </h:body>
+    <!-- RIGHT -->
+    <div class="right">
+        <div class="card">
+
+            <h:form>
+
+                <h2>Welcome back</h2>
+                <div class="sub">Sign in to your account to continue</div>
+
+                <h:messages styleClass="error"/>
+
+                <h:inputText value="#{loginBean.username}" styleClass="input" required="true">
+                    <f:passThroughAttribute name="placeholder" value="Email"/>
+                </h:inputText>
+
+                <h:inputSecret value="#{loginBean.password}" styleClass="input" required="true">
+                    <f:passThroughAttribute name="placeholder" value="Password"/>
+                </h:inputSecret>
+
+                <h:commandButton value="Sign in"
+                                 action="#{loginBean.login()}"
+                                 styleClass="btn"/>
+
+                <h:outputText value="#{loginBean.message}" styleClass="error"/>
+
+                <div class="bottom">
+                    Don’t have an account?
+                    <h:link value="Create one" outcome="Registration.jsf"/>
+                </div>
+
+            </h:form>
+
+        </div>
+    </div>
+
+</div>
+
+</h:body>
 </html>
