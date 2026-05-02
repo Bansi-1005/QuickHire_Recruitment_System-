@@ -132,7 +132,8 @@ public class LoginCDIBean implements Serializable {
             if (role.equalsIgnoreCase("Admin")) {
                 return "/admin/adminDashboard.xhtml?faces-redirect=true";
             } else if (role.equalsIgnoreCase("Recruiter")) {
-                return "/recruiter/recruiterDashboard.xhtml?faces-redirect=true";
+//                return "/recruiter/recruiterDashboard.xhtml?faces-redirect=true";
+                   return "recruiter/recruiterDashboard?faces-redirect=true";
             } else {
                 return "/candidate/candidateDashboard.xhtml?faces-redirect=true";
             }

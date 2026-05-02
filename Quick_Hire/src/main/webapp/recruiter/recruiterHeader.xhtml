@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <header class="top-header">
+        <div class="top-header-inner">
+            <div class="brand-block">
+                <div class="brand-logo">
+                    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="qhGrad" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#ffffff"/>
+                                <stop offset="100%" stop-color="#c8f3ee"/>
+                            </linearGradient>
+                        </defs>
+                        <rect x="10" y="10" width="44" height="44" rx="14" fill="url(#qhGrad)"/>
+                        <path d="M23 21V43M23 32H33M41 21V43M33 32V43"
+                              stroke="#1e3c72" stroke-width="4.5"
+                              stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+
+                <div class="brand-text">
+                    <span class="brand-title">QuickHire</span>
+                    <span class="brand-subtitle">Recruit smarter, hire faster</span>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <div class="header-badge">Recruiter Portal</div>
+                    <div class="user-chip">
+                        <div class="user-avatar">
+                            #{loginBean.username != null ? loginBean.username.substring(0,1).toUpperCase() : 'R'}
+                        </div>
+
+                        <div class="user-info">
+                            <span class="user-name">#{loginBean.username}</span>
+                            <span class="user-role">Recruiter</span>
+                        </div>
+
+                        <h:form styleClass="logout-btn">
+                            <h:commandButton value="Logout"
+                                             action="#{loginBean.logout}"
+                                             styleClass="logout-btn" />
+                        </h:form>
+                    </div>
+            </div>
+        </div>
+    </header>
+
+</ui:composition>

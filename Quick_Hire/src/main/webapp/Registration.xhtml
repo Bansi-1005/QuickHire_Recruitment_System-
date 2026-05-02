@@ -1,8 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
+
 <h:head>
     <title>Register</title>
 
@@ -17,7 +20,6 @@
             height: 100vh;
         }
 
-        /* LEFT PANEL */
         .left {
             flex: 1;
             background: linear-gradient(135deg, #0f9b8e, #1f6fdc);
@@ -41,8 +43,6 @@
 
         .left p {
             font-size: 15px;
-            opacity: 0.9;
-            line-height: 1.6;
         }
 
         .features {
@@ -52,7 +52,6 @@
             font-size: 14px;
         }
 
-        /* RIGHT PANEL */
         .right {
             flex: 1;
             background: #f8f9fc;
@@ -71,28 +70,12 @@
             overflow-y: auto;
         }
 
-        h2 {
-            margin-bottom: 5px;
-        }
-
-        .sub {
-            font-size: 14px;
-            color: #777;
-            margin-bottom: 15px;
-        }
-
         .input {
             width: 100%;
             padding: 10px;
             margin: 8px 0;
             border-radius: 6px;
             border: 1px solid #ccc;
-        }
-
-        .input:focus {
-            border-color: #1f6fdc;
-            outline: none;
-            box-shadow: 0 0 5px rgba(31,111,220,0.3);
         }
 
         .btn {
@@ -106,19 +89,14 @@
             cursor: pointer;
         }
 
-        .bottom {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 14px;
-        }
-
-        .bottom a {
-            color: #1f6fdc;
-        }
-
         .error {
             color: red;
             font-size: 12px;
+        }
+
+        .bottom {
+            text-align: center;
+            margin-top: 15px;
         }
 
     </style>
@@ -140,9 +118,9 @@
         </p>
 
         <div class="features">
-            <span>&#10004; Smart Screening</span>
-            <span>&#10004; Secure &amp; Fast</span>
-            <span>&#10004; Easy Hiring</span>
+            <span>✔ Smart Screening</span>
+            <span>✔ Secure &amp; Fast</span>
+            <span>✔ Easy Hiring</span>
         </div>
     </div>
 
@@ -153,28 +131,39 @@
             <h:form>
 
                 <h2>Sign up</h2>
-                <div class="sub">Fill in your details to continue</div>
 
-                <h:messages styleClass="error"/>
+                <h:messages globalOnly="true" styleClass="error"/>
 
-                <!-- BASIC INFO -->
-                <h:inputText value="#{registrationJSFManagedBean.user.userName}"
-                             styleClass="input" required="true">
+                <!-- USERNAME -->
+                <h:inputText id="username"
+                             value="#{registrationJSFManagedBean.user.userName}"
+                             styleClass="input"
+                             required="true">
                     <f:passThroughAttribute name="placeholder" value="Username"/>
                 </h:inputText>
+                <h:message for="username" styleClass="error"/>
 
-                <h:inputText value="#{registrationJSFManagedBean.user.userEmail}"
-                             styleClass="input" required="true">
+                <!-- EMAIL -->
+                <h:inputText id="email"
+                             value="#{registrationJSFManagedBean.user.userEmail}"
+                             styleClass="input"
+                             required="true">
                     <f:passThroughAttribute name="placeholder" value="Email"/>
                 </h:inputText>
+                <h:message for="email" styleClass="error"/>
 
-                <h:inputSecret value="#{registrationJSFManagedBean.user.userPassword}"
-                               styleClass="input" required="true">
+                <!-- PASSWORD -->
+                <h:inputSecret id="password"
+                               value="#{registrationJSFManagedBean.user.userPassword}"
+                               styleClass="input"
+                               required="true">
                     <f:passThroughAttribute name="placeholder" value="Password"/>
                 </h:inputSecret>
+                <h:message for="password" styleClass="error"/>
 
                 <!-- ROLE -->
-                <h:selectOneMenu value="#{registrationJSFManagedBean.roleId}"
+                <h:selectOneMenu id="role"
+                                 value="#{registrationJSFManagedBean.roleId}"
                                  styleClass="input">
                     <f:selectItem itemLabel="Select Role" itemValue="#{null}" />
                     <f:selectItem itemLabel="Candidate" itemValue="2" />
@@ -185,54 +174,63 @@
                 <!-- ROLE BASED -->
                 <h:panelGroup id="rolePanel">
 
-                    <!-- Candidate -->
-                    <h:panelGroup rendered="#{registrationJSFManagedBean.roleId == 2}">
+                    <!-- CANDIDATE -->
+                    <h:panelGroup style="#{registrationJSFManagedBean.roleId == 2 ? '' : 'display:none;'}">
 
-                        <h:inputText value="#{registrationJSFManagedBean.candidate.candidatePhone}"
+                        <h:inputText id="phone"
+                                     value="#{registrationJSFManagedBean.candidate.candidatePhone}"
                                      styleClass="input">
                             <f:passThroughAttribute name="placeholder" value="Phone"/>
                         </h:inputText>
 
-                        <h:inputText value="#{registrationJSFManagedBean.candidate.candidateLocation}"
+                        <h:inputText id="location"
+                                     value="#{registrationJSFManagedBean.candidate.candidateLocation}"
                                      styleClass="input">
                             <f:passThroughAttribute name="placeholder" value="Location"/>
                         </h:inputText>
 
-                        <h:inputText value="#{registrationJSFManagedBean.candidate.candidateDOB}"
+                        <h:inputText id="dob"
+                                     value="#{registrationJSFManagedBean.candidate.candidateDOB}"
                                      styleClass="input">
-                            <f:passThroughAttribute name="type" value="date"/>
                             <f:convertDateTime pattern="yyyy-MM-dd"/>
+                            <f:passThroughAttribute name="type" value="date"/>
                         </h:inputText>
 
-                        <h:selectOneMenu value="#{registrationJSFManagedBean.candidate.candidateGender}"
+                        <h:selectOneMenu id="gender"
+                                         value="#{registrationJSFManagedBean.candidate.candidateGender}"
                                          styleClass="input">
                             <f:selectItem itemLabel="Gender" itemValue="" />
                             <f:selectItem itemLabel="Male" itemValue="Male"/>
                             <f:selectItem itemLabel="Female" itemValue="Female"/>
                         </h:selectOneMenu>
 
-                        <h:inputText value="#{registrationJSFManagedBean.candidate.candidateExperience}"
+                        <h:inputText id="experience"
+                                     value="#{registrationJSFManagedBean.candidate.candidateExperience}"
                                      styleClass="input">
                             <f:passThroughAttribute name="placeholder" value="Experience"/>
                         </h:inputText>
 
                     </h:panelGroup>
 
-                    <!-- Recruiter -->
-                    <h:panelGroup rendered="#{registrationJSFManagedBean.roleId == 3}">
+                    <!-- RECRUITER -->
+                    <h:panelGroup style="#{registrationJSFManagedBean.roleId == 3 ? '' : 'display:none;'}">
 
-                        <h:inputText value="#{registrationJSFManagedBean.recruiter.designation}"
+                        <h:inputText id="designation"
+                                     value="#{registrationJSFManagedBean.recruiter.designation}"
                                      styleClass="input">
                             <f:passThroughAttribute name="placeholder" value="Designation"/>
                         </h:inputText>
 
-                        <h:inputText value="#{registrationJSFManagedBean.recruiter.recruiterPhone}"
+                        <h:inputText id="recphone"
+                                     value="#{registrationJSFManagedBean.recruiter.recruiterPhone}"
                                      styleClass="input">
                             <f:passThroughAttribute name="placeholder" value="Phone"/>
                         </h:inputText>
 
-                        <h:inputText value="#{registrationJSFManagedBean.recruiter.companyId.companyId}"
+                        <h:inputText id="recCompany"
+                                     value="#{registrationJSFManagedBean.recruiter.companyId.companyId}"
                                      styleClass="input">
+                            <f:convertNumber integerOnly="true"/>
                             <f:passThroughAttribute name="placeholder" value="Company ID"/>
                         </h:inputText>
 
@@ -245,10 +243,10 @@
                                  action="#{registrationJSFManagedBean.registerUser}"
                                  styleClass="btn"/>
 
-                <!-- LOGIN LINK -->
+                <!-- LOGIN -->
                 <div class="bottom">
-                    Already have an account?
-                    <h:link value="Sign in" outcome="Login.jsf"/>
+                    <h:link value="Already have an account? Login"
+                            outcome="Login.jsf"/>
                 </div>
 
             </h:form>

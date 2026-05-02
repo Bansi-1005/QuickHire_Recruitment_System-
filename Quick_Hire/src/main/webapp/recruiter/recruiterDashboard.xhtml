@@ -1,53 +1,276 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
-    <h:head>
-        <title>Recruiter Dashboard</title>
+<h:head>
+    <title>Recruiter Dashboard</title>
+    <h:outputStylesheet library="css" name="recruiter.css" />
+</h:head>
 
-        <style>
-            body { font-family: Arial; background: #f4f6f9; }
-            .container { width: 500px; margin: 80px auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
-            .btn { padding: 10px; width: 100%; background: green; color: white; border: none; margin-top: 10px; border-radius: 5px; }
-            .logout { background: red; }
-        </style>
-    </h:head>
+<h:body>
 
-    <h:body>
+<f:metadata>
+    <f:viewAction action="#{loginBean.checkLogin}" />
+</f:metadata>
 
-    <f:metadata>
-        <f:viewAction action="#{loginBean.checkLogin}" />
-    </f:metadata>
+<ui:include src="recruiterHeader.xhtml"/>
 
-    <div class="container">
+<h:panelGroup rendered="#{loginBean.role eq 'Recruiter'}">
+    <div class="dashboard-layout">
 
-    <h:panelGroup rendered="#{loginBean.role eq 'Recruiter'}">
+        <aside class="sidebar">
+            <div class="sidebar-title">Navigation</div>
 
-        <h2>Welcome Recruiter 💼</h2>
+            <h:form styleClass="menu-form">
+                <h:commandLink value="🏠 Dashboard" styleClass="menu-link active" />
+                <h:commandLink value="📋 Job Postings" action="#{dashboardBean.getJobs()}" styleClass="menu-link" />
+                <h:commandLink value="👥 Applicants" styleClass="menu-link" />
+                <h:commandLink value="📅 Interviews" styleClass="menu-link" />
+                <h:commandLink value="📊 Reports" styleClass="menu-link" />
+                <h:commandLink value="⚙ Settings" styleClass="menu-link" />
+            </h:form>
 
-        <h:outputText value="Username: #{loginBean.username}" /><br/>
-        <h:outputText value="Role: #{loginBean.role}" /><br/><br/>
+            <div class="sidebar-card">
+                <h4>Hiring Progress</h4>
+                <p>Track open roles, candidate pipeline, and interview schedules in one place.</p>
+                <a href="#" class="sidebar-btn">View Overview</a>
+            </div>
+        </aside>
 
-        <h:form>
-            <h:commandButton value="View Jobs" action="#{dashboardBean.getJobs()}" styleClass="btn"/>
-            <br/><br/>
-            <h:outputText value="#{dashboardBean.result}" />
-        </h:form>
+        <main class="main">
 
-        <h:form>
-            <h:commandButton value="Logout" action="#{loginBean.logout()}" styleClass="btn logout"/>
-        </h:form>
+            <section class="hero">
+                <div class="hero-grid">
+                    <div>
+                        <div class="welcome-tag">Recruiter Dashboard</div>
+                        <h1>Welcome back, #{loginBean.username} 👋</h1>
+                        <p>
+                            Manage jobs, review applications, and follow up with top talent from one clean and interactive workspace.
+                        </p>
 
-    </h:panelGroup>
+                        <div class="hero-actions">
+                            <h:form>
+                                <h:commandButton value="🚀 View Jobs"
+                                                 action="#{dashboardBean.getJobs()}"
+                                                 styleClass="btn-main" />
+                            </h:form>
+                            <button type="button" class="btn-light">+ Post New Job</button>
+                        </div>
+                    </div>
 
-    <h:panelGroup rendered="#{loginBean.role ne 'Recruiter'}">
-        <h2 style="color:red;">Access Denied ❌</h2>
-    </h:panelGroup>
+                    <div class="hero-stats">
+                        <div class="hero-mini-card">
+                            <span>Today Interviews</span>
+                            <strong>02</strong>
+                        </div>
+                        <div class="hero-mini-card">
+                            <span>New Applicants</span>
+                            <strong>07</strong>
+                        </div>
+                        <div class="hero-mini-card">
+                            <span>Shortlisted</span>
+                            <strong>04</strong>
+                        </div>
+                        <div class="hero-mini-card">
+                            <span>Hiring Rate</span>
+                            <strong>86%</strong>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
+            <section class="cards">
+                <div class="card">
+                    <div class="card-top">
+                        <h3>Active Jobs</h3>
+                        <div class="card-icon">💼</div>
+                    </div>
+                    <div class="card-value">5</div>
+                    <div class="card-note">2 roles added this week</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-top">
+                        <h3>Total Applicants</h3>
+                        <div class="card-icon">👥</div>
+                    </div>
+                    <div class="card-value">12</div>
+                    <div class="card-note">3 new applications today</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-top">
+                        <h3>Upcoming Interviews</h3>
+                        <div class="card-icon">📅</div>
+                    </div>
+                    <div class="card-value">2</div>
+                    <div class="card-note">Next interview at 10:00 AM</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-top">
+                        <h3>Avg Time to Hire</h3>
+                        <div class="card-icon">⏱</div>
+                    </div>
+                    <div class="card-value">18d</div>
+                    <div class="card-note">Improved by 2 days</div>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Top Candidates</h3>
+                        <a href="#" class="panel-link">See all</a>
+                    </div>
+
+                    <div class="candidate-item">
+                        <div class="person">
+                            <div class="avatar">A</div>
+                            <div class="person-info">
+                                <h4>Alice Johnson</h4>
+                                <p>Java Developer • 5 years experience</p>
+                            </div>
+                        </div>
+                        <div class="score-badge">92%</div>
+                    </div>
+
+                    <div class="candidate-item">
+                        <div class="person">
+                            <div class="avatar">D</div>
+                            <div class="person-info">
+                                <h4>Dan Wilson</h4>
+                                <p>Backend Engineer • Spring Boot</p>
+                            </div>
+                        </div>
+                        <div class="score-badge">88%</div>
+                    </div>
+
+                    <div class="candidate-item">
+                        <div class="person">
+                            <div class="avatar">C</div>
+                            <div class="person-info">
+                                <h4>Carol Davis</h4>
+                                <p>Full Stack Developer • React + Java</p>
+                            </div>
+                        </div>
+                        <div class="score-badge">85%</div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Upcoming Interviews</h3>
+                        <a href="#" class="panel-link">Schedule</a>
+                    </div>
+
+                    <div class="interview-item">
+                        <div class="person">
+                            <div class="avatar">A</div>
+                            <div class="person-info">
+                                <h4>Alice Johnson</h4>
+                                <p>Technical Round • Google Meet</p>
+                            </div>
+                        </div>
+                        <div class="time-badge">10:00 AM</div>
+                    </div>
+
+                    <div class="interview-item">
+                        <div class="person">
+                            <div class="avatar">C</div>
+                            <div class="person-info">
+                                <h4>Carol Davis</h4>
+                                <p>HR Round • Office Meeting</p>
+                            </div>
+                        </div>
+                        <div class="time-badge">2:00 PM</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bottom-row">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Recent Activity</h3>
+                        <a href="#" class="panel-link">Refresh</a>
+                    </div>
+
+                    <div class="activity-list">
+                        <div class="activity-item">
+                            <div class="activity-dot"></div>
+                            <div>
+                                <h4>New application received</h4>
+                                <p>Michael Brown applied for Senior Java Developer 15 minutes ago.</p>
+                            </div>
+                        </div>
+
+                        <div class="activity-item">
+                            <div class="activity-dot"></div>
+                            <div>
+                                <h4>Interview confirmed</h4>
+                                <p>Alice Johnson confirmed today's technical interview slot.</p>
+                            </div>
+                        </div>
+
+                        <div class="activity-item">
+                            <div class="activity-dot"></div>
+                            <div>
+                                <h4>Job post performing well</h4>
+                                <p>Backend Engineer posting reached 120 views this week.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Quick Actions</h3>
+                        <a href="#" class="panel-link">Manage</a>
+                    </div>
+
+                    <div class="quick-actions">
+                        <div class="action-box">
+                            <h4>Create Job</h4>
+                            <p>Post a new opening and start receiving applications quickly.</p>
+                            <button type="button">Post Now</button>
+                        </div>
+
+                        <div class="action-box">
+                            <h4>Review Applicants</h4>
+                            <p>Check candidate profiles and shortlist top matches.</p>
+                            <button type="button">Open List</button>
+                        </div>
+
+                        <div class="action-box">
+                            <h4>Plan Interviews</h4>
+                            <p>Set interview slots and coordinate with candidates faster.</p>
+                            <button type="button">Schedule</button>
+                        </div>
+
+                        <div class="action-box">
+                            <h4>Generate Report</h4>
+                            <p>View hiring pipeline insights and recruiter performance.</p>
+                            <button type="button">View Report</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
     </div>
+</h:panelGroup>
 
-    </h:body>
+<h:panelGroup rendered="#{loginBean.role ne 'Recruiter'}">
+    <div style="padding-top:120px; text-align:center;">
+        <h2 style="color:red;">Access Denied ❌</h2>
+    </div>
+</h:panelGroup>
+
+<ui:include src="recruiterFooter.xhtml"/>
+
+</h:body>
 </html>
