@@ -1,52 +1,259 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
+
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
-    <h:head>
-        <title>Candidate Dashboard</title>
+<h:head>
+    <title>Candidate Dashboard</title>
+    <h:outputStylesheet library="css" name="recruiter.css" />
+</h:head>
 
-        <style>
-            body { font-family: Arial; background: #f4f6f9; }
-            .container { width: 500px; margin: 80px auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
-            .btn { padding: 10px; width: 100%; background: purple; color: white; border: none; margin-top: 10px; border-radius: 5px; }
-            .logout { background: red; }
-        </style>
-    </h:head>
+<h:body>
 
-    <h:body>
+<f:metadata>
+    <f:viewAction action="#{loginBean.checkLogin}" />
+</f:metadata>
 
-    <f:metadata>
-        <f:viewAction action="#{loginBean.checkLogin}" />
-    </f:metadata>
+<!-- COMMON HEADER -->
+<ui:include src="/common/header.xhtml"/>
 
-    <div class="container">
+<!-- ROLE CHECK -->
+<h:panelGroup rendered="#{loginBean.role eq 'Candidate'}">
 
-    <h:panelGroup rendered="#{loginBean.role eq 'Candidate'}">
+<div class="dashboard-layout">
 
-        <h2>Welcome Candidate 🎓</h2>
+    <!-- ================= SIDEBAR ================= -->
+    <aside class="sidebar">
+        <div class="sidebar-title">Candidate Menu</div>
 
-        <h:outputText value="Username: #{loginBean.username}" /><br/>
-        <h:outputText value="Role: #{loginBean.role}" /><br/><br/>
-
-        <h:form>
-            <h:commandButton value="View Jobs" action="#{dashboardBean.getJobs()}" styleClass="btn"/>
-            <br/><br/>
-            <h:outputText value="#{dashboardBean.result}" />
+        <h:form styleClass="menu-form">
+            <h:commandLink value="🏠 Dashboard" styleClass="menu-link active"/>
+            <h:commandLink value="💼 Search Jobs" styleClass="menu-link"/>
+            <h:commandLink value="📄 My Applications" styleClass="menu-link"/>
+            <h:commandLink value="📅 Interviews" styleClass="menu-link"/>
+            <h:commandLink value="👤 Profile" styleClass="menu-link"/>
+            <h:commandLink value="📤 Upload Resume" styleClass="menu-link"/>
+            <h:commandLink value="🔔 Notifications" styleClass="menu-link"/>
         </h:form>
 
-        <h:form>
-            <h:commandButton value="Logout" action="#{loginBean.logout()}" styleClass="btn logout"/>
-        </h:form>
+        <div class="sidebar-card">
+            <h4>Your Progress</h4>
+            <p>Track applications, interviews, and job matches easily.</p>
+        </div>
+    </aside>
 
-    </h:panelGroup>
+    <!-- ================= MAIN ================= -->
+    <main class="main">
 
-    <h:panelGroup rendered="#{loginBean.role ne 'Candidate'}">
+        <!-- HERO -->
+        <section class="hero">
+            <div class="hero-grid">
+                <div>
+                    <div class="welcome-tag">Candidate Dashboard</div>
+                    <h1>Welcome, #{loginBean.username} 👋</h1>
+
+                    <p>
+                        Explore jobs, track applications, and manage your career journey.
+                    </p>
+
+                    <div class="hero-actions">
+                        <button class="btn-main">🔍 Find Jobs</button>
+                        <button class="btn-light">📄 My Applications</button>
+                    </div>
+                </div>
+
+                <!-- STATS -->
+                <div class="hero-stats">
+                    <div class="hero-mini-card">
+                        <span>Applied Jobs</span>
+                        <strong>5</strong>
+                    </div>
+                    <div class="hero-mini-card">
+                        <span>Shortlisted</span>
+                        <strong>2</strong>
+                    </div>
+                    <div class="hero-mini-card">
+                        <span>Interviews</span>
+                        <strong>1</strong>
+                    </div>
+                    <div class="hero-mini-card">
+                        <span>Offers</span>
+                        <strong>1</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CARDS -->
+        <section class="cards">
+
+            <div class="card">
+                <div class="card-top">
+                    <h3>Available Jobs</h3>
+                    <div class="card-icon">💼</div>
+                </div>
+                <div class="card-value">12</div>
+                <div class="card-note">Based on your profile</div>
+            </div>
+
+            <div class="card">
+                <div class="card-top">
+                    <h3>Applications</h3>
+                    <div class="card-icon">📄</div>
+                </div>
+                <div class="card-value">5</div>
+                <div class="card-note">Track your progress</div>
+            </div>
+
+            <div class="card">
+                <div class="card-top">
+                    <h3>Upcoming Interviews</h3>
+                    <div class="card-icon">📅</div>
+                </div>
+                <div class="card-value">1</div>
+                <div class="card-note">Prepare well</div>
+            </div>
+
+            <div class="card">
+                <div class="card-top">
+                    <h3>Notifications</h3>
+                    <div class="card-icon">🔔</div>
+                </div>
+                <div class="card-value">3</div>
+                <div class="card-note">Stay updated</div>
+            </div>
+
+        </section>
+
+        <!-- JOBS + INTERVIEWS -->
+        <section class="section">
+
+            <!-- JOBS -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h3>Recommended Jobs</h3>
+                </div>
+
+                <!-- Job 1 -->
+                <div class="candidate-item">
+                    <div class="person">
+                        <div class="avatar">💼</div>
+                        <div class="person-info">
+                            <h4>Java Developer</h4>
+                            <p>Ahmedabad • 2 yrs</p>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="score-badge">90%</span>
+                        <button class="btn-main">Apply</button>
+                    </div>
+                </div>
+
+                <!-- Job 2 -->
+                <div class="candidate-item">
+                    <div class="person">
+                        <div class="avatar">💼</div>
+                        <div class="person-info">
+                            <h4>Python Developer</h4>
+                            <p>Surat • 1 yr</p>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="score-badge">85%</span>
+                        <button class="btn-main">Apply</button>
+                    </div>
+                </div>
+
+                <!-- Job 3 -->
+                <div class="candidate-item">
+                    <div class="person">
+                        <div class="avatar">💼</div>
+                        <div class="person-info">
+                            <h4>Frontend Developer</h4>
+                            <p>Mumbai • 1 yr</p>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="score-badge">80%</span>
+                        <button class="btn-main">Apply</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- INTERVIEWS -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h3>Upcoming Interviews</h3>
+                </div>
+
+                <div class="interview-item">
+                    <div class="person">
+                        <div class="avatar">🎤</div>
+                        <div class="person-info">
+                            <h4>Java Developer</h4>
+                            <p>Round 1 • Online</p>
+                        </div>
+                    </div>
+                    <div class="time-badge">20 Mar</div>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- NOTIFICATIONS -->
+        <section class="bottom-row">
+            <div class="panel">
+                <div class="panel-header">
+                    <h3>Recent Notifications</h3>
+                </div>
+
+                <div class="activity-item">
+                    <div class="activity-dot"></div>
+                    <div>
+                        <h4>Application Submitted</h4>
+                        <p>You applied for Java Developer.</p>
+                    </div>
+                </div>
+
+                <div class="activity-item">
+                    <div class="activity-dot"></div>
+                    <div>
+                        <h4>Interview Scheduled</h4>
+                        <p>Your interview is scheduled tomorrow.</p>
+                    </div>
+                </div>
+
+                <div class="activity-item">
+                    <div class="activity-dot"></div>
+                    <div>
+                        <h4>Status Updated</h4>
+                        <p>Your application is shortlisted.</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+</div>
+
+</h:panelGroup>
+
+<!-- ACCESS DENIED -->
+<h:panelGroup rendered="#{loginBean.role ne 'Candidate'}">
+    <div style="padding-top:120px; text-align:center;">
         <h2 style="color:red;">Access Denied ❌</h2>
-    </h:panelGroup>
-
     </div>
+</h:panelGroup>
 
-    </h:body>
+<!-- COMMON FOOTER -->
+<ui:include src="/common/footer.xhtml"/>
+
+</h:body>
 </html>

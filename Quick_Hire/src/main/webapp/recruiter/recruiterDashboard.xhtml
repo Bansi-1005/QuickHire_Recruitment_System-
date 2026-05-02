@@ -17,7 +17,7 @@
     <f:viewAction action="#{loginBean.checkLogin}" />
 </f:metadata>
 
-<ui:include src="recruiterHeader.xhtml"/>
+<ui:include src="/common/header.xhtml"/>
 
 <h:panelGroup rendered="#{loginBean.role eq 'Recruiter'}">
     <div class="dashboard-layout">
@@ -270,7 +270,7 @@
     </div>
 </h:panelGroup>
 
-<ui:include src="recruiterFooter.xhtml"/>
+<ui:include src="/common/footer.xhtml"/>
 
 </h:body>
 </html>

@@ -7,11 +7,13 @@
 
     <header class="top-header">
         <div class="top-header-inner">
+
+            <!-- BRAND -->
             <div class="brand-block">
                 <div class="brand-logo">
                     <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <linearGradient id="qhGrad" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+                            <linearGradient id="qhGrad" x1="8" y1="8" x2="56" y2="56">
                                 <stop offset="0%" stop-color="#ffffff"/>
                                 <stop offset="100%" stop-color="#c8f3ee"/>
                             </linearGradient>
@@ -29,25 +31,39 @@
                 </div>
             </div>
 
+            <!-- RIGHT SIDE -->
             <div class="header-right">
-                <div class="header-badge">Recruiter Portal</div>
-                    <div class="user-chip">
-                        <div class="user-avatar">
-                            #{loginBean.username != null ? loginBean.username.substring(0,1).toUpperCase() : 'R'}
-                        </div>
 
-                        <div class="user-info">
-                            <span class="user-name">#{loginBean.username}</span>
-                            <span class="user-role">Recruiter</span>
-                        </div>
+                <!-- ✅ DYNAMIC ROLE BADGE -->
+                <div class="header-badge">
+                    #{loginBean.role} Portal
+                </div>
 
-                        <h:form styleClass="logout-btn">
+                <div class="user-chip">
+
+                    <!-- ✅ DYNAMIC AVATAR -->
+                    <div class="user-avatar">
+                        #{loginBean.username != null ? loginBean.username.substring(0,1).toUpperCase() : 'U'}
+                    </div>
+
+                    <div class="user-info">
+                        <!-- ✅ DYNAMIC NAME -->
+                        <span class="user-name">#{loginBean.username}</span>
+
+                        <!-- ✅ DYNAMIC ROLE -->
+                        <span class="user-role">#{loginBean.role}</span>
+                    </div>
+
+                    <!-- LOGOUT -->
+                    <h:form styleClass="logout-btn">
                             <h:commandButton value="Logout"
                                              action="#{loginBean.logout}"
                                              styleClass="logout-btn" />
-                        </h:form>
-                    </div>
+                    </h:form>
+
+                </div>
             </div>
+
         </div>
     </header>
 

@@ -171,7 +171,7 @@ public class LoginCDIBean implements Serializable {
         password = null;
         role = null;
 
-        return "/login.xhtml?faces-redirect=true";
+        return "/Login.xhtml?faces-redirect=true";
     }
 }
 
