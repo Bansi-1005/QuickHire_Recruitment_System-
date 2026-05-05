@@ -5,7 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
-
+<f:view>   
 <h:head>
     <title>Recruiter Dashboard</title>
     <h:outputStylesheet library="css" name="recruiter.css" />
@@ -270,7 +270,90 @@
     </div>
 </h:panelGroup>
 
+
+<!-- ================= PROFILE MODAL ================= -->
+<div id="profileModal" class="modal-overlay">
+    <div class="modal-box">
+
+        <div class="modal-header">
+            <h3>Update Profile</h3>
+            <span class="close-btn" onclick="closeProfileModal()">×</span>
+        </div>
+
+        <p class="modal-subtitle">
+            Keep your contact details up to date so candidates can reach you easily.
+        </p>
+
+        <h:form id="profileForm" styleClass="modal-form">
+
+            <!-- hidden recruiter id -->
+            <h:inputHidden value="#{recruiterCDIBean.recruiter.recruiterId}" />
+
+            <div class="form-inner">
+
+                <div class="form-group">
+                    <label>Name</label>
+                    <h:inputText value="#{loginBean.username}" readonly="true" />
+                </div>
+
+                <div class="form-group">
+                    <label>Designation</label>
+                    <h:inputText value="#{recruiterCDIBean.recruiter.designation}" />
+                </div>
+
+                <div class="form-group">
+                    <label>Phone</label>
+                    <h:inputText value="#{recruiterCDIBean.recruiter.recruiterPhone}" />
+                </div>
+
+                <!-- success / error messages -->
+                <h:messages id="messages"
+                            globalOnly="true"
+                            layout="list"
+                            styleClass="modal-message" />
+
+            </div>
+
+            <div class="modal-actions">
+
+                <h:commandButton value="Update"
+                                 action="#{recruiterCDIBean.updateProfile}"
+                                 styleClass="btn-main">
+                    <f:ajax execute="@form" render="profileForm"/>
+                </h:commandButton>
+
+                <button type="button"
+                        class="btn-light btn-cancel"
+                        onclick="closeProfileModal()">
+                    Cancel
+                </button>
+
+            </div>
+
+        </h:form>
+    </div>
+</div>
 <ui:include src="/common/footer.xhtml"/>
 
+<script>
+function clearProfileMessages(){
+    var msg = document.getElementById("profileForm:messages");
+    if(msg){
+        msg.innerHTML = "";
+    }
+}
+
+function openProfileModal(){
+    clearProfileMessages();
+    document.getElementById("profileModal").style.display = "flex";
+}
+
+function closeProfileModal(){
+    clearProfileMessages();
+    document.getElementById("profileModal").style.display = "none";
+}
+</script>
+
 </h:body>
+</f:view>  
 </html>

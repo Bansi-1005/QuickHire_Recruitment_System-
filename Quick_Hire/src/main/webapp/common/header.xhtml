@@ -41,24 +41,32 @@
 
                 <div class="user-chip">
 
-                    <!-- ✅ DYNAMIC AVATAR -->
-                    <div class="user-avatar">
-                        #{loginBean.username != null ? loginBean.username.substring(0,1).toUpperCase() : 'U'}
-                    </div>
+                    <!-- CLICKABLE USER (ONLY THIS PART) -->
+                    <h:form style="margin:0;">
+                        <h:commandLink onclick="openProfileModal(); return false;"
+                                       style="display:flex; align-items:center; gap:10px; text-decoration:none; color:inherit;">
 
-                    <div class="user-info">
-                        <!-- ✅ DYNAMIC NAME -->
-                        <span class="user-name">#{loginBean.username}</span>
+                            <!-- ✅ DYNAMIC AVATAR -->
+                            <div class="user-avatar">
+                                #{loginBean.username != null ? loginBean.username.substring(0,1).toUpperCase() : 'U'}
+                            </div>
 
-                        <!-- ✅ DYNAMIC ROLE -->
-                        <span class="user-role">#{loginBean.role}</span>
-                    </div>
+                            <div class="user-info">
+                                <!-- ✅ DYNAMIC NAME -->
+                                <span class="user-name">#{loginBean.username}</span>
 
-                    <!-- LOGOUT -->
+                                <!-- ✅ DYNAMIC ROLE -->
+                                <span class="user-role">#{loginBean.role}</span>
+                            </div>
+
+                        </h:commandLink>
+                    </h:form>
+
+                    <!-- LOGOUT (UNCHANGED) -->
                     <h:form styleClass="logout-btn">
-                            <h:commandButton value="Logout"
-                                             action="#{loginBean.logout}"
-                                             styleClass="logout-btn" />
+                        <h:commandButton value="Logout"
+                                         action="#{loginBean.logout}"
+                                         styleClass="logout-btn" />
                     </h:form>
 
                 </div>

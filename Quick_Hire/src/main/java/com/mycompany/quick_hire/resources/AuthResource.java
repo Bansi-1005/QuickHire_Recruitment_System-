@@ -59,6 +59,7 @@ public class AuthResource {
         String json = new JSONObject()
         .put("token", token)
         .put("role", role)
+        .put("userId", user.getUserId())   // ✅ ADD THIS LINE
         .toString();
 
         return Response.ok(json)

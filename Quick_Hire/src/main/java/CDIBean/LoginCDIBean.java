@@ -8,6 +8,7 @@ import Client.JwtClientFilter;
 import jakarta.inject.Named;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.context.FacesContext;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
@@ -27,7 +28,8 @@ import org.json.JSONObject;
 @Named(value = "loginBean")
 @SessionScoped
 public class LoginCDIBean implements Serializable {
-    
+    @Inject
+    RecruiterCDIBean recruiterCDIBean;
     // Stores user credentials from UI
     private String username;
     private String password;
@@ -40,6 +42,9 @@ public class LoginCDIBean implements Serializable {
     
     // Role of logged-in user (Admin / Recruiter / Candidate)
     private String role;
+
+    private int userId;
+
 
     // ================= GETTERS & SETTERS =================
 
@@ -83,6 +88,13 @@ public class LoginCDIBean implements Serializable {
         this.role = role;
     }
     
+    public int getUserId() {
+    return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
     public LoginCDIBean() {
     }
     
@@ -127,12 +139,17 @@ public class LoginCDIBean implements Serializable {
             
             // Extract token & role
             role = obj.getString("role");
+            
+            userId = obj.getInt("userId");
 
+            System.out.println("LOGGED USER ID: " + userId);
             // Redirect based on role
             if (role.equalsIgnoreCase("Admin")) {
                 return "/admin/adminDashboard.xhtml?faces-redirect=true";
             } else if (role.equalsIgnoreCase("Recruiter")) {
 //                return "/recruiter/recruiterDashboard.xhtml?faces-redirect=true";
+                   recruiterCDIBean.loadProfile();   // ✅ LOAD PROFILE HERE
+
                    return "recruiter/recruiterDashboard?faces-redirect=true";
             } else {
                 return "/candidate/candidateDashboard.xhtml?faces-redirect=true";

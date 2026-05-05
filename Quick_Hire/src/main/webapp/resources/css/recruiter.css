@@ -962,3 +962,307 @@ body{
         font-size: 12px;
     }
 }
+
+
+/* =========================
+   PROFILE MODAL (RECRUITER)
+========================= */
+
+.modal-overlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 26, 60, 0.70);  /* dark blur overlay */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 20px;
+}
+
+/* MAIN CARD */
+.modal-box{
+    width: 520px;
+    max-width: 95%;
+    background:
+        linear-gradient(135deg,
+            rgba(15,155,142,0.20),
+            rgba(24,90,157,0.35)),
+        radial-gradient(circle at top left,
+            #f3f7ff 0,
+            #e4eefc 40%,
+            #dfe9fb 100%);
+    border-radius: 30px;
+    padding: 30px 32px 24px;
+
+    box-shadow:
+        0 26px 70px rgba(5, 18, 40, 0.70),
+        0 0 0 2px rgba(80, 110, 160, 0.45);
+    border: 2px solid rgba(80, 110, 160, 0.90);
+
+    position: relative;
+    overflow: hidden;
+    animation: modalPopIn 0.40s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+/* soft light band behind header */
+.modal-box::before{
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 96px;
+    background: linear-gradient(
+        180deg,
+        rgba(255,255,255,0.40),
+        rgba(255,255,255,0.05)
+    );
+    opacity: 0.9;
+    pointer-events: none;
+}
+
+/* HEADER */
+.modal-header{
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.modal-header h3{
+    margin: 0;
+    font-size: 23px;
+    font-weight: 800;
+    color: #0b2340;
+}
+
+.modal-subtitle{
+    position: relative;
+    z-index: 1;
+    margin: 0 0 18px;
+    font-size: 13px;
+    color: #4b5a6c;
+}
+
+/* CLOSE ICON */
+.close-btn{
+    font-size: 24px;
+    cursor: pointer;
+    color: #6c7b90;
+    transition: 0.2s;
+    line-height: 1;
+    padding: 4px;
+    border-radius: 999px;
+}
+
+.close-btn:hover{
+    color: #0b2340;
+    background: rgba(255,255,255,0.7);
+    transform: scale(1.05);
+}
+
+/* FORM WRAPPER */
+.modal-form{
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* inner white card with fields + messages */
+.form-inner{
+    padding: 16px 16px 12px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.76);
+    border: 1px solid rgba(210, 222, 240, 0.95);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.9),
+        0 10px 25px rgba(16, 42, 90, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.form-group{
+    display: flex;
+    flex-direction: column;
+}
+
+/* labels */
+.form-group label{
+    font-size: 12px;
+    margin-bottom: 6px;
+    color: #233044;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+/* inputs (JSF h:inputText) */
+.form-group input{
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid #c9d6f0;
+    font-size: 14px;
+    background: #f9fbff;
+    color: #102033;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+    transition: all 0.22s ease;
+}
+
+.form-group input[readonly]{
+    background: #f3f6fd;
+    color: #6a7484;
+}
+
+.form-group input:focus{
+    outline: none;
+    border-color: var(--primary-teal);
+    box-shadow:
+        0 0 0 3px rgba(15,155,142,0.30),
+        inset 0 1px 0 rgba(255,255,255,0.95);
+}
+
+/* ACTION BUTTONS */
+.modal-actions{
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+/* DARKER UPDATE BUTTON */
+.modal-actions .btn-main{
+    padding: 11px 26px;
+    background: linear-gradient(135deg, #12305f, #0b7a6f); /* darker gradient */
+    color: #ffffff;
+    border-radius: 999px;
+    border: none;
+    box-shadow: 0 16px 34px rgba(8, 40, 90, 0.55);
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.modal-actions .btn-main:hover{
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+    box-shadow: 0 18px 38px rgba(8, 40, 90, 0.70);
+}
+
+/* Cancel button */
+.btn-cancel{
+    padding: 11px 22px;
+    border-radius: 999px;
+    background: #e3e8f5;
+    color: #4f5c70;
+    border: 1px solid #c4d0eb;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-cancel:hover{
+    background: #d7e0f7;
+    color: #1c2940;
+}
+
+/* MESSAGES */
+.modal-message{
+    margin-top: 6px;
+    margin-bottom: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.modal-message li{
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* success */
+.modal-message li,
+.modal-message li.info,
+.modal-message .info{
+    background: linear-gradient(90deg, #d6f7e6, #f1fff7);
+    border: 1px solid #4bc78f;
+    color: #0b5b39;
+    box-shadow: 0 10px 20px rgba(19, 133, 90, 0.20);
+}
+
+.modal-message li::before{
+    content: "✓";
+    font-size: 11px;
+    font-weight: 700;
+    color: #1fb271;
+}
+
+/* error */
+.modal-message li.error,
+.modal-message .error{
+    background: linear-gradient(90deg, #ffe1e1, #fff4f4);
+    border: 1px solid #f07f7f;
+    color: #8a1520;
+    box-shadow: 0 10px 20px rgba(196, 62, 62, 0.22);
+}
+
+.modal-message li.error::before{
+    content: "!";
+    font-size: 11px;
+    font-weight: 700;
+    color: #dc3545;
+}
+
+/* ANIMATION */
+@keyframes modalPopIn{
+    0%{
+        opacity: 0;
+        transform: translateY(30px) scale(0.92);
+    }
+    60%{
+        opacity: 1;
+        transform: translateY(-4px) scale(1.03);
+    }
+    100%{
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px){
+
+    .modal-box{
+        width: 100%;
+        padding: 22px 18px 18px;
+        border-radius: 24px;
+    }
+
+    .modal-header h3{
+        font-size: 19px;
+    }
+
+    .modal-actions{
+        flex-direction: column;
+        align-items: stretch;
+        margin-top: 16px;
+    }
+
+    .modal-actions .btn-main,
+    .modal-actions .btn-cancel{
+        width: 100%;
+        text-align: center;
+    }
+}

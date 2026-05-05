@@ -95,10 +95,30 @@ public class RecruiterBean implements RecruiterBeanLocal {
         }
     }
 
+//    @Override
+//    public void updateProfile(Tblrecruiters recruiter) {
+//        try {
+//            em.merge(recruiter);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
     @Override
     public void updateProfile(Tblrecruiters recruiter) {
         try {
-            em.merge(recruiter);
+            Tblrecruiters existing = em.find(Tblrecruiters.class, recruiter.getRecruiterId());
+
+            if (existing != null) {
+
+                if (recruiter.getDesignation() != null)
+                    existing.setDesignation(recruiter.getDesignation());
+
+                if (recruiter.getRecruiterPhone() != null)
+                    existing.setRecruiterPhone(recruiter.getRecruiterPhone());
+
+                em.merge(existing);
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
