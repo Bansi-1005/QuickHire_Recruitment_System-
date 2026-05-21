@@ -5,6 +5,7 @@
 package EJB;
 
 import Entity.*;
+import Validation.RecruiterValidator;
 import jakarta.annotation.security.DeclareRoles;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ejb.EJB;
@@ -14,6 +15,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.security.enterprise.identitystore.Pbkdf2PasswordHash;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -24,63 +26,18 @@ import util.EmailServiceLocal;
  *
  * @author RINKAL
  */
-
 @Stateless
-@DeclareRoles({"Admin","Recruiter","Candidate"})
+@DeclareRoles({"Admin", "Recruiter", "Candidate"})
 public class RecruiterBean implements RecruiterBeanLocal {
 
     @PersistenceContext(unitName = "jpu")
     EntityManager em;
-    
-    @EJB private EmailServiceLocal emailService;
-    
-    @Inject Pbkdf2PasswordHash hash;
-    
-//    @Override
-//    public void registerRecruiter(Tblusers user, Tblrecruiters recruiter) {
-//        try {
-//            Date now = new Date();
-//            
-//            //  STEP 1: Initialize hash (IMPORTANT)
-//            Map<String, String> params = new HashMap<>();
-//            params.put("Pbkdf2PasswordHash.Iterations", "3072");
-//            params.put("Pbkdf2PasswordHash.Algorithm", "PBKDF2WithHmacSHA256");
-//
-//            hash.initialize(params);
-//
-//            //  STEP 2: Hash password
-//            String hashedPassword = hash.generate(user.getUserPassword().toCharArray());
-//
-//            //  STEP 3: Set hashed password
-//            user.setUserPassword(hashedPassword);
-//            
-//            
-//            user.setCreatedDate(now);
-//            user.setUpdatedDate(now);
-//            user.setLastLoginDate(now);
-//
-//            em.persist(user);
-//
-//            recruiter.setUserId(user);
-//            recruiter.setCreatedDate(now);
-//
-//            em.persist(recruiter);
-//            
-//            // Send Welcome Email
-//            if (user.getUserEmail() != null) {
-//                String subject = "Welcome to QuickHire";
-//                String message = "Hello " + user.getUserName() + ",\n\n"
-//                        + "Your recruiter account has been created successfully.\n"
-//                        + "You can now post jobs and manage candidates.\n\n"
-//                        + "Regards,\nQuickHire Team";
-//
-//                emailService.sendEmail(user.getUserEmail(), subject, message);
-//            }
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
+
+    @EJB
+    private EmailServiceLocal emailService;
+
+    @Inject
+    Pbkdf2PasswordHash hash;
 
     // ================= PROFILE =================
     @Override
@@ -95,14 +52,6 @@ public class RecruiterBean implements RecruiterBeanLocal {
         }
     }
 
-//    @Override
-//    public void updateProfile(Tblrecruiters recruiter) {
-//        try {
-//            em.merge(recruiter);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
     @Override
     public void updateProfile(Tblrecruiters recruiter) {
         try {
@@ -110,11 +59,13 @@ public class RecruiterBean implements RecruiterBeanLocal {
 
             if (existing != null) {
 
-                if (recruiter.getDesignation() != null)
+                if (recruiter.getDesignation() != null) {
                     existing.setDesignation(recruiter.getDesignation());
+                }
 
-                if (recruiter.getRecruiterPhone() != null)
+                if (recruiter.getRecruiterPhone() != null) {
                     existing.setRecruiterPhone(recruiter.getRecruiterPhone());
+                }
 
                 em.merge(existing);
             }
@@ -128,9 +79,9 @@ public class RecruiterBean implements RecruiterBeanLocal {
     @Override
     public Tblcompany getCompanyDetails(int recruiterId) {
         try {
-        return em.createNamedQuery("Tblrecruiters.findCompanyByRecruiterId", Tblcompany.class)
-                .setParameter("recruiterId", recruiterId)
-                .getSingleResult();
+            return em.createNamedQuery("Tblrecruiters.findCompanyByRecruiterId", Tblcompany.class)
+                    .setParameter("recruiterId", recruiterId)
+                    .getSingleResult();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -139,34 +90,92 @@ public class RecruiterBean implements RecruiterBeanLocal {
 
     // ================= JOB MANAGEMENT =================
     @Override
-    //@RolesAllowed("Recruiter")
     public void createJob(Tbljob job) {
+
         try {
+
+            // ================= VALIDATION =================
+            RecruiterValidator.validateJob(job);
+
+            // ================= SET POSTED DATE =================
             job.setJobPostedDate(new Date());
-            
-            // Fetch full recruiter from DB
-            Tblrecruiters recruiter = em.find(Tblrecruiters.class, job.getRecruiterId().getRecruiterId());
 
-            if (recruiter != null) {
-                job.setRecruiterId(recruiter); // attach full object
+            // ================= FETCH RECRUITER =================
+            Tblrecruiters recruiter
+                    = em.find(
+                            Tblrecruiters.class,
+                            job.getRecruiterId()
+                                    .getRecruiterId()
+                    );
+
+            if (recruiter == null) {
+
+                throw new RuntimeException(
+                        "Recruiter not found"
+                );
             }
-            
+
+            // ================= SET RECRUITER =================
+            job.setRecruiterId(recruiter);
+
+            // ================= SAVE JOB =================
             em.persist(job);
-            
-           // Notify Recruiter
-            if (recruiter != null && recruiter.getUserId() != null) {
 
-                String email = recruiter.getUserId().getUserEmail();
+            // ================= SAVE ACTIVITY =================
+            Tblnotification activity
+                    = new Tblnotification();
 
-                String subject = "Job Posted Successfully";
-                String message = "Your job has been posted successfully.\n\n"
-                        + "Job Title: " + job.getJobTitle() + "\n"
-                        + "Location: " + job.getJobLocation();
+            activity.setUserId(
+                    recruiter.getUserId()
+            );
 
-                emailService.sendEmail(email, subject, message);
+            activity.setMessage(
+                    "New job posted: "
+                    + job.getJobTitle()
+            );
+
+            activity.setCreatedDate(
+                    new Date()
+            );
+
+            activity.setNotificationStatus(
+                    "Read"
+            );
+
+            em.persist(activity);
+
+            // ================= SEND EMAIL =================
+            Tblusers recruiterUser
+                    = recruiter.getUserId();
+
+            if (recruiterUser != null) {
+
+                String email
+                        = recruiterUser.getUserEmail();
+
+                String subject
+                        = "Job Posted Successfully";
+
+                String message
+                        = "Your job has been posted successfully.\n\n"
+                        + "Job Title: "
+                        + job.getJobTitle()
+                        + "\n"
+                        + "Location: "
+                        + job.getJobLocation();
+
+                emailService.sendEmail(
+                        email,
+                        subject,
+                        message
+                );
             }
+
         } catch (Exception e) {
+
             e.printStackTrace();
+
+            throw e;
         }
     }
 
@@ -195,47 +204,55 @@ public class RecruiterBean implements RecruiterBeanLocal {
 //            e.printStackTrace();
 //        }
 //    }
-    
     @Override
     public void updateJob(Tbljob job) {
         try {
+            RecruiterValidator.validateJob(job);
+
             Tbljob existingJob = em.find(Tbljob.class, job.getJobId());
 
             if (existingJob != null) {
 
                 // Update ONLY if value is provided (NOT NULL)
-
-                if (job.getJobTitle() != null)
+                if (job.getJobTitle() != null) {
                     existingJob.setJobTitle(job.getJobTitle());
+                }
 
-                if (job.getJobDescription() != null)
+                if (job.getJobDescription() != null) {
                     existingJob.setJobDescription(job.getJobDescription());
+                }
 
-                if (job.getJobLocation() != null)
+                if (job.getJobLocation() != null) {
                     existingJob.setJobLocation(job.getJobLocation());
+                }
 
-                if (job.getJobStatus() != null)
+                if (job.getJobStatus() != null) {
                     existingJob.setJobStatus(job.getJobStatus());
+                }
 
-                if (job.getJobType() != null)
+                if (job.getJobType() != null) {
                     existingJob.setJobType(job.getJobType());
+                }
 
-                if (job.getExperienceRequired() != null)
+                if (job.getExperienceRequired() != null) {
                     existingJob.setExperienceRequired(job.getExperienceRequired());
+                }
 
-                if (job.getJobCompensationType() != null)
+                if (job.getJobCompensationType() != null) {
                     existingJob.setJobCompensationType(job.getJobCompensationType());
+                }
 
-                if (job.getJobExpiryDate() != null)
+                if (job.getJobExpiryDate() != null) {
                     existingJob.setJobExpiryDate(job.getJobExpiryDate());
+                }
 
                 job.setJobPostedDate(existingJob.getJobPostedDate());
 
                 // recruiter update (important)
                 if (job.getRecruiterId() != null) {
-                    Tblrecruiters r = em.find(Tblrecruiters.class,job.getRecruiterId().getRecruiterId());
+                    Tblrecruiters r = em.find(Tblrecruiters.class, job.getRecruiterId().getRecruiterId());
                     existingJob.setRecruiterId(r);
-                } 
+                }
                 em.merge(existingJob);
             }
 
@@ -265,8 +282,6 @@ public class RecruiterBean implements RecruiterBeanLocal {
 //            throw e;
 //        }
 //    }
-    
-    
 //    @Override
 //    public void deleteJob(int jobId, int recruiterId) {
 //        try {
@@ -327,10 +342,8 @@ public class RecruiterBean implements RecruiterBeanLocal {
             throw e;
         }
     }
-    
-    
+
 //single,multiple,all job delete logic:
-    
 //@Override
 //public void deleteJob(Integer jobId, Collection<Integer> jobIds, int recruiterId) {
 //    try {
@@ -436,7 +449,6 @@ public class RecruiterBean implements RecruiterBeanLocal {
 //        throw e;
 //    }
 //}
-    
     @Override
     public void updateJobStatus(int jobId, String status) {
         try {
@@ -517,7 +529,7 @@ public class RecruiterBean implements RecruiterBeanLocal {
         }
     }
 
-@Override
+    @Override
     public void updateApplicationStatus(int applicationId, String newStatus) {
         try {
             Tblapplication app = em.find(Tblapplication.class, applicationId);
@@ -529,10 +541,72 @@ public class RecruiterBean implements RecruiterBeanLocal {
                 app.setLastUpdatedDate(new Date());
                 em.merge(app);
 
+                // ================= RECENT ACTIVITY =================
+                if ("Shortlisted".equalsIgnoreCase(newStatus)) {
+
+                    Tblnotification activity
+                            = new Tblnotification();
+
+                    activity.setUserId(
+                            app.getJobId()
+                                    .getRecruiterId()
+                                    .getUserId()
+                    );
+
+                    activity.setMessage(
+                            app.getCandidateId()
+                                    .getUserId()
+                                    .getUserName()
+                            + " shortlisted for "
+                            + app.getJobId()
+                                    .getJobTitle()
+                    );
+
+                    activity.setCreatedDate(
+                            new Date()
+                    );
+
+                    activity.setNotificationStatus(
+                            "Read"
+                    );
+
+                    em.persist(activity);
+                }
+
+                if ("Selected".equalsIgnoreCase(newStatus)) {
+
+                    Tblnotification activity
+                            = new Tblnotification();
+
+                    activity.setUserId(
+                            app.getJobId()
+                                    .getRecruiterId()
+                                    .getUserId()
+                    );
+
+                    activity.setMessage(
+                            app.getCandidateId()
+                                    .getUserId()
+                                    .getUserName()
+                            + " selected for "
+                            + app.getJobId()
+                                    .getJobTitle()
+                    );
+
+                    activity.setCreatedDate(
+                            new Date()
+                    );
+
+                    activity.setNotificationStatus(
+                            "Read"
+                    );
+
+                    em.persist(activity);
+                }
+
                 addApplicationStatusHistory(applicationId, oldStatus, newStatus);
-                
+
                 // Notify Candidate
-                
                 // Fetch fresh from DB (safe)
                 Tblapplication freshApp = em.find(Tblapplication.class, applicationId);
 
@@ -581,7 +655,9 @@ public class RecruiterBean implements RecruiterBeanLocal {
     public void generateScreeningScore(int applicationId) {
         try {
             Tblapplication app = em.find(Tblapplication.class, applicationId);
-            if (app == null) return;
+            if (app == null) {
+                return;
+            }
 
             Collection<Tblskills> candidateSkills = app.getCandidateId().getTblskillsCollection();
             Collection<Tblskills> jobSkills = app.getJobId().getTblskillsCollection();
@@ -649,34 +725,91 @@ public class RecruiterBean implements RecruiterBeanLocal {
 
     // ================= INTERVIEW =================
     @Override
-    public void scheduleInterview(Tblinterview interview) {
-        try {
-            // Attach full application from DB
-            Tblapplication app = em.find(Tblapplication.class, interview.getApplicationId().getApplicationId());
+    public void scheduleInterview(
+            Tblinterview interview) {
 
-            if (app != null) {
-                interview.setApplicationId(app);
+        try {
+
+            Tblapplication app
+                    = em.find(
+                            Tblapplication.class,
+                            interview.getApplicationId()
+                                    .getApplicationId()
+                    );
+
+            if (app == null) {
+                return;
             }
 
+            interview.setApplicationId(app);
+
+            // SAVE INTERVIEW
             em.persist(interview);
-            
-            // Notify Candidate
-            if (app != null && app.getCandidateId() != null && app.getCandidateId().getUserId() != null) {
 
-                Tblusers candidateUser = app.getCandidateId().getUserId();
+            // =========================
+            // SAVE RECENT ACTIVITY
+            // =========================
+            Tblnotification activity
+                    = new Tblnotification();
 
-                String subject = "Interview Scheduled";
+            activity.setUserId(
+                    app.getJobId()
+                            .getRecruiterId()
+                            .getUserId()
+            );
 
-                String message = "Hello " + candidateUser.getUserName() + ",\n\n"
+            activity.setMessage(
+                    "Interview scheduled with "
+                    + app.getCandidateId()
+                            .getUserId()
+                            .getUserName()
+            );
+
+            activity.setCreatedDate(
+                    new Date()
+            );
+
+            activity.setNotificationStatus(
+                    "Read"
+            );
+
+            em.persist(activity);
+
+            // =========================
+            // SEND EMAIL TO CANDIDATE
+            // =========================
+            Tblusers candidateUser
+                    = app.getCandidateId()
+                            .getUserId();
+
+            if (candidateUser != null) {
+
+                String subject
+                        = "Interview Scheduled";
+
+                String message
+                        = "Hello "
+                        + candidateUser.getUserName()
+                        + ",\n\n"
                         + "Your interview has been scheduled.\n\n"
-                        + "Job: " + app.getJobId().getJobTitle() + "\n"
-                        + "Date: " + interview.getInterviewDate() + "\n\n"
-                        + "Please be prepared.\n\n"
+                        + "Job: "
+                        + app.getJobId()
+                                .getJobTitle()
+                        + "\n"
+                        + "Date: "
+                        + interview.getInterviewDate()
+                        + "\n\n"
                         + "Regards,\nQuickHire Team";
 
-                emailService.sendEmail(candidateUser.getUserEmail(), subject, message);
+                emailService.sendEmail(
+                        candidateUser.getUserEmail(),
+                        subject,
+                        message
+                );
             }
+
         } catch (Exception e) {
+
             e.printStackTrace();
         }
     }
@@ -698,9 +831,9 @@ public class RecruiterBean implements RecruiterBeanLocal {
                 interview.setFeedback(feedback);
                 interview.setResult(result);
                 em.merge(interview);
-                
+
                 // Notify Candidate
-                 // Fetch fresh application safely
+                // Fetch fresh application safely
                 Tblapplication app = em.find(Tblapplication.class, interview.getApplicationId().getApplicationId());
 
                 if (app != null && app.getCandidateId() != null && app.getCandidateId().getUserId() != null) {
@@ -722,7 +855,6 @@ public class RecruiterBean implements RecruiterBeanLocal {
         }
     }
 
-
     // ================= NOTIFICATION =================
     @Override
     public void sendNotification(Tblnotification notification) {
@@ -743,6 +875,244 @@ public class RecruiterBean implements RecruiterBeanLocal {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    @Override
+    public long getTodayInterviewsCount(int recruiterId) {
+
+        try {
+
+            return em.createQuery(
+                    "SELECT COUNT(i) FROM Tblinterview i "
+                    + "WHERE i.applicationId.jobId.recruiterId.recruiterId = :rid "
+                    + "AND FUNCTION('DATE', i.interviewDate) = CURRENT_DATE "
+                    + "AND i.interviewDate >= CURRENT_TIMESTAMP "
+                    + "AND i.interviewStatus = 'Scheduled'",
+                    Long.class)
+                    .setParameter("rid", recruiterId)
+                    .getSingleResult();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    @Override
+    public long getNewApplicantsCount(int recruiterId) {
+        try {
+
+            return em.createQuery(
+                    "SELECT COUNT(a) FROM Tblapplication a "
+                    + "WHERE a.jobId.recruiterId.recruiterId = :rid "
+                    + "AND FUNCTION('DATE', a.applicationAppliedDate) = CURRENT_DATE",
+                    Long.class)
+                    .setParameter("rid", recruiterId)
+                    .getSingleResult();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    @Override
+    public long getShortlistedCount(int recruiterId) {
+        try {
+
+            return em.createQuery(
+                    "SELECT COUNT(a) FROM Tblapplication a "
+                    + "WHERE a.jobId.recruiterId.recruiterId = :rid "
+                    + "AND a.applicationStatus = 'Shortlisted'",
+                    Long.class)
+                    .setParameter("rid", recruiterId)
+                    .getSingleResult();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    @Override
+    public double getHiringRate(int recruiterId) {
+
+        try {
+
+            Long selected = em.createQuery(
+                    "SELECT COUNT(a) FROM Tblapplication a "
+                    + "WHERE a.jobId.recruiterId.recruiterId = :rid "
+                    + "AND a.applicationStatus = 'Selected'",
+                    Long.class)
+                    .setParameter("rid", recruiterId)
+                    .getSingleResult();
+
+            Long total = em.createQuery(
+                    "SELECT COUNT(a) FROM Tblapplication a "
+                    + "WHERE a.jobId.recruiterId.recruiterId = :rid",
+                    Long.class)
+                    .setParameter("rid", recruiterId)
+                    .getSingleResult();
+
+            if (total == 0) {
+                return 0;
+            }
+
+            return (selected * 100.0) / total;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    @Override
+    public long getActiveJobsCount(int recruiterId) {
+
+        try {
+
+            return em.createQuery(
+                    "SELECT COUNT(j) FROM Tbljob j "
+                    + "WHERE j.recruiterId.recruiterId = :rid "
+                    + "AND j.jobStatus = 'Open'",
+                    Long.class)
+                    .setParameter("rid", recruiterId)
+                    .getSingleResult();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    @Override
+    public long getTotalApplicantsCount(int recruiterId) {
+
+        try {
+
+            return em.createQuery(
+                    "SELECT COUNT(a) FROM Tblapplication a "
+                    + "WHERE a.jobId.recruiterId.recruiterId = :rid",
+                    Long.class)
+                    .setParameter("rid", recruiterId)
+                    .getSingleResult();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    @Override
+    public long getUpcomingInterviewsCount(int recruiterId) {
+
+        try {
+
+            return em.createQuery(
+                    "SELECT COUNT(i) FROM Tblinterview i "
+                    + "WHERE i.applicationId.jobId.recruiterId.recruiterId = :rid "
+                    + "AND i.interviewDate >= CURRENT_TIMESTAMP "
+                    + "AND i.interviewStatus = 'Scheduled'",
+                    Long.class)
+                    .setParameter("rid", recruiterId)
+                    .getSingleResult();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    @Override
+    public double getAvgTimeToHire(int recruiterId) {
+
+        try {
+
+            Double avgDays = em.createQuery(
+                    "SELECT AVG(FUNCTION('DATEDIFF', a.lastUpdatedDate, a.applicationAppliedDate)) "
+                    + "FROM Tblapplication a "
+                    + "WHERE a.jobId.recruiterId.recruiterId = :rid "
+                    + "AND a.applicationStatus = 'Selected'",
+                    Double.class)
+                    .setParameter("rid", recruiterId)
+                    .getSingleResult();
+
+            return avgDays != null ? avgDays : 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    @Override
+    public Collection<Tblscreeningscore> getDashboardTopCandidates(int recruiterId) {
+
+        try {
+
+            return em.createQuery(
+                    "SELECT s FROM Tblscreeningscore s "
+                    + "WHERE s.applicationId.jobId.recruiterId.recruiterId = :rid "
+                    + "ORDER BY s.matchingScore DESC",
+                    Tblscreeningscore.class)
+                    .setParameter("rid", recruiterId)
+                    .setMaxResults(3)
+                    .getResultList();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public Collection<Tblinterview> getDashboardUpcomingInterviews(int recruiterId) {
+
+        try {
+
+            Date now = new Date();
+
+            System.out.println("Current Java Time = " + now);
+
+            return em.createQuery(
+                    "SELECT i FROM Tblinterview i "
+                    + "WHERE i.applicationId.jobId.recruiterId.recruiterId = :rid "
+                    + "AND i.interviewDate >= :now "
+                    + "AND i.interviewStatus = 'Scheduled' "
+                    + "ORDER BY i.interviewDate ASC",
+                    Tblinterview.class)
+                    .setParameter("rid", recruiterId)
+                    .setParameter("now", now)
+                    .setMaxResults(3)
+                    .getResultList();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public Collection<Tblnotification> getRecentActivities(int userId) {
+
+        try {
+
+            return em.createQuery(
+                    "SELECT n FROM Tblnotification n "
+                    + "WHERE n.userId.userId = :uid "
+                    + "ORDER BY n.createdDate DESC",
+                    Tblnotification.class)
+                    .setParameter("uid", userId)
+                    .setMaxResults(6)
+                    .getResultList();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return new ArrayList<>();
         }
     }
 }

@@ -62,4 +62,33 @@ public interface RecruiterBeanLocal {
     // ================= NOTIFICATION =================
     void sendNotification(Tblnotification notification);
     Collection<Tblnotification> getRecruiterNotifications(int userId);
+    
+    
+    // ================= DASHBOARD =================
+
+    public long getTodayInterviewsCount(int recruiterId);
+
+    public long getNewApplicantsCount(int recruiterId);
+
+    public long getShortlistedCount(int recruiterId);
+
+    public double getHiringRate(int recruiterId);
+
+    public long getActiveJobsCount(int recruiterId);
+
+    public long getTotalApplicantsCount(int recruiterId);
+
+    public long getUpcomingInterviewsCount(int recruiterId);
+
+    public double getAvgTimeToHire(int recruiterId);
+     
+    Collection<Tblscreeningscore> getDashboardTopCandidates(int recruiterId);
+
+    Collection<Tblinterview> getDashboardUpcomingInterviews(int recruiterId);
+    
+    Collection<Tblnotification> getRecentActivities(int userId);
+        
 }
+
+
+  

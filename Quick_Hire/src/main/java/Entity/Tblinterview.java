@@ -56,10 +56,12 @@ public class Tblinterview implements Serializable {
     @Column(name = "interviewId")
     private Integer interviewId;
     @Column(name = "interviewDate")
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date interviewDate;
     @Column(name = "interviewRound")
     private Integer interviewRound;
+    @Column(name = "interviewRoundName")
+    private String interviewRoundName;
     @Size(max = 150)
     @Column(name = "interviewerName")
     private String interviewerName;
@@ -113,6 +115,14 @@ public class Tblinterview implements Serializable {
 
     public void setInterviewRound(Integer interviewRound) {
         this.interviewRound = interviewRound;
+    }
+    
+    public String getInterviewRoundName() {
+        return interviewRoundName;
+    }
+
+    public void setInterviewRoundName(String interviewRoundName) {
+        this.interviewRoundName = interviewRoundName;
     }
 
     public String getInterviewerName() {

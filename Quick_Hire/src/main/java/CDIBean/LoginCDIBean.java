@@ -154,8 +154,10 @@ public class LoginCDIBean implements Serializable {
             } else if (role.equalsIgnoreCase("Recruiter")) {
 //                return "/recruiter/recruiterDashboard.xhtml?faces-redirect=true";
                    recruiterCDIBean.loadProfile();   // ✅ LOAD PROFILE HERE
-
+                    recruiterCDIBean.loadDashboardData();
+                   
                    return "recruiter/recruiterDashboard?faces-redirect=true";
+
             } else {
                 return "/candidate/candidateDashboard.xhtml?faces-redirect=true";
             }

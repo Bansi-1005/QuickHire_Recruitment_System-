@@ -5,355 +5,378 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
-<f:view>   
-<h:head>
-    <title>Recruiter Dashboard</title>
-    <h:outputStylesheet library="css" name="recruiter.css" />
-</h:head>
+    <f:view>   
+        <h:head>
+            <title>Recruiter Dashboard</title>
+            <h:outputStylesheet library="css" name="/recruiter/recruiter.css" />
+            <h:outputStylesheet library="css" name="/recruiter/recruiterDashboard.css" />
+        </h:head>
 
-<h:body>
+        <h:body>
 
-<f:metadata>
-    <f:viewAction action="#{loginBean.checkLogin}" />
-</f:metadata>
+            <f:metadata>
+                <f:viewAction action="#{loginBean.checkLogin}" />
+                <f:viewAction action="#{recruiterCDIBean.loadProfile}" />
+                <f:viewAction action="#{recruiterCDIBean.loadDashboardData}" />
+            </f:metadata>
 
-<ui:include src="/common/header.xhtml"/>
+            <ui:include src="/common/header.xhtml"/>
 
-<h:panelGroup rendered="#{loginBean.role eq 'Recruiter'}">
-    <div class="dashboard-layout">
+            <h:panelGroup rendered="#{loginBean.role eq 'Recruiter'}">
+                <div class="dashboard-layout">
 
-        <aside class="sidebar">
-            <div class="sidebar-title">Navigation</div>
+                    <aside class="sidebar">
+                        <div class="sidebar-title">Navigation</div>
 
-            <h:form styleClass="menu-form">
-                <h:commandLink value="🏠 Dashboard" styleClass="menu-link active" />
-                <h:commandLink value="📋 Job Postings" action="#{dashboardBean.getJobs()}" styleClass="menu-link" />
-                <h:commandLink value="👥 Applicants" styleClass="menu-link" />
-                <h:commandLink value="📅 Interviews" styleClass="menu-link" />
-                <h:commandLink value="📊 Reports" styleClass="menu-link" />
-                <h:commandLink value="⚙ Settings" styleClass="menu-link" />
-            </h:form>
+                        <h:form styleClass="menu-form">
+                            <h:commandLink value="🏠 Dashboard" styleClass="menu-link active" />
+                            <h:commandLink value="📋 Job Postings" action="recruiterPostJob?faces-redirect=true" styleClass="menu-link" />
+                            <h:commandLink value="👥 Applicants" styleClass="menu-link" />
+                            <h:commandLink value="📅 Interviews" styleClass="menu-link" />
+                            <h:commandLink value="📊 Reports" styleClass="menu-link" />
+                            <h:commandLink value="⚙ Settings" styleClass="menu-link" />
+                        </h:form>
 
-            <div class="sidebar-card">
-                <h4>Hiring Progress</h4>
-                <p>Track open roles, candidate pipeline, and interview schedules in one place.</p>
-                <a href="#" class="sidebar-btn">View Overview</a>
+                        <div class="sidebar-card">
+                            <h4>Hiring Progress</h4>
+                            <p>Track open roles, candidate pipeline, and interview schedules in one place.</p>
+                            <a href="#" class="sidebar-btn">View Overview</a>
+                        </div>
+                    </aside>
+
+                    <main class="main">
+
+                        <section class="hero">
+                            <div class="hero-grid">
+                                <div>
+                                    <div class="welcome-tag">Recruiter Dashboard</div>
+                                    <h1>Welcome back, #{loginBean.username} 👋</h1>
+                                    <p>
+                                        Manage jobs, review applications, and follow up with top talent from one clean and interactive workspace.
+                                    </p>
+
+                                    <div class="hero-actions">
+                                        <h:form>
+                                            <h:commandButton value=" View Jobs "
+                                                             action="recruiterViewJobs?faces-redirect=true"
+                                                             styleClass="btn-main" />
+                                        </h:form>
+                                        <h:form>
+                                            <h:commandButton value="+ Post New Job"
+                                                             action="recruiterPostJob?faces-redirect=true"
+                                                             styleClass="btn-light" />
+                                        </h:form>
+                                    </div>
+                                </div>
+
+                                <div class="hero-stats">
+                                    <div class="hero-mini-card">
+                                        <span>Today Interviews</span>
+                                        <strong>#{recruiterCDIBean.todayInterviews}</strong>
+                                    </div>
+                                    <div class="hero-mini-card">
+                                        <span>New Applicants</span>
+                                        <strong>#{recruiterCDIBean.newApplicants}</strong>
+                                    </div>
+                                    <div class="hero-mini-card">
+                                        <span>Shortlisted</span>
+                                        <strong>#{recruiterCDIBean.shortlistedCandidates}</strong>
+                                    </div>
+                                    <div class="hero-mini-card">
+                                        <span>Hiring Rate</span>
+                                        <strong>#{recruiterCDIBean.hiringRate}%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="cards">
+                            <div class="card">
+                                <div class="card-top">
+                                    <h3>Active Jobs</h3>
+                                    <div class="card-icon">💼</div>
+                                </div>
+                                <div class="card-value">#{recruiterCDIBean.activeJobs}</div>
+                                <div class="card-note"><p>#{recruiterCDIBean.activeJobs} positions currently open</p></div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-top">
+                                    <h3>Total Applicants</h3>
+                                    <div class="card-icon">👥</div>
+                                </div>
+                                <div class="card-value"> #{recruiterCDIBean.totalApplicants}</div>
+                                <div class="card-note"><p>#{recruiterCDIBean.newApplicants} new applications today</p></div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-top">
+                                    <h3>Upcoming Interviews</h3>
+                                    <div class="card-icon">📅</div>
+                                </div>
+                                <div class="card-value">#{recruiterCDIBean.upcomingInterviews}</div>
+                                <div class="card-note"><p>#{recruiterCDIBean.upcomingInterviews} interviews scheduled</p></div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-top">
+                                    <h3>Avg Time to Hire</h3>
+                                    <div class="card-icon">⏱</div>
+                                </div>
+                                <div class="card-value">#{recruiterCDIBean.avgTimeToHire}d</div>
+                                <div class="card-note"><p>Average days to finalize hiring</p></div>
+                            </div>
+                        </section>
+
+                        <section class="section">
+
+                            <!-- ================= TOP CANDIDATES ================= -->
+
+                            <div class="panel recent-activity-panel">
+
+                                <div class="panel-header">
+                                    <h3>Top Candidates</h3>
+                                    <a href="#" class="panel-link">See all</a>
+                                </div>
+
+                                <ui:repeat value="#{recruiterCDIBean.topCandidateslist}" var="c">
+
+                                    <div class="candidate-item">
+
+                                        <div class="person">
+
+                                            <div class="avatar">
+                                                #{c.applicationId.candidateId.userId.userName.substring(0,1)}
+                                            </div>
+
+                                            <div class="person-info">
+
+                                                <h4>
+                                                    #{c.applicationId.candidateId.userId.userName}
+                                                </h4>
+
+                                                <p>
+                                                    #{c.applicationId.jobId.jobTitle}
+                                                    •
+                                                    #{c.applicationId.candidateId.candidateExperience} Years Experience
+                                                </p>
+
+                                            </div>
+
+                                        </div>
+
+                                        <div class="score-badge">
+                                            #{c.matchingScore}%
+                                        </div>
+
+                                    </div>
+
+                                </ui:repeat>
+
+                            </div>
+
+                            <!-- ================= UPCOMING INTERVIEWS ================= -->
+
+                            <div class="panel">
+
+                                <div class="panel-header">
+                                    <h3>Upcoming Interviews</h3>
+                                    <a href="#" class="panel-link">Schedule</a>
+                                </div>
+
+                                <ui:repeat value="#{recruiterCDIBean.interviewList}" var="i">
+
+                                    <div class="interview-item">
+
+                                        <div class="person">
+
+                                            <div class="avatar">
+                                                #{i.applicationId.candidateId.userId.userName.substring(0,1)}
+                                            </div>
+
+                                            <div class="person-info">
+
+                                                <h4>
+                                                    #{i.applicationId.candidateId.userId.userName}
+                                                </h4>
+
+                                                <p>
+                                                    #{i.interviewRoundName}
+                                                    •
+                                                    #{i.interviewerMode}
+                                                </p>
+
+                                            </div>
+
+                                        </div>
+
+                                        <div class="time-badge">
+
+                                            <div class="time-badge">
+
+                                                #{recruiterCDIBean.formatInterviewDate(i.interviewDate)}
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </ui:repeat>
+
+                            </div>
+
+                        </section>
+
+                        <section class="bottom-row">
+                            <div class="panel recent-activity-panel full-width-panel">
+
+                                <div class="panel-header activity-panel-header">
+                                    <div>
+                                        <h3>Recent Activity</h3>
+                                        <p class="panel-subtitle">Latest recruiter activities</p>
+                                    </div>
+
+                                    <h:form styleClass="activity-header-actions">
+                                        <a href="#" class="panel-link">View All</a>
+
+                                        <h:commandButton
+                                            value="↻ Refresh"
+                                            action="#{recruiterCDIBean.loadDashboardData}"
+                                            styleClass="refresh-btn">
+                                            <f:ajax render="@form activityPanel"/>
+                                        </h:commandButton>
+                                    </h:form>
+                                </div>
+
+                                <h:panelGroup id="activityPanel" layout="block">
+                                    <div class="activity-list #{empty recruiterCDIBean.recentActivities ? 'is-empty' : 'has-data'}">
+
+                                        <h:panelGroup rendered="#{empty recruiterCDIBean.recentActivities}">
+                                            <div class="empty-state animated-empty-state">
+                                                <div class="empty-state-icon">📭</div>
+                                                <h4>No Recent activity !!!!</h4>
+                                                <p>
+                                                    New applications, interview updates, shortlist actions,
+                                                    and hiring progress will appear here.
+                                                </p>
+                                            </div>
+                                        </h:panelGroup>
+
+                                        <ui:repeat value="#{recruiterCDIBean.recentActivities}" var="a">
+                                            <div class="activity-item">
+                                                <div class="activity-dot"></div>
+
+                                                <div class="activity-content">
+                                                    <p class="activity-message">#{a.message}</p>
+                                                    <span class="activity-time">
+                                                        #{recruiterCDIBean.getTimeAgo(a.createdDate)}
+                                                    </span>
+                                                </div>
+
+                                                <div class="activity-icon">⚡</div>
+                                            </div>
+                                        </ui:repeat>
+                                    </div>
+                                </h:panelGroup>
+
+                            </div>
+                        </section>
+
+                    </main>
+                </div>
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{loginBean.role ne 'Recruiter'}">
+                <div style="padding-top:120px; text-align:center;">
+                    <h2 style="color:red;">Access Denied ❌</h2>
+                </div>
+            </h:panelGroup>
+
+
+            <!-- ================= PROFILE MODAL ================= -->
+            <div id="profileModal" class="modal-overlay">
+                <div class="modal-box">
+
+                    <div class="modal-header">
+                        <h3>Update Profile</h3>
+                        <span class="close-btn" onclick="closeProfileModal()">×</span>
+                    </div>
+
+                    <p class="modal-subtitle">
+                        Keep your contact details up to date so candidates can reach you easily.
+                    </p>
+
+                    <h:form id="profileForm" styleClass="modal-form">
+
+                        <!-- hidden recruiter id -->
+                        <h:inputHidden value="#{recruiterCDIBean.recruiter.recruiterId}" />
+
+                        <div class="form-inner">
+
+                            <div class="form-group">
+                                <label>Name</label>
+                                <h:inputText value="#{loginBean.username}" readonly="true" />
+                            </div>
+
+                            <div class="form-group">
+                                <label>Designation</label>
+                                <h:inputText value="#{recruiterCDIBean.recruiter.designation}" />
+                            </div>
+
+                            <div class="form-group">
+                                <label>Phone</label>
+                                <h:inputText value="#{recruiterCDIBean.recruiter.recruiterPhone}" />
+                            </div>
+
+                            <!-- success / error messages -->
+                            <h:messages id="messages"
+                                        globalOnly="true"
+                                        layout="list"
+                                        styleClass="modal-message" />
+
+                        </div>
+
+                        <div class="modal-actions">
+
+                            <h:commandButton value="Update"
+                                             action="#{recruiterCDIBean.updateProfile}"
+                                             styleClass="btn-main">
+                                <f:ajax execute="@form" render="profileForm"/>
+                            </h:commandButton>
+
+                            <button type="button"
+                                    class="btn-light btn-cancel"
+                                    onclick="closeProfileModal()">
+                                Cancel
+                            </button>
+
+                        </div>
+
+                    </h:form>
+                </div>
             </div>
-        </aside>
+            <ui:include src="/common/footer.xhtml"/>
 
-        <main class="main">
+            <script>
+                function clearProfileMessages() {
+                    var msg = document.getElementById("profileForm:messages");
+                    if (msg) {
+                        msg.innerHTML = "";
+                    }
+                }
 
-            <section class="hero">
-                <div class="hero-grid">
-                    <div>
-                        <div class="welcome-tag">Recruiter Dashboard</div>
-                        <h1>Welcome back, #{loginBean.username} 👋</h1>
-                        <p>
-                            Manage jobs, review applications, and follow up with top talent from one clean and interactive workspace.
-                        </p>
+                function openProfileModal() {
+                    clearProfileMessages();
+                    document.getElementById("profileModal").style.display = "flex";
+                }
 
-                        <div class="hero-actions">
-                            <h:form>
-                                <h:commandButton value="🚀 View Jobs"
-                                                 action="#{dashboardBean.getJobs()}"
-                                                 styleClass="btn-main" />
-                            </h:form>
-                            <button type="button" class="btn-light">+ Post New Job</button>
-                        </div>
-                    </div>
+                function closeProfileModal() {
+                    clearProfileMessages();
+                    document.getElementById("profileModal").style.display = "none";
+                }
+            </script>
 
-                    <div class="hero-stats">
-                        <div class="hero-mini-card">
-                            <span>Today Interviews</span>
-                            <strong>02</strong>
-                        </div>
-                        <div class="hero-mini-card">
-                            <span>New Applicants</span>
-                            <strong>07</strong>
-                        </div>
-                        <div class="hero-mini-card">
-                            <span>Shortlisted</span>
-                            <strong>04</strong>
-                        </div>
-                        <div class="hero-mini-card">
-                            <span>Hiring Rate</span>
-                            <strong>86%</strong>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="cards">
-                <div class="card">
-                    <div class="card-top">
-                        <h3>Active Jobs</h3>
-                        <div class="card-icon">💼</div>
-                    </div>
-                    <div class="card-value">5</div>
-                    <div class="card-note">2 roles added this week</div>
-                </div>
-
-                <div class="card">
-                    <div class="card-top">
-                        <h3>Total Applicants</h3>
-                        <div class="card-icon">👥</div>
-                    </div>
-                    <div class="card-value">12</div>
-                    <div class="card-note">3 new applications today</div>
-                </div>
-
-                <div class="card">
-                    <div class="card-top">
-                        <h3>Upcoming Interviews</h3>
-                        <div class="card-icon">📅</div>
-                    </div>
-                    <div class="card-value">2</div>
-                    <div class="card-note">Next interview at 10:00 AM</div>
-                </div>
-
-                <div class="card">
-                    <div class="card-top">
-                        <h3>Avg Time to Hire</h3>
-                        <div class="card-icon">⏱</div>
-                    </div>
-                    <div class="card-value">18d</div>
-                    <div class="card-note">Improved by 2 days</div>
-                </div>
-            </section>
-
-            <section class="section">
-                <div class="panel">
-                    <div class="panel-header">
-                        <h3>Top Candidates</h3>
-                        <a href="#" class="panel-link">See all</a>
-                    </div>
-
-                    <div class="candidate-item">
-                        <div class="person">
-                            <div class="avatar">A</div>
-                            <div class="person-info">
-                                <h4>Alice Johnson</h4>
-                                <p>Java Developer • 5 years experience</p>
-                            </div>
-                        </div>
-                        <div class="score-badge">92%</div>
-                    </div>
-
-                    <div class="candidate-item">
-                        <div class="person">
-                            <div class="avatar">D</div>
-                            <div class="person-info">
-                                <h4>Dan Wilson</h4>
-                                <p>Backend Engineer • Spring Boot</p>
-                            </div>
-                        </div>
-                        <div class="score-badge">88%</div>
-                    </div>
-
-                    <div class="candidate-item">
-                        <div class="person">
-                            <div class="avatar">C</div>
-                            <div class="person-info">
-                                <h4>Carol Davis</h4>
-                                <p>Full Stack Developer • React + Java</p>
-                            </div>
-                        </div>
-                        <div class="score-badge">85%</div>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <div class="panel-header">
-                        <h3>Upcoming Interviews</h3>
-                        <a href="#" class="panel-link">Schedule</a>
-                    </div>
-
-                    <div class="interview-item">
-                        <div class="person">
-                            <div class="avatar">A</div>
-                            <div class="person-info">
-                                <h4>Alice Johnson</h4>
-                                <p>Technical Round • Google Meet</p>
-                            </div>
-                        </div>
-                        <div class="time-badge">10:00 AM</div>
-                    </div>
-
-                    <div class="interview-item">
-                        <div class="person">
-                            <div class="avatar">C</div>
-                            <div class="person-info">
-                                <h4>Carol Davis</h4>
-                                <p>HR Round • Office Meeting</p>
-                            </div>
-                        </div>
-                        <div class="time-badge">2:00 PM</div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="bottom-row">
-                <div class="panel">
-                    <div class="panel-header">
-                        <h3>Recent Activity</h3>
-                        <a href="#" class="panel-link">Refresh</a>
-                    </div>
-
-                    <div class="activity-list">
-                        <div class="activity-item">
-                            <div class="activity-dot"></div>
-                            <div>
-                                <h4>New application received</h4>
-                                <p>Michael Brown applied for Senior Java Developer 15 minutes ago.</p>
-                            </div>
-                        </div>
-
-                        <div class="activity-item">
-                            <div class="activity-dot"></div>
-                            <div>
-                                <h4>Interview confirmed</h4>
-                                <p>Alice Johnson confirmed today's technical interview slot.</p>
-                            </div>
-                        </div>
-
-                        <div class="activity-item">
-                            <div class="activity-dot"></div>
-                            <div>
-                                <h4>Job post performing well</h4>
-                                <p>Backend Engineer posting reached 120 views this week.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <div class="panel-header">
-                        <h3>Quick Actions</h3>
-                        <a href="#" class="panel-link">Manage</a>
-                    </div>
-
-                    <div class="quick-actions">
-                        <div class="action-box">
-                            <h4>Create Job</h4>
-                            <p>Post a new opening and start receiving applications quickly.</p>
-                            <button type="button">Post Now</button>
-                        </div>
-
-                        <div class="action-box">
-                            <h4>Review Applicants</h4>
-                            <p>Check candidate profiles and shortlist top matches.</p>
-                            <button type="button">Open List</button>
-                        </div>
-
-                        <div class="action-box">
-                            <h4>Plan Interviews</h4>
-                            <p>Set interview slots and coordinate with candidates faster.</p>
-                            <button type="button">Schedule</button>
-                        </div>
-
-                        <div class="action-box">
-                            <h4>Generate Report</h4>
-                            <p>View hiring pipeline insights and recruiter performance.</p>
-                            <button type="button">View Report</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-        </main>
-    </div>
-</h:panelGroup>
-
-<h:panelGroup rendered="#{loginBean.role ne 'Recruiter'}">
-    <div style="padding-top:120px; text-align:center;">
-        <h2 style="color:red;">Access Denied ❌</h2>
-    </div>
-</h:panelGroup>
-
-
-<!-- ================= PROFILE MODAL ================= -->
-<div id="profileModal" class="modal-overlay">
-    <div class="modal-box">
-
-        <div class="modal-header">
-            <h3>Update Profile</h3>
-            <span class="close-btn" onclick="closeProfileModal()">×</span>
-        </div>
-
-        <p class="modal-subtitle">
-            Keep your contact details up to date so candidates can reach you easily.
-        </p>
-
-        <h:form id="profileForm" styleClass="modal-form">
-
-            <!-- hidden recruiter id -->
-            <h:inputHidden value="#{recruiterCDIBean.recruiter.recruiterId}" />
-
-            <div class="form-inner">
-
-                <div class="form-group">
-                    <label>Name</label>
-                    <h:inputText value="#{loginBean.username}" readonly="true" />
-                </div>
-
-                <div class="form-group">
-                    <label>Designation</label>
-                    <h:inputText value="#{recruiterCDIBean.recruiter.designation}" />
-                </div>
-
-                <div class="form-group">
-                    <label>Phone</label>
-                    <h:inputText value="#{recruiterCDIBean.recruiter.recruiterPhone}" />
-                </div>
-
-                <!-- success / error messages -->
-                <h:messages id="messages"
-                            globalOnly="true"
-                            layout="list"
-                            styleClass="modal-message" />
-
-            </div>
-
-            <div class="modal-actions">
-
-                <h:commandButton value="Update"
-                                 action="#{recruiterCDIBean.updateProfile}"
-                                 styleClass="btn-main">
-                    <f:ajax execute="@form" render="profileForm"/>
-                </h:commandButton>
-
-                <button type="button"
-                        class="btn-light btn-cancel"
-                        onclick="closeProfileModal()">
-                    Cancel
-                </button>
-
-            </div>
-
-        </h:form>
-    </div>
-</div>
-<ui:include src="/common/footer.xhtml"/>
-
-<script>
-function clearProfileMessages(){
-    var msg = document.getElementById("profileForm:messages");
-    if(msg){
-        msg.innerHTML = "";
-    }
-}
-
-function openProfileModal(){
-    clearProfileMessages();
-    document.getElementById("profileModal").style.display = "flex";
-}
-
-function closeProfileModal(){
-    clearProfileMessages();
-    document.getElementById("profileModal").style.display = "none";
-}
-</script>
-
-</h:body>
-</f:view>  
+        </h:body>
+    </f:view>  
 </html>

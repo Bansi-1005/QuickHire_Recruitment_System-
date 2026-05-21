@@ -39,6 +39,7 @@ public class RecruiterJerseyClient {
     public void setToken(String token) {
         this.token = token;
     }
+
     public <T> T topCandidates(Class<T> responseType, String jobId) throws ClientErrorException {
         WebTarget resource = webTarget;
         if (jobId != null) {
@@ -92,7 +93,14 @@ public class RecruiterJerseyClient {
     }
 
     public Response createJob(Object requestEntity) throws ClientErrorException {
-        return webTarget.path("createJob").request(jakarta.ws.rs.core.MediaType.APPLICATION_JSON).post(jakarta.ws.rs.client.Entity.entity(requestEntity, jakarta.ws.rs.core.MediaType.APPLICATION_JSON), Response.class);
+        return webTarget.path("createJob")
+                .request(MediaType.TEXT_PLAIN)
+                .header("Authorization", "Bearer " + token)
+                .post(
+                        Entity.entity(requestEntity,
+                                MediaType.APPLICATION_JSON),
+                        Response.class
+                );
     }
 
     public Response sendNotification(Object requestEntity) throws ClientErrorException {
@@ -103,13 +111,27 @@ public class RecruiterJerseyClient {
         return webTarget.path("deleteJob").request().delete(Response.class);
     }
 
-    public <T> T getJobs(Class<T> responseType, String recruiterId) throws ClientErrorException {
+//    public <T> T getJobs(Class<T> responseType, String recruiterId) throws ClientErrorException {
+//        WebTarget resource = webTarget;
+//        if (recruiterId != null) {
+//            resource = resource.queryParam("recruiterId", recruiterId);
+//        }
+//        resource = resource.path("getJobs");
+//        return resource.request(jakarta.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
+//    }
+    public <T> T getJobs(Class<T> responseType, String recruiterId) {
+
         WebTarget resource = webTarget;
+
         if (recruiterId != null) {
             resource = resource.queryParam("recruiterId", recruiterId);
         }
+
         resource = resource.path("getJobs");
-        return resource.request(jakarta.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
+
+        return resource.request(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + token)
+                .get(responseType);
     }
 
     public Response updateJobStatus() throws ClientErrorException {
@@ -187,5 +209,107 @@ public class RecruiterJerseyClient {
     public void close() {
         client.close();
     }
-    
+
+    public String getTodayInterviews(String recruiterId) {
+
+        return webTarget.path("todayInterviews")
+                .queryParam("recruiterId", recruiterId)
+                .request(MediaType.TEXT_PLAIN)
+                .header("Authorization", "Bearer " + token)
+                .get(String.class);
+    }
+
+    public String getNewApplicants(String recruiterId) {
+
+        return webTarget.path("newApplicants")
+                .queryParam("recruiterId", recruiterId)
+                .request(MediaType.TEXT_PLAIN)
+                .header("Authorization", "Bearer " + token)
+                .get(String.class);
+    }
+
+    public String getShortlisted(String recruiterId) {
+
+        return webTarget.path("shortlisted")
+                .queryParam("recruiterId", recruiterId)
+                .request(MediaType.TEXT_PLAIN)
+                .header("Authorization", "Bearer " + token)
+                .get(String.class);
+    }
+
+    public String getHiringRate(String recruiterId) {
+
+        return webTarget.path("hiringRate")
+                .queryParam("recruiterId", recruiterId)
+                .request(MediaType.TEXT_PLAIN)
+                .header("Authorization", "Bearer " + token)
+                .get(String.class);
+    }
+
+    public String getActiveJobs(String recruiterId) {
+
+        return webTarget.path("activeJobs")
+                .queryParam("recruiterId", recruiterId)
+                .request(MediaType.TEXT_PLAIN)
+                .header("Authorization", "Bearer " + token)
+                .get(String.class);
+    }
+
+    public String getTotalApplicants(String recruiterId) {
+
+        return webTarget.path("totalApplicants")
+                .queryParam("recruiterId", recruiterId)
+                .request(MediaType.TEXT_PLAIN)
+                .header("Authorization", "Bearer " + token)
+                .get(String.class);
+    }
+
+    public String getUpcomingInterviews(String recruiterId) {
+
+        return webTarget.path("upcomingInterviews")
+                .queryParam("recruiterId", recruiterId)
+                .request(MediaType.TEXT_PLAIN)
+                .header("Authorization", "Bearer " + token)
+                .get(String.class);
+    }
+
+    public String getAvgTimeToHire(String recruiterId) {
+
+        return webTarget.path("avgTimeToHire")
+                .queryParam("recruiterId", recruiterId)
+                .request(MediaType.TEXT_PLAIN)
+                .header("Authorization", "Bearer " + token)
+                .get(String.class);
+    }
+
+    public <T> T getDashboardTopCandidates(Class<T> responseType, String recruiterId) {
+        return webTarget
+                .path("dashboardTopCandidates")
+                .queryParam("recruiterId", recruiterId)
+                .request(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + token)
+                .get(responseType);
+    }
+
+    public <T> T getDashboardUpcomingInterviews(Class<T> responseType, String recruiterId) {
+
+        return webTarget
+                .path("dashboardUpcomingInterviews")
+                .queryParam("recruiterId", recruiterId)
+                .request(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + token)
+                .get(responseType);
+    }
+
+    public <T> T getRecentActivities(Class<T> responseType, String userId) {
+
+        return webTarget
+                .path("recentActivities")
+                .queryParam("userId", userId)
+                .request(MediaType.APPLICATION_JSON)
+                .header("Authorization",
+                        "Bearer " + token)
+                .get(responseType);
+    }
+
 }

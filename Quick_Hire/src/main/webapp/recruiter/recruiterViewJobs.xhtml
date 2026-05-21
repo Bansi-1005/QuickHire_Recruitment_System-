@@ -1,0 +1,356 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+
+<h:head>
+    <title>View Job Postings</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <h:outputStylesheet library="css" name="/recruiter/recruiter.css" />
+    <h:outputStylesheet library="css" name="/recruiter/recruiterViewJobs.css" />
+</h:head>
+
+<h:body>
+    <ui:include src="/common/header.xhtml"/>
+
+    <h:panelGroup rendered="#{loginBean.role eq 'Recruiter'}">
+        <div class="dashboard-layout viewjobs-page">
+
+            <aside class="sidebar viewjobs-sidebar">
+                <div class="sidebar-title">Navigation</div>
+
+                <h:form styleClass="menu-form">
+                    <h:commandLink value="🏠 Dashboard"
+                                   action="recruiterDashboard?faces-redirect=true"
+                                   styleClass="menu-link" />
+
+                    <h:commandLink value="📋 Job Postings"
+                                   action="recruiterPostJob?faces-redirect=true"
+                                   styleClass="menu-link" />
+
+                    
+                    <h:commandLink value="👥 Applicants" styleClass="menu-link" />
+                    <h:commandLink value="📅 Interviews" styleClass="menu-link" />
+                    <h:commandLink value="📊 Reports" styleClass="menu-link" />
+                    <h:commandLink value="⚙ Settings" styleClass="menu-link" />
+                </h:form>
+
+                <div class="sidebar-card">
+                    <h4>Quick Tips</h4>
+                    <p>
+                        Use filters to quickly locate active jobs, review expiring openings,
+                        and manage postings by location or work mode.
+                    </p>
+                    <a href="#" class="sidebar-btn">Filtering Guide</a>
+                </div>
+            </aside>
+
+            <main class="main viewjobs-main">
+
+                <section class="viewjobs-hero">
+                    <div class="viewjobs-hero-content">
+                        <div class="viewjobs-page-tag">Recruiter Workspace</div>
+                        <h1>View Job Postings</h1>
+                        <p>
+                            Manage all your published openings in one place with smart filters,
+                            job status insights, and quick actions.
+                        </p>
+                    </div>
+
+                    <div class="viewjobs-hero-actions">
+                        <a href="recruiterPostJob.jsf" class="viewjobs-btn viewjobs-btn-primary">+ Post New Job</a>
+                        <a href="#" class="viewjobs-btn viewjobs-btn-light">Export List</a>
+                    </div>
+                </section>
+
+                <section class="viewjobs-stats">
+                    <div class="viewjobs-stat-card">
+                        <span class="viewjobs-stat-label">Total Jobs</span>
+                        <strong>18</strong>
+                        <small>All recruiter postings</small>
+                    </div>
+                    <div class="viewjobs-stat-card">
+                        <span class="viewjobs-stat-label">Open Jobs</span>
+                        <strong>12</strong>
+                        <small>Currently accepting applications</small>
+                    </div>
+                    <div class="viewjobs-stat-card">
+                        <span class="viewjobs-stat-label">Closed Jobs</span>
+                        <strong>4</strong>
+                        <small>Expired or closed listings</small>
+                    </div>
+                    <div class="viewjobs-stat-card">
+                        <span class="viewjobs-stat-label">Expiring Soon</span>
+                        <strong>2</strong>
+                        <small>Ends in the next 7 days</small>
+                    </div>
+                </section>
+
+                <section class="panel viewjobs-filter-panel">
+                    <div class="panel-header">
+                        <div>
+                            <h2>Search and Filters</h2>
+                            <p class="panel-subtitle">Narrow jobs by work mode, location, and posting date.</p>
+                        </div>
+                        <a href="#" class="panel-link">Reset Filters</a>
+                    </div>
+
+                    <h:form id="filterForm" styleClass="viewjobs-filter-form">
+                        <div class="viewjobs-filter-grid">
+
+                            <div class="viewjobs-filter-group">
+                                <label for="workModeFilter">Work Mode</label>
+                                <div class="viewjobs-select-wrap">
+                                    <select id="workModeFilter" class="viewjobs-form-control viewjobs-select-control">
+                                        <option value="">All Work Modes</option>
+                                        <option>Remote</option>
+                                        <option>Hybrid</option>
+                                        <option>On-site</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="viewjobs-filter-group">
+                                <label for="statusFilter">Job Status</label>
+                                <div class="viewjobs-select-wrap">
+                                    <select id="statusFilter" class="viewjobs-form-control viewjobs-select-control">
+                                        <option value="">All Status</option>
+                                        <option>Open</option>
+                                        <option>Closed</option>
+                                        <option>Onhold</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="viewjobs-filter-group">
+                                <label for="stateFilter">State</label>
+                                <div class="viewjobs-select-wrap">
+                                    <select id="stateFilter" class="viewjobs-form-control viewjobs-select-control">
+                                        <option value="">All States</option>
+                                        <option>Gujarat</option>
+                                        <option>Maharashtra</option>
+                                        <option>Rajasthan</option>
+                                        <option>Karnataka</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="viewjobs-filter-group">
+                                <label for="cityFilter">City</label>
+                                <div class="viewjobs-select-wrap">
+                                    <select id="cityFilter" class="viewjobs-form-control viewjobs-select-control">
+                                        <option value="">All Cities</option>
+                                        <option>Surat</option>
+                                        <option>Ahmedabad</option>
+                                        <option>Vadodara</option>
+                                        <option>Mumbai</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="viewjobs-filter-group">
+                                <label for="jobTypeFilter">Job Type</label>
+                                <div class="viewjobs-select-wrap">
+                                    <select id="jobTypeFilter" class="viewjobs-form-control viewjobs-select-control">
+                                        <option value="">All Types</option>
+                                        <option>Full-time</option>
+                                        <option>Part-time</option>
+                                        <option>Internship</option>
+                                        <option>Contract</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="viewjobs-filter-group">
+                                <label for="dateFilter">Posted Date</label>
+                                <div class="viewjobs-select-wrap">
+                                    <select id="dateFilter" class="viewjobs-form-control viewjobs-select-control">
+                                        <option value="">All Dates</option>
+                                        <option>Today</option>
+                                        <option>Last 7 Days</option>
+                                        <option>Last 30 Days</option>
+                                        <option>This Month</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="viewjobs-filter-group viewjobs-search-group full">
+                                <label for="jobSearch">Search Job Title / Skills</label>
+                                <input id="jobSearch"
+                                       type="text"
+                                       class="viewjobs-form-control"
+                                       placeholder="Search by title, skill, or location..." />
+                            </div>
+                        </div>
+
+                        <div class="viewjobs-filter-actions">
+                            <button type="button" class="viewjobs-btn viewjobs-btn-primary">Apply Filters</button>
+                            <button type="button" class="viewjobs-btn viewjobs-btn-secondary">Clear All</button>
+                        </div>
+                    </h:form>
+                </section>
+
+                <section class="panel viewjobs-results-panel">
+                    <div class="panel-header">
+                        <div>
+                            <h2>Published Jobs</h2>
+                            <p class="panel-subtitle">Showing jobs created by this recruiter.</p>
+                        </div>
+                        <span class="viewjobs-result-badge">18 Results</span>
+                    </div>
+
+                    <div class="viewjobs-table-wrap">
+                        <table class="viewjobs-table">
+                            <thead>
+                                <tr>
+                                    <th>Job Title</th>
+                                    <th>Location</th>
+                                    <th>Work Mode</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Vacancies</th>
+                                    <th>Posted</th>
+                                    <th>Expiry</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="viewjobs-job-cell">
+                                            <strong>Java Full Stack Developer</strong>
+                                            <span>Spring Boot, REST API, SQL</span>
+                                        </div>
+                                    </td>
+                                    <td>Surat, Gujarat</td>
+                                    <td><span class="viewjobs-pill viewjobs-pill-remote">Remote</span></td>
+                                    <td>Full-time</td>
+                                    <td><span class="viewjobs-pill viewjobs-pill-open">Open</span></td>
+                                    <td>3</td>
+                                    <td>19 May 2026</td>
+                                    <td>10 Jun 2026</td>
+                                    <td>
+                                        <div class="viewjobs-actions">
+                                            <a href="#" class="viewjobs-action-link">View</a>
+                                            <a href="#" class="viewjobs-action-link">Edit</a>
+                                            <a href="#" class="viewjobs-action-link danger">Close</a>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>
+                                        <div class="viewjobs-job-cell">
+                                            <strong>UI/UX Designer</strong>
+                                            <span>Figma, Adobe XD, Design Systems</span>
+                                        </div>
+                                    </td>
+                                    <td>Ahmedabad, Gujarat</td>
+                                    <td><span class="viewjobs-pill viewjobs-pill-hybrid">Hybrid</span></td>
+                                    <td>Contract</td>
+                                    <td><span class="viewjobs-pill viewjobs-pill-open">Open</span></td>
+                                    <td>2</td>
+                                    <td>18 May 2026</td>
+                                    <td>30 May 2026</td>
+                                    <td>
+                                        <div class="viewjobs-actions">
+                                            <a href="#" class="viewjobs-action-link">View</a>
+                                            <a href="#" class="viewjobs-action-link">Edit</a>
+                                            <a href="#" class="viewjobs-action-link danger">Close</a>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>
+                                        <div class="viewjobs-job-cell">
+                                            <strong>Backend Intern</strong>
+                                            <span>Java, MySQL, API Testing</span>
+                                        </div>
+                                    </td>
+                                    <td>Surat, Gujarat</td>
+                                    <td><span class="viewjobs-pill viewjobs-pill-onsite">On-site</span></td>
+                                    <td>Internship</td>
+                                    <td><span class="viewjobs-pill viewjobs-pill-hold">Onhold</span></td>
+                                    <td>5</td>
+                                    <td>16 May 2026</td>
+                                    <td>05 Jun 2026</td>
+                                    <td>
+                                        <div class="viewjobs-actions">
+                                            <a href="#" class="viewjobs-action-link">View</a>
+                                            <a href="#" class="viewjobs-action-link">Edit</a>
+                                            <a href="#" class="viewjobs-action-link danger">Delete</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="viewjobs-mobile-list">
+                        <article class="viewjobs-job-card">
+                            <div class="viewjobs-job-card-top">
+                                <div>
+                                    <h3>Java Full Stack Developer</h3>
+                                    <p>Spring Boot, REST API, SQL</p>
+                                </div>
+                                <span class="viewjobs-pill viewjobs-pill-open">Open</span>
+                            </div>
+
+                            <div class="viewjobs-job-meta">
+                                <span>Surat, Gujarat</span>
+                                <span>Remote</span>
+                                <span>Full-time</span>
+                            </div>
+
+                            <div class="viewjobs-job-grid">
+                                <div><small>Vacancies</small><strong>3</strong></div>
+                                <div><small>Posted</small><strong>19 May 2026</strong></div>
+                                <div><small>Expiry</small><strong>10 Jun 2026</strong></div>
+                            </div>
+
+                            <div class="viewjobs-actions mobile">
+                                <a href="#" class="viewjobs-action-link">View</a>
+                                <a href="#" class="viewjobs-action-link">Edit</a>
+                                <a href="#" class="viewjobs-action-link danger">Close</a>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{loginBean.role ne 'Recruiter'}">
+        <div style="padding-top:120px; text-align:center;">
+            <h2 style="color:red;">Access Denied ❌</h2>
+        </div>
+    </h:panelGroup>
+
+    <ui:include src="/common/footer.xhtml"/>
+
+    <script type="text/javascript">
+        (function () {
+            const selects = document.querySelectorAll('.viewjobs-select-control');
+            const search = document.getElementById('jobSearch');
+
+            function setActiveState() {
+                selects.forEach(s => {
+                    s.classList.toggle('has-value', !!s.value);
+                });
+                if (search) {
+                    search.classList.toggle('has-value', !!search.value.trim());
+                }
+            }
+
+            selects.forEach(s => s.addEventListener('change', setActiveState));
+            if (search) search.addEventListener('input', setActiveState);
+            setActiveState();
+        })();
+    </script>
+</h:body>
+</html>

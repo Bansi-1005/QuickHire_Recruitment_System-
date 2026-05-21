@@ -1,0 +1,768 @@
+/*
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to edit this template
+*/
+/*
+Created on : May 19, 2026
+Author : RINKAL
+*/
+
+/* =========================
+PAGE LAYOUT
+========================= */
+
+.postjob-main{
+width:calc(100% - 250px);
+padding:100px 28px 110px;
+}
+
+/* =========================
+HERO
+========================= */
+
+.postjob-hero{
+width:100%;
+background:linear-gradient(120deg, rgba(30,60,114,0.97), rgba(15,155,142,0.95));
+color:var(--white);
+border-radius:var(--radius-xl);
+padding:26px 28px;
+box-shadow:var(--shadow-md);
+animation:panelFadeUp 0.75s ease both;
+}
+
+.postjob-page-tag{
+display:inline-block;
+background:rgba(255,255,255,0.14);
+border:1px solid rgba(255,255,255,0.16);
+padding:7px 14px;
+border-radius:999px;
+font-size:13px;
+font-weight:600;
+margin-bottom:14px;
+}
+
+.postjob-hero h1{
+margin:0 0 10px;
+font-size:30px;
+}
+
+.postjob-hero p{
+margin:0;
+max-width:none;
+color:rgba(255,255,255,0.90);
+line-height:1.7;
+}
+
+/* =========================
+BEFORE PUBLISH
+========================= */
+
+.postjob-before-card{
+width:100%;
+margin-top:22px;
+background:var(--white);
+border:1px solid var(--border);
+border-radius:var(--radius-lg);
+box-shadow:var(--shadow-sm);
+padding:20px 22px;
+}
+
+.postjob-before-card h3{
+margin:0 0 14px;
+font-size:18px;
+color:var(--primary-dark);
+}
+
+.postjob-before-list{
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+}
+
+.postjob-before-list span{
+display:inline-flex;
+align-items:center;
+padding:9px 14px;
+border-radius:999px;
+background:var(--primary-soft);
+color:var(--primary-dark);
+font-size:13px;
+font-weight:600;
+}
+
+/* =========================
+FORM PANEL
+========================= */
+
+.postjob-form-wrap{
+width:100%;
+margin-top:22px;
+}
+
+.postjob-form-panel{
+width:100%;
+background:var(--white);
+border-radius:var(--radius-lg);
+border:1px solid var(--border);
+box-shadow:var(--shadow-sm);
+padding:24px;
+}
+
+.postjob-panel-header{
+margin-bottom:18px;
+}
+
+.postjob-panel-header h2{
+margin:0;
+font-size:22px;
+color:var(--text);
+}
+
+
+.postjob-job-form{
+width:100%;
+}
+
+.postjob-form-grid{
+display:grid;
+grid-template-columns:repeat(2, minmax(0, 1fr));
+gap:18px;
+width:100%;
+}
+
+.postjob-form-group{
+display:flex;
+flex-direction:column;
+min-width:0;
+}
+
+.postjob-form-group.full{
+grid-column:1 / -1;
+}
+
+.postjob-form-group label{
+margin-bottom:8px;
+font-size:14px;
+font-weight:700;
+color:var(--text);
+}
+
+/* =========================
+WORK MODE
+========================= */
+
+.postjob-workmode-box{
+display:flex;
+flex-direction:column;
+gap:12px;
+}
+
+.postjob-workmode-radio{
+display:grid;
+grid-template-columns:repeat(3, minmax(0, 1fr));
+gap:12px;
+width:100%;
+}
+
+.postjob-workmode-radio tbody{
+display:contents;
+}
+
+.postjob-workmode-radio tr{
+display:contents;
+}
+
+.postjob-workmode-radio td{
+display:block;
+}
+
+.postjob-workmode-radio input[type="radio"]{
+position:absolute;
+opacity:0;
+pointer-events:none;
+}
+
+.postjob-workmode-radio label{
+display:flex;
+align-items:center;
+justify-content:center;
+min-height:52px;
+padding:14px 16px;
+border-radius:16px;
+border:1px solid #d5deea;
+background:linear-gradient(180deg, #fbfdff, #f6faff);
+font-size:14px;
+font-weight:700;
+color:var(--text);
+cursor:pointer;
+transition:all 0.25s ease;
+box-shadow:
+inset 0 1px 0 rgba(255,255,255,0.78),
+0 4px 12px rgba(15,35,65,0.04);
+text-align:center;
+}
+
+.postjob-workmode-radio label:hover{
+border-color:#b9cbe0;
+transform:translateY(-1px);
+box-shadow:
+0 10px 24px rgba(15,35,65,0.08),
+inset 0 1px 0 rgba(255,255,255,0.88);
+}
+
+.postjob-workmode-radio input[type="radio"]:checked + label{
+background:linear-gradient(135deg, rgba(15,155,142,0.12), rgba(30,60,114,0.12));
+border-color:var(--primary-teal);
+color:var(--primary-dark);
+box-shadow:
+0 0 0 3px rgba(15,155,142,0.10),
+0 12px 24px rgba(15,155,142,0.10);
+}
+
+.postjob-workmode-help{
+padding:10px 14px;
+border-radius:14px;
+background:#f7fbff;
+border:1px solid #d9e7f1;
+font-size:12px;
+line-height:1.6;
+color:var(--text-muted);
+}
+
+/* =========================
+LOCATION BLOCK
+========================= */
+
+.postjob-location-box{
+padding:20px;
+border-radius:20px;
+background:linear-gradient(180deg, #f8fcff 0%, #f2fbf9 100%);
+border:1px solid #d5e6eb;
+box-shadow:
+0 10px 30px rgba(15,35,65,0.05),
+inset 0 1px 0 rgba(255,255,255,0.85);
+}
+
+.postjob-location-header{
+margin-bottom:16px;
+}
+
+.postjob-location-header h3{
+margin:0 0 8px;
+font-size:18px;
+color:var(--primary-dark);
+}
+
+.postjob-location-header p{
+margin:0;
+font-size:13px;
+line-height:1.7;
+color:var(--text-muted);
+}
+
+.postjob-location-grid{
+grid-template-columns:repeat(2, minmax(0, 1fr));
+}
+
+.postjob-location-preview{
+display:flex;
+align-items:flex-start;
+gap:14px;
+padding:16px;
+border-radius:18px;
+border:1px solid #cfe0e7;
+background:linear-gradient(180deg, rgba(255,255,255,0.95), rgba(242,250,252,0.95));
+box-shadow:
+inset 0 1px 0 rgba(255,255,255,0.9),
+0 8px 22px rgba(15,35,65,0.05);
+}
+
+.postjob-location-preview-icon{
+width:42px;
+height:42px;
+display:flex;
+align-items:center;
+justify-content:center;
+border-radius:14px;
+background:linear-gradient(135deg, rgba(15,155,142,0.14), rgba(30,60,114,0.12));
+font-size:18px;
+flex-shrink:0;
+}
+
+.postjob-location-preview-content{
+display:flex;
+flex-direction:column;
+gap:4px;
+min-width:0;
+}
+
+.postjob-location-preview-label{
+font-size:12px;
+font-weight:700;
+text-transform:uppercase;
+letter-spacing:0.04em;
+color:#648091;
+}
+
+.postjob-location-preview-value{
+font-size:16px;
+font-weight:700;
+color:#234256;
+word-break:break-word;
+}
+
+.postjob-location-preview-empty{
+font-size:14px;
+color:var(--text-muted);
+line-height:1.6;
+}
+
+/* =========================
+FORM CONTROLS
+========================= */
+
+.postjob-form-control{
+width:100%;
+height:52px;
+padding:0 16px;
+border:1px solid #d6dee8;
+border-radius:16px;
+font-size:15px;
+font-weight:500;
+background:linear-gradient(180deg, #fbfdff, #f7fbff);
+color:var(--text);
+outline:none;
+transition:all 0.25s ease;
+box-sizing:border-box;
+box-shadow:
+inset 0 1px 0 rgba(255,255,255,0.75),
+0 4px 10px rgba(15,35,65,0.04);
+}
+
+.postjob-form-control:hover{
+border-color:#c5d3e3;
+background:linear-gradient(180deg, #ffffff, #f5faff);
+}
+
+.postjob-form-control:focus{
+border-color:var(--primary-teal);
+background:#ffffff;
+box-shadow:
+0 0 0 4px rgba(15,155,142,0.10),
+0 10px 24px rgba(15,155,142,0.08);
+}
+
+.postjob-form-control::placeholder{
+color:#8ea0b5;
+font-weight:400;
+}
+
+.postjob-form-control[disabled]{
+background:#f3f6f9;
+color:#93a4b4;
+cursor:not-allowed;
+box-shadow:none;
+}
+
+/* =========================
+TEXTAREA
+========================= */
+
+.postjob-textarea{
+min-height:150px;
+height:auto;
+padding:14px 16px;
+resize:vertical;
+line-height:1.6;
+font-family:'Segoe UI', sans-serif;
+}
+
+/* =========================
+RICH SELECT
+========================= */
+
+.postjob-select-wrap{
+position:relative;
+width:100%;
+}
+
+.postjob-select-wrap::after{
+content:"";
+position:absolute;
+top:50%;
+right:18px;
+width:10px;
+height:10px;
+border-right:2px solid var(--primary-dark);
+border-bottom:2px solid var(--primary-dark);
+transform:translateY(-60%) rotate(45deg);
+pointer-events:none;
+transition:all 0.25s ease;
+opacity:0.85;
+}
+
+.postjob-select-control{
+appearance:none;
+-webkit-appearance:none;
+-moz-appearance:none;
+padding-right:52px;
+cursor:pointer;
+background:linear-gradient(180deg, #fbfdff, #f4f9ff);
+}
+
+.postjob-select-control::-ms-expand{
+display:none;
+}
+
+.postjob-select-control:hover{
+border-color:#b9cbe0;
+background:linear-gradient(180deg, #ffffff, #f2f8ff);
+box-shadow:
+inset 0 1px 0 rgba(255,255,255,0.85),
+0 8px 18px rgba(15,35,65,0.08);
+}
+
+.postjob-select-control:focus{
+border-color:var(--primary-teal);
+background:#ffffff;
+box-shadow:
+0 0 0 4px rgba(15,155,142,0.10),
+0 10px 24px rgba(15,155,142,0.08);
+}
+
+.postjob-select-wrap:hover::after{
+border-color:var(--primary-teal);
+transform:translateY(-55%) rotate(45deg) scale(1.05);
+}
+
+.postjob-select-wrap:focus-within::after{
+border-color:var(--primary-teal);
+}
+
+.postjob-select-control option{
+color:var(--text);
+background:#ffffff;
+font-size:14px;
+}
+
+/* =========================
+HELP TEXT / MESSAGES
+========================= */
+
+.postjob-hint-text{
+margin-top:8px;
+font-size:12px;
+color:var(--text-muted);
+line-height:1.6;
+}
+
+.postjob-form-messages{
+margin:0 0 18px;
+padding:12px 14px;
+border-radius:14px;
+background:#fff4f4;
+color:#dc3545;
+list-style:none;
+border:1px solid #ffd6d6;
+}
+
+/* =========================
+BUTTONS
+========================= */
+
+.postjob-form-actions{
+display:flex;
+gap:12px;
+flex-wrap:wrap;
+margin-top:24px;
+}
+
+.postjob-btn{
+border:none;
+padding:12px 20px;
+border-radius:999px;
+font-size:14px;
+font-weight:700;
+cursor:pointer;
+transition:all 0.25s ease;
+}
+
+.postjob-btn-primary{
+background:linear-gradient(90deg, var(--primary-teal), var(--primary-dark));
+color:var(--white);
+box-shadow:0 10px 24px rgba(15,155,142,0.22);
+}
+
+.postjob-btn-secondary{
+background:#edf4ff;
+color:var(--primary-dark);
+}
+
+.postjob-btn-light{
+background:#f3f5f8;
+color:var(--text);
+}
+
+.postjob-btn:hover{
+transform:translateY(-2px);
+}
+
+/* =========================
+RESPONSIVE
+========================= */
+
+@media (max-width:768px){
+.postjob-main{
+width:100%;
+margin-left:0;
+padding:18px 14px 90px;
+}
+
+.postjob-hero{
+padding:20px 16px;
+margin-top:14px;
+}
+
+.postjob-hero h1{
+font-size:24px;
+}
+
+.postjob-form-grid,
+.postjob-location-grid,
+.postjob-workmode-radio{
+grid-template-columns:1fr;
+}
+
+.postjob-form-actions{
+flex-direction:column;
+}
+
+.postjob-btn{
+width:100%;
+text-align:center;
+}
+
+.postjob-form-panel,
+.postjob-before-card,
+.postjob-location-box{
+padding:18px 16px;
+}
+
+.postjob-location-preview{
+padding:14px;
+}
+}
+
+@media (max-width:480px){
+.postjob-hero h1{
+font-size:22px;
+}
+
+.postjob-before-list span{
+width:100%;
+justify-content:flex-start;
+}
+}
+
+
+
+/* =========================
+   INVALID FIELD STYLE
+========================= */
+.postjob-form-control.error,
+.postjob-form-control:invalid{
+    border-color:#e53935 !important;
+    background:#fff8f8;
+    box-shadow: 0 0 0 3px rgba(229,57,53,0.10);
+}
+
+/* =========================
+   VALID FIELD STYLE
+========================= */
+.postjob-form-control.valid{
+    border-color:#1e8e3e !important;
+    background:#f8fff9;
+}
+
+/* =========================
+   FIELD ERROR MESSAGE
+========================= */
+.postjob-field-error{
+    display:block;
+    margin-top:6px;
+    color:#d32f2f;
+    font-size:13px;
+    font-weight:500;
+    line-height:1.5;
+}
+
+/* =========================
+   FIELD SUCCESS MESSAGE
+========================= */
+.postjob-field-success{
+    display:block;
+    margin-top:6px;
+    color:#1e8e3e;
+    font-size:13px;
+    font-weight:500;
+}
+
+/* =========================
+   INVALID JSF INPUT BORDER
+========================= */
+input[aria-invalid="true"],
+textarea[aria-invalid="true"],
+select[aria-invalid="true"]{
+    border-color:#e53935 !important;
+    background:#fff8f8 !important;
+    box-shadow: 0 0 0 3px rgba(229,57,53,0.10) !important;
+}
+
+/* =========================
+   VALID JSF INPUT BORDER
+========================= */
+input[aria-invalid="false"]:focus,
+textarea[aria-invalid="false"]:focus,
+select[aria-invalid="false"]:focus{
+    border-color:#0f9b8e !important;
+}
+
+/* =========================
+   BETTER LABEL ALIGNMENT
+========================= */
+.postjob-form-group label{
+    display:flex;
+    align-items:center;
+    gap:2px;
+}
+
+/* =========================
+   OPTIONAL TEXT
+========================= */
+.postjob-optional{
+    color:#7b8794;
+    font-size:12px;
+    font-weight:500;
+    margin-left:4px;
+}
+
+/* =========================
+   FLOATING GLOBAL MESSAGE WRAP
+========================= */
+.postjob-global-message-wrap{
+    position:fixed;
+    top:90px;
+    right:24px;
+    z-index:9999;
+    width:min(380px, calc(100vw - 32px));
+    pointer-events:none;
+}
+
+/* =========================
+   GLOBAL MESSAGE CARD
+========================= */
+.postjob-msg{
+    width:100%;
+    box-sizing:border-box;
+    pointer-events:auto;
+    position:relative;
+    list-style:none;
+    margin:0 0 12px 0;
+    padding:14px 16px 14px 48px;
+    border-radius:14px;
+    font-size:14px;
+    font-weight:600;
+    line-height:1.5;
+    border:1px solid transparent;
+    box-shadow:0 14px 32px rgba(15, 23, 42, 0.16);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+    animation:postjobMsgSlideIn .35s ease;
+    cursor:pointer;
+    overflow:hidden;
+}
+
+/* =========================
+   MESSAGE ICON
+========================= */
+.postjob-msg::before{
+    position:absolute;
+    left:16px;
+    top:14px;
+    font-size:18px;
+    font-weight:700;
+    line-height:1;
+}
+
+/* =========================
+   SUCCESS MESSAGE
+========================= */
+.postjob-msg-success{
+    color:#166534 !important;
+    background:linear-gradient(135deg, #ecfdf3, #dcfce7);
+    border-color:#86efac;
+}
+
+.postjob-msg-success::before{
+    content:"✓";
+    color:#16a34a;
+}
+
+/* =========================
+   WARNING MESSAGE
+========================= */
+.postjob-msg-warning{
+    color:#92400e !important;
+    background:linear-gradient(135deg, #fff7ed, #ffedd5);
+    border-color:#fdba74;
+}
+
+.postjob-msg-warning::before{
+    content:"!";
+    color:#ea580c;
+}
+
+/* =========================
+   HIDE ANIMATION
+========================= */
+.postjob-msg-hide{
+    opacity:0;
+    transform:translateY(-10px) scale(.98);
+    transition:opacity .45s ease, transform .45s ease;
+}
+
+/* =========================
+   SHOW ANIMATION
+========================= */
+@keyframes postjobMsgSlideIn{
+    from{
+        opacity:0;
+        transform:translateY(-14px) scale(.97);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0) scale(1);
+    }
+}
+
+/* =========================
+   MOBILE
+========================= */
+@media (max-width:768px){
+    .postjob-global-message-wrap{
+        top:75px;
+        left:12px;
+        right:12px;
+        width:auto;
+    }
+
+    .postjob-msg{
+        font-size:13px;
+        padding:13px 14px 13px 44px;
+    }
+
+    .postjob-msg::before{
+        left:14px;
+        top:13px;
+    }
+}

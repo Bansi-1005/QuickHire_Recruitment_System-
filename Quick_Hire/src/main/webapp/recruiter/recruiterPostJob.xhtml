@@ -1,0 +1,689 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+
+    <f:view>
+
+        <f:metadata>
+            <f:viewAction action="#{loginBean.checkLogin}" />
+            <f:viewAction action="#{recruiterCDIBean.loadProfile}" />
+            <f:viewAction action="#{recruiterCDIBean.initLocationData}" />
+        </f:metadata>
+
+        <h:head>
+            <title>Post New Job</title>
+            <h:outputStylesheet library="css" name="/recruiter/recruiter.css" />
+            <h:outputStylesheet library="css" name="/recruiter/recruiterPostJob.css" />
+        </h:head>
+
+        <h:body>
+
+            <ui:include src="/common/header.xhtml"/>
+
+            <h:panelGroup rendered="#{loginBean.role eq 'Recruiter'}">
+                <div class="dashboard-layout post-job-page">
+
+                    <aside class="sidebar postjob-sidebar">
+                        <div class="sidebar-title">Navigation</div>
+
+                        <h:form styleClass="menu-form">
+                            <h:commandLink value="🏠 Dashboard"
+                                           action="recruiterDashboard?faces-redirect=true"
+                                           styleClass="menu-link" />
+
+                            <h:commandLink value="📋 Job Postings"
+                                           action="recruiterPostJob?faces-redirect=true"
+                                           styleClass="menu-link active" />
+
+                            <h:commandLink value="👥 Applicants" styleClass="menu-link" />
+                            <h:commandLink value="📅 Interviews" styleClass="menu-link" />
+                            <h:commandLink value="📊 Reports" styleClass="menu-link" />
+                            <h:commandLink value="⚙ Settings" styleClass="menu-link" />
+                        </h:form>
+
+                        <div class="sidebar-card">
+                            <h4>Quick Tips</h4>
+                            <p>
+                                Write a clear title, keep requirements realistic,
+                                and add key skills so the right candidates can find your job faster.
+                            </p>
+                            <a href="#" class="sidebar-btn">Hiring Guide</a>
+                        </div>
+                    </aside>
+
+                    <main class="main postjob-main">
+
+                        <section class="postjob-hero">
+                            <div class="postjob-hero-content">
+                                <div class="postjob-page-tag">Recruiter Workspace</div>
+                                <h1>Create New Job</h1>
+                                <p>
+                                    Publish a detailed opening with job role, experience, salary range,
+                                    vacancies, expiry date, and required skills.
+                                </p>
+                            </div>
+                        </section>
+
+                        <section class="postjob-before-card">
+                            <h3>Before Publish</h3>
+                            <div class="postjob-before-list">
+                                <span>Use a role-specific title.</span>
+                                <span>Mention exact experience needed.</span>
+                                <span>Keep salary range realistic.</span>
+                                <span>Add key skills for better matching.</span>
+                                <span>Set a valid expiry date.</span>
+                            </div>
+                        </section>
+
+                        <section class="postjob-form-wrap">
+
+                            <div class="postjob-form-panel">
+                                <div class="postjob-panel-header">
+                                    <h2>Job Details</h2>
+                                </div>
+
+                                <h:form id="postJobForm" styleClass="postjob-job-form">
+
+
+                                    <div class="postjob-form-grid">
+
+                                        <!-- JOB TITLE -->
+                                        <div class="postjob-form-group">
+                                            <label for="jobTitle">Job Title</label>
+
+                                            <h:inputText id="jobTitle"
+                                                         value="#{recruiterCDIBean.job.jobTitle}"
+                                                         required="true"
+                                                         requiredMessage="Job title is required"
+                                                         validatorMessage="Only letters, numbers, spaces and basic symbols are allowed"
+                                                         maxlength="100"
+                                                         styleClass="postjob-form-control"
+                                                         pt:placeholder="Example: Java Full Stack Developer">
+
+                                                <f:validateLength minimum="3" maximum="100" />
+
+                                                <f:ajax event="keyup"
+                                                        delay="200"
+                                                        execute="@this"
+                                                        render="jobTitleMessage" />
+                                            </h:inputText>
+
+                                            <h:message id="jobTitleMessage"
+                                                       for="jobTitle"
+                                                       styleClass="postjob-field-error" />
+                                        </div>
+
+                                        <!-- REQUIRED SKILLS -->
+                                        <div class="postjob-form-group">
+                                            <label for="skills">Required Skills</label>
+
+                                            <h:inputText id="skills"
+                                                         value="#{recruiterCDIBean.skillInput}"
+                                                         required="true"
+                                                         requiredMessage="Skills are required"
+                                                         styleClass="postjob-form-control"
+                                                         pt:placeholder="Java, Spring Boot, SQL, REST API">
+
+                                                <f:ajax event="keyup"
+                                                        delay="200"
+                                                        execute="@this"
+                                                        render="skillsMessage" />
+                                            </h:inputText>
+
+                                            <h:message id="skillsMessage"
+                                                       for="skills"
+                                                       styleClass="postjob-field-error" />
+
+                                            <small class="postjob-hint-text">
+                                                Enter skills separated by commas.
+                                            </small>
+                                        </div>
+
+                                        <!-- WORK MODE -->
+                                        <div class="postjob-form-group full">
+                                            <label>Work Mode</label>
+
+                                            <div class="postjob-workmode-box">
+
+                                                <h:selectOneRadio id="workMode"
+                                                                  value="#{recruiterCDIBean.job.workMode}"
+                                                                  layout="pageDirection"
+                                                                  required="true"
+                                                                  requiredMessage="Please select work mode"
+                                                                  styleClass="postjob-workmode-radio">
+
+                                                    <f:selectItem itemLabel="Remote" itemValue="Remote" />
+                                                    <f:selectItem itemLabel="Hybrid" itemValue="Hybrid" />
+                                                    <f:selectItem itemLabel="On-site" itemValue="On-site" />
+
+                                                    <f:ajax execute="@this"
+                                                            listener="#{recruiterCDIBean.onWorkModeChange}"
+                                                            render="locationBlock generatedLocationPreview generatedLocationInput messages workModeHelp workModeMessage" />
+                                                </h:selectOneRadio>
+
+                                                <h:message id="workModeMessage"
+                                                           for="workMode"
+                                                           styleClass="postjob-field-error" />
+
+                                                <h:panelGroup id="workModeHelp"
+                                                              layout="block"
+                                                              styleClass="postjob-workmode-help">
+
+                                                    <h:outputText value="Fully remote role with broad location flexibility."
+                                                                  rendered="#{recruiterCDIBean.job.workMode eq 'Remote'}" />
+
+                                                    <h:outputText value="Mix of office and remote work; structured city/state helps candidates filter properly."
+                                                                  rendered="#{recruiterCDIBean.job.workMode eq 'Hybrid'}" />
+
+                                                    <h:outputText value="Physical office presence required; city and state should be clearly visible."
+                                                                  rendered="#{recruiterCDIBean.job.workMode eq 'On-site'}" />
+
+                                                    <h:outputText value="Choose one option to continue location setup."
+                                                                  rendered="#{empty recruiterCDIBean.job.workMode}" />
+
+                                                </h:panelGroup>
+
+                                            </div>
+                                        </div>
+
+                                        <!-- LOCATION -->
+                                        <h:panelGroup id="locationBlock"
+                                                      layout="block"
+                                                      styleClass="postjob-form-group full">
+
+                                            <div class="postjob-location-box">
+
+                                                <div class="postjob-location-header">
+                                                    <h3>Location Details</h3>
+                                                    <p>Select state and city for Hybrid or On-site jobs.</p>
+                                                </div>
+
+                                                <div class="postjob-form-grid postjob-location-grid">
+
+                                                    <!-- STATE -->
+                                                    <h:panelGroup layout="block"
+                                                                  rendered="#{recruiterCDIBean.job.workMode ne 'Remote'
+                                                                              and not empty recruiterCDIBean.job.workMode}"
+                                                                  styleClass="postjob-form-group">
+
+                                                        <label for="jobStateSelect">State</label>
+
+                                                        <div class="postjob-select-wrap">
+                                                            <h:selectOneMenu id="jobStateSelect"
+                                                                             value="#{recruiterCDIBean.selectedState}"
+                                                                             required="#{recruiterCDIBean.job.workMode ne 'Remote'
+                                                                                         and not empty recruiterCDIBean.job.workMode}"
+                                                                             requiredMessage="Please select state"
+                                                                             styleClass="postjob-form-control postjob-select-control">
+
+                                                                <f:selectItem itemLabel="Select State"
+                                                                              itemValue="#{null}"
+                                                                              noSelectionOption="true" />
+
+                                                                <f:selectItems value="#{recruiterCDIBean.availableStates}" />
+
+                                                                <f:ajax execute="@this"
+                                                                        delay="200"
+                                                                        listener="#{recruiterCDIBean.onStateChange}"
+                                                                        render="jobCitySelect generatedLocationPreview generatedLocationInput cityHint stateMessage" />
+                                                            </h:selectOneMenu>
+                                                        </div>
+
+                                                        <h:message id="stateMessage"
+                                                                   for="jobStateSelect"
+                                                                   styleClass="postjob-field-error" />
+                                                    </h:panelGroup>
+
+                                                    <!-- CITY -->
+                                                    <h:panelGroup layout="block"
+                                                                  rendered="#{recruiterCDIBean.job.workMode ne 'Remote'
+                                                                              and not empty recruiterCDIBean.job.workMode}"
+                                                                  styleClass="postjob-form-group">
+
+                                                        <label for="jobCitySelect">City</label>
+
+                                                        <div class="postjob-select-wrap">
+                                                            <h:selectOneMenu id="jobCitySelect"
+                                                                             value="#{recruiterCDIBean.selectedCity}"
+                                                                             disabled="#{empty recruiterCDIBean.selectedState}"
+                                                                             required="#{recruiterCDIBean.job.workMode ne 'Remote'
+                                                                                         and not empty recruiterCDIBean.job.workMode}"
+                                                                             requiredMessage="Please select city"
+                                                                             styleClass="postjob-form-control postjob-select-control">
+
+                                                                <f:selectItem itemLabel="Select City"
+                                                                              itemValue="#{null}"
+                                                                              noSelectionOption="true" />
+
+                                                                <f:selectItems value="#{recruiterCDIBean.availableCities}" />
+
+                                                                <f:ajax execute="@this"
+                                                                        delay="200"
+                                                                        listener="#{recruiterCDIBean.onCityChange}"
+                                                                        render="generatedLocationPreview generatedLocationInput cityMessage" />
+                                                            </h:selectOneMenu>
+                                                        </div>
+
+                                                        <h:message id="cityMessage"
+                                                                   for="jobCitySelect"
+                                                                   styleClass="postjob-field-error" />
+
+                                                        <h:panelGroup id="cityHint"
+                                                                      layout="block"
+                                                                      rendered="#{empty recruiterCDIBean.selectedState}">
+                                                            <small class="postjob-hint-text">
+                                                                Select state first to load matching cities.
+                                                            </small>
+                                                        </h:panelGroup>
+
+                                                    </h:panelGroup>
+
+                                                    <!-- LOCATION PREVIEW -->
+                                                    <div class="postjob-form-group full">
+                                                        <label>Location Preview</label>
+
+                                                        <h:panelGroup id="generatedLocationPreview"
+                                                                      layout="block"
+                                                                      styleClass="postjob-location-preview">
+
+                                                            <div class="postjob-location-preview-icon">📍</div>
+
+                                                            <div class="postjob-location-preview-content">
+                                                                <span class="postjob-location-preview-label">
+                                                                    Final job location
+                                                                </span>
+
+                                                                <h:outputText value="#{recruiterCDIBean.job.jobLocation}"
+                                                                              rendered="#{not empty recruiterCDIBean.job.jobLocation}"
+                                                                              styleClass="postjob-location-preview-value" />
+
+                                                                <h:outputText value="Location will appear here after selection."
+                                                                              rendered="#{empty recruiterCDIBean.job.jobLocation}"
+                                                                              styleClass="postjob-location-preview-empty" />
+                                                            </div>
+
+                                                        </h:panelGroup>
+
+                                                        <h:inputHidden id="generatedLocationInput"
+                                                                       value="#{recruiterCDIBean.job.jobLocation}" />
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </h:panelGroup>
+
+                                        <!-- EXPERIENCE -->
+                                        <div class="postjob-form-group">
+                                            <label for="experienceRequired">Experience Required (Years)</label>
+
+                                            <h:inputText id="experienceRequired"
+                                                         value="#{recruiterCDIBean.job.experienceRequired}"
+                                                         required="true"
+                                                         requiredMessage="Experience is required"
+                                                         converterMessage="Experience must be numeric"
+                                                         validatorMessage="Experience must be between 0 and 50"
+                                                         styleClass="postjob-form-control"
+                                                         pt:placeholder="Example: 2">
+
+                                                <f:validateLongRange minimum="0" maximum="50" />
+
+                                                <f:ajax event="keyup"
+                                                        delay="200"
+                                                        execute="@this"
+                                                        render="experienceMessage" />
+                                            </h:inputText>
+
+                                            <h:message id="experienceMessage"
+                                                       for="experienceRequired"
+                                                       styleClass="postjob-field-error" />
+                                        </div>
+
+                                        <!-- JOB TYPE -->
+                                        <div class="postjob-form-group">
+                                            <label for="jobType">Job Type</label>
+
+                                            <div class="postjob-select-wrap">
+                                                <h:selectOneMenu id="jobType"
+                                                                 value="#{recruiterCDIBean.job.jobType}"
+                                                                 required="true"
+                                                                 requiredMessage="Please select job type"
+                                                                 styleClass="postjob-form-control postjob-select-control">
+
+                                                    <f:selectItem itemLabel="Select Job Type"
+                                                                  itemValue="#{null}"
+                                                                  noSelectionOption="true" />
+
+                                                    <f:selectItem itemLabel="Full-time" itemValue="Full-time" />
+                                                    <f:selectItem itemLabel="Part-time" itemValue="Part-time" />
+                                                    <f:selectItem itemLabel="Internship" itemValue="Internship" />
+                                                    <f:selectItem itemLabel="Contract" itemValue="Contract" />
+
+                                                    <f:ajax event="change"
+                                                            delay="200"
+                                                            execute="@this"
+                                                            render="jobTypeMessage" />
+                                                </h:selectOneMenu>
+                                            </div>
+
+                                            <h:message id="jobTypeMessage"
+                                                       for="jobType"
+                                                       styleClass="postjob-field-error" />
+                                        </div>
+
+                                        <!-- JOB STATUS -->
+                                        <div class="postjob-form-group">
+                                            <label for="jobStatus">Job Status</label>
+
+                                            <div class="postjob-select-wrap">
+                                                <h:selectOneMenu id="jobStatus"
+                                                                 value="#{recruiterCDIBean.job.jobStatus}"
+                                                                 required="true"
+                                                                 requiredMessage="Please select job status"
+                                                                 styleClass="postjob-form-control postjob-select-control">
+
+                                                    <f:selectItem itemLabel="Select Status"
+                                                                  itemValue="#{null}"
+                                                                  noSelectionOption="true" />
+
+                                                    <f:selectItem itemLabel="Open" itemValue="Open" />
+                                                    <f:selectItem itemLabel="Closed" itemValue="Closed" />
+                                                    <f:selectItem itemLabel="Onhold" itemValue="Onhold" />
+
+                                                    <f:ajax event="change"
+                                                            delay="200"
+                                                            execute="@this"
+                                                            render="jobStatusMessage" />
+                                                </h:selectOneMenu>
+                                            </div>
+
+                                            <h:message id="jobStatusMessage"
+                                                       for="jobStatus"
+                                                       styleClass="postjob-field-error" />
+                                        </div>
+
+                                        <!-- COMPENSATION TYPE -->
+                                        <div class="postjob-form-group">
+                                            <label for="compensationType">Compensation Type</label>
+
+                                            <div class="postjob-select-wrap">
+                                                <h:selectOneMenu id="compensationType"
+                                                                 value="#{recruiterCDIBean.job.jobCompensationType}"
+                                                                 required="true"
+                                                                 requiredMessage="Select compensation type"
+                                                                 styleClass="postjob-form-control postjob-select-control">
+
+                                                    <f:selectItem itemLabel="Select Compensation Type"
+                                                                  itemValue="#{null}"
+                                                                  noSelectionOption="true" />
+
+                                                    <f:selectItem itemLabel="Salary" itemValue="salary" />
+                                                    <f:selectItem itemLabel="Stipend" itemValue="stipend" />
+
+                                                    <f:ajax event="change"
+                                                            execute="@this"
+                                                            delay="200"
+                                                            render="compensationTypeMessage" />
+                                                </h:selectOneMenu>
+                                            </div>
+
+                                            <h:message id="compensationTypeMessage"
+                                                       for="compensationType"
+                                                       styleClass="postjob-field-error" />
+                                        </div>
+
+                                        <!-- MIN COMPENSATION -->
+                                        <div class="postjob-form-group">
+                                            <label for="compensationMin">Minimum Compensation</label>
+
+                                            <h:inputText id="compensationMin"
+                                                         value="#{recruiterCDIBean.job.jobCompensationMin}"
+                                                         required="true"
+                                                         requiredMessage="Minimum compensation is required"
+                                                         converterMessage="Enter valid minimum amount"
+                                                         validatorMessage="Minimum compensation must be greater than 0"
+                                                         styleClass="postjob-form-control"
+                                                         pt:placeholder="Example: 22000">
+
+                                                <f:validateDoubleRange minimum="0.01" />
+
+                                                <f:ajax event="keyup"
+                                                        execute="@this"
+                                                        delay="200"
+                                                        listener="#{recruiterCDIBean.syncMaxCompensation}"
+                                                        render="compensationMinMessage compensationMaxWrapper" />
+                                            </h:inputText>
+
+                                            <h:message id="compensationMinMessage"
+                                                       for="compensationMin"
+                                                       styleClass="postjob-field-error" />
+                                        </div>
+
+                                        <!-- MAX COMPENSATION -->
+                                        <h:panelGroup id="compensationMaxWrapper" layout="block" styleClass="postjob-form-group">
+                                            <label for="compensationMax">Maximum Compensation</label>
+
+                                            <h:inputText id="compensationMax"
+                                                         value="#{recruiterCDIBean.job.jobCompensationMax}"
+                                                         required="true"
+                                                         requiredMessage="Maximum compensation is required"
+                                                         converterMessage="Enter valid maximum amount"
+                                                         validatorMessage="Maximum compensation must be greater than 0"
+                                                         styleClass="postjob-form-control"
+                                                         pt:placeholder="Example: 42000">
+
+                                                <f:validateDoubleRange minimum="0.01" />
+
+                                                <f:ajax event="keyup"
+                                                        execute="@this"
+                                                        delay="200"
+                                                        render="compensationMaxMessage" />
+                                            </h:inputText>
+
+                                            <h:message id="compensationMaxMessage"
+                                                       for="compensationMax"
+                                                       styleClass="postjob-field-error" />
+                                        </h:panelGroup>
+
+                                        <!-- COMPENSATION PERIOD -->
+                                        <div class="postjob-form-group">
+                                            <label for="compensationPeriod">Compensation Period</label>
+
+                                            <div class="postjob-select-wrap">
+                                                <h:selectOneMenu id="compensationPeriod"
+                                                                 value="#{recruiterCDIBean.job.jobCompensationPeriod}"
+                                                                 required="true"
+                                                                 requiredMessage="Select compensation period"
+                                                                 styleClass="postjob-form-control postjob-select-control">
+
+                                                    <f:selectItem itemLabel="Select Compensation Period"
+                                                                  itemValue="#{null}"
+                                                                  noSelectionOption="true" />
+
+                                                    <f:selectItem itemLabel="Monthly" itemValue="monthly" />
+                                                    <f:selectItem itemLabel="Yearly" itemValue="yearly" />
+
+                                                    <f:ajax event="change"
+                                                            execute="@this"
+                                                            delay="200"
+                                                            render="compensationPeriodMessage" />
+                                                </h:selectOneMenu>
+                                            </div>
+
+                                            <h:message id="compensationPeriodMessage"
+                                                       for="compensationPeriod"
+                                                       styleClass="postjob-field-error" />
+                                        </div>
+
+                                        <!-- VACANCIES -->
+                                        <div class="postjob-form-group">
+                                            <label for="jobVacancies">Vacancies</label>
+
+                                            <h:inputText id="jobVacancies"
+                                                         value="#{recruiterCDIBean.job.jobVacancies}"
+                                                         required="true"
+                                                         requiredMessage="Vacancies are required"
+                                                         converterMessage="Vacancies must be numeric"
+                                                         validatorMessage="Vacancies must be between 1 and 10000"
+                                                         styleClass="postjob-form-control"
+                                                         pt:placeholder="Example: 3">
+
+                                                <f:validateLongRange minimum="1" maximum="10000" />
+
+                                                <f:ajax event="keyup"
+                                                        execute="@this"
+                                                        delay="200"
+                                                        render="vacanciesMessage" />
+                                            </h:inputText>
+
+                                            <h:message id="vacanciesMessage"
+                                                       for="jobVacancies"
+                                                       styleClass="postjob-field-error" />
+                                        </div>
+
+                                        <!-- EXPIRY DATE -->
+                                        <div class="postjob-form-group">
+                                            <label for="jobExpiryDate">Expiry Date</label>
+
+                                            <h:inputText id="jobExpiryDate"
+                                                         value="#{recruiterCDIBean.job.jobExpiryDate}"
+                                                         required="true"
+                                                         requiredMessage="Expiry date is required"
+                                                         converterMessage="Please select a valid date"
+                                                         styleClass="postjob-form-control"
+                                                         pt:type="date"
+                                                         pt:min="#{recruiterCDIBean.tomorrowDate}">
+
+                                                <f:convertDateTime pattern="yyyy-MM-dd" />
+
+                                                <f:ajax event="change"
+                                                        execute="@this"
+                                                        delay="200"
+                                                        render="expiryDateMessage" />
+                                            </h:inputText>
+
+                                            <h:message id="expiryDateMessage"
+                                                       for="jobExpiryDate"
+                                                       styleClass="postjob-field-error" />
+
+                                            <small class="postjob-hint-text">
+                                                Select the application closing date.
+                                            </small>
+                                        </div>
+
+                                        <!-- DESCRIPTION -->
+                                        <div class="postjob-form-group full">
+                                            <label for="jobDescription">Job Description</label>
+
+                                            <h:inputTextarea id="jobDescription"
+                                                             value="#{recruiterCDIBean.job.jobDescription}"
+                                                             required="true"
+                                                             requiredMessage="Job description is required"
+                                                             validatorMessage="Job description must contain at least 20 characters"
+                                                             rows="7"
+                                                             styleClass="postjob-form-control postjob-textarea"
+                                                             pt:placeholder="Describe the job role, responsibilities, required skills, and expectations...">
+
+                                                <f:validateLength minimum="20" />
+
+                                                <f:ajax event="keyup"
+                                                        execute="@this"
+                                                        delay="200"
+                                                        render="descriptionMessage" />
+                                            </h:inputTextarea>
+
+                                            <h:message id="descriptionMessage"
+                                                       for="jobDescription"
+                                                       styleClass="postjob-field-error" />
+                                        </div>
+                                    </div>
+                                    <div id="globalMessageBox">
+                                        <h:messages id="messages"
+                                                    globalOnly="true"
+                                                    showDetail="true"
+                                                    showSummary="false"
+                                                    layout="list"
+                                                    infoClass="postjob-msg postjob-msg-success"
+                                                    errorClass="postjob-msg postjob-msg-error"
+                                                    warnClass="postjob-msg postjob-msg-warning"
+                                                    fatalClass="postjob-msg postjob-msg-error" />
+                                    </div>
+
+                                    <!-- BUTTONS -->
+                                    <div class="postjob-form-actions">
+
+                                        <h:commandButton value="Publish Job"
+                                                         action="#{recruiterCDIBean.saveJob}"
+                                                         styleClass="postjob-btn postjob-btn-primary">
+
+                                            <f:ajax execute="@form"
+                                                    render="@form messages" />
+
+                                        </h:commandButton>
+
+                                        <h:commandButton value="Back to Dashboard"
+                                                         action="recruiterDashboard?faces-redirect=true"
+                                                         immediate="true"
+                                                         styleClass="postjob-btn postjob-btn-light" />
+                                    </div>
+
+
+                                </h:form>
+                            </div>
+
+                        </section>
+
+                    </main>
+                </div>
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{loginBean.role ne 'Recruiter'}">
+                <div style="padding-top:120px; text-align:center;">
+                    <h2 style="color:red;">Access Denied ❌</h2>
+                </div>
+            </h:panelGroup>
+
+            <ui:include src="/common/footer.xhtml"/>
+
+
+            <script type="text/javascript">
+
+                function handleGlobalMessages() {
+
+                    const msgBox = document.getElementById('globalMessageBox');
+
+                    if (msgBox &amp; &amp; msgBox.innerText.trim() !== ''){
+
+                        msgBox.style.display = "block";
+                        msgBox.style.opacity = "1";
+
+                        setTimeout(() => {
+
+                            msgBox.style.transition = "opacity 0.5s ease";
+                            msgBox.style.opacity = "0";
+
+                            setTimeout(() => {
+                                msgBox.style.display = "none";
+                            }, 500);
+
+                        }, 2000);
+                    }
+                }
+
+                window.addEventListener('load', handleGlobalMessages);
+
+                jsf.ajax.addOnEvent(function (data) {
+
+                    if (data.status === 'success') 
+                        handleGlobalMessages();
+                    }
+
+                });
+
+            </script>
+        </h:body>
+    </f:view>
+</html>

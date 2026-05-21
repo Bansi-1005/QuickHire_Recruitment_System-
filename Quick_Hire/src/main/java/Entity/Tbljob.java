@@ -53,20 +53,24 @@ import java.util.Date;
     @NamedQuery(name = "Tbljob.findByJobStatus", query = "SELECT t FROM Tbljob t WHERE t.jobStatus = :jobStatus"),
     @NamedQuery(name = "Tbljob.findByJobPostedDate", query = "SELECT t FROM Tbljob t WHERE t.jobPostedDate = :jobPostedDate"),
     @NamedQuery(name = "Tbljob.findByJobExpiryDate", query = "SELECT t FROM Tbljob t WHERE t.jobExpiryDate = :jobExpiryDate"),
-    
+
     @NamedQuery(name = "Tbljob.findActiveJobs", query = "SELECT t FROM Tbljob t WHERE t.jobStatus = 'Open'"),
     @NamedQuery(name = "Tbljob.findByRecruiter", query = "SELECT t FROM Tbljob t WHERE t.recruiterId.recruiterId = :recruiterId"),
     @NamedQuery(name = "Tbljob.findByLocation", query = "SELECT t FROM Tbljob t WHERE t.jobLocation LIKE :jobLocation"),
     @NamedQuery(name = "Tbljob.findBySkill", query = "SELECT t FROM Tbljob t JOIN t.tblskillsCollection s WHERE s.skillName LIKE :skillName"),
-    
-    @NamedQuery(name="Tbljob.count", query="SELECT COUNT(t) FROM Tbljob t"),
+
+    @NamedQuery(name = "Tbljob.count", query = "SELECT COUNT(t) FROM Tbljob t"),
     @NamedQuery(
-        name = "Tbljob.findJobsByCompany",
-        query = "SELECT j FROM Tbljob j JOIN j.recruiterId r JOIN r.companyId c WHERE c.companyId = :companyId"
+            name = "Tbljob.findJobsByCompany",
+            query = "SELECT j FROM Tbljob j JOIN j.recruiterId r JOIN r.companyId c WHERE c.companyId = :companyId"
     ),
     @NamedQuery(
-        name = "Tbljob.jobWiseApplications",
-        query = "SELECT j.jobTitle, COUNT(a) FROM Tbljob j LEFT JOIN j.tblapplicationCollection a GROUP BY j.jobTitle"
+            name = "Tbljob.jobWiseApplications",
+            query = "SELECT j.jobTitle, COUNT(a) FROM Tbljob j LEFT JOIN j.tblapplicationCollection a GROUP BY j.jobTitle"
+    ),
+    @NamedQuery(
+            name = "Tbljob.findByWorkMode",
+            query = "SELECT t FROM Tbljob t WHERE t.workMode = :workMode"
     )
 })
 public class Tbljob implements Serializable {
@@ -84,9 +88,18 @@ public class Tbljob implements Serializable {
     @Size(max = 65535)
     @Column(name = "jobDescription")
     private String jobDescription;
+    @Size(max = 100)
+    @Column(name = "jobCity")
+    private String jobCity;
+    @Size(max = 100)
+    @Column(name = "jobState")
+    private String jobState;
     @Size(max = 255)
     @Column(name = "jobLocation")
     private String jobLocation;
+    @Size(max = 50)
+    @Column(name = "workMode")
+    private String workMode;
     @Column(name = "experienceRequired")
     private Integer experienceRequired;
     @Size(max = 50)
@@ -165,12 +178,36 @@ public class Tbljob implements Serializable {
         this.jobDescription = jobDescription;
     }
 
+    public String getJobCity() {
+        return jobCity;
+    }
+
+    public void setJobCity(String jobCity) {
+        this.jobCity = jobCity;
+    }
+
+    public String getJobState() {
+        return jobState;
+    }
+
+    public void setJobState(String jobState) {
+        this.jobState = jobState;
+    }
+
     public String getJobLocation() {
         return jobLocation;
     }
 
     public void setJobLocation(String jobLocation) {
         this.jobLocation = jobLocation;
+    }
+
+    public String getWorkMode() {
+        return workMode;
+    }
+
+    public void setWorkMode(String workMode) {
+        this.workMode = workMode;
     }
 
     public Integer getExperienceRequired() {
@@ -315,5 +352,5 @@ public class Tbljob implements Serializable {
     public String toString() {
         return "Entity.Tbljob[ jobId=" + jobId + " ]";
     }
-    
+
 }
