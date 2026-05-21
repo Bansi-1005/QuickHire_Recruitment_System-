@@ -7,6 +7,12 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
 
+<!-- ================= METADATA ================= -->
+<f:metadata>
+    <f:viewAction action="#{loginBean.checkLogin}" />
+    <f:viewAction action="#{candidateCDIBean.loadUserData}" />
+</f:metadata>
+    
 <h:head>
 
     <title>Search Jobs</title>
@@ -18,12 +24,6 @@
 </h:head>
 
 <h:body>
-
-    <!-- ================= METADATA ================= -->
-    <f:metadata>
-        <f:viewAction action="#{loginBean.checkLogin}" />
-        <f:viewAction action="#{candidateCDIBean.loadUserData}" />
-    </f:metadata>
 
     <ui:include src="/common/header.xhtml"/>
 

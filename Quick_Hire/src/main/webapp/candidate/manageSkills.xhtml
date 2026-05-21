@@ -7,6 +7,14 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
     
+     <!-- ================= METADATA ================= -->
+    <f:metadata>
+        <f:viewAction action="#{loginBean.checkLogin}" />
+        <f:viewAction action="#{candidateCDIBean.loadUserData}" />
+        <f:viewAction action="#{candidateCDIBean.loadAllSkills}" />
+        <f:viewAction action="#{candidateCDIBean.loadCandidateSkills}" />
+    </f:metadata>
+     
     <h:head>
 
         <title>Manage Skills</title>
@@ -22,14 +30,6 @@
     </h:head>
 
     <h:body>
-
-        <!-- ================= METADATA ================= -->
-        <f:metadata>
-            <f:viewAction action="#{loginBean.checkLogin}" />
-            <f:viewAction action="#{candidateCDIBean.loadUserData}" />
-            <f:viewAction action="#{candidateCDIBean.loadAllSkills}" />
-            <f:viewAction action="#{candidateCDIBean.loadCandidateSkills}" />
-        </f:metadata>
 
         <!-- ================= HEADER ================= -->
         <ui:include src="/common/header.xhtml"/>

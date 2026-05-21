@@ -6,18 +6,18 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
+<f:metadata>
+    <f:viewAction action="#{loginBean.checkLogin}" />
+    
+    <f:viewAction action="#{candidateCDIBean.loadUserData}" />
+</f:metadata>
+    
 <h:head>
     <title>Candidate Dashboard</title>
     <h:outputStylesheet library="css" name="/candidate/candidate.css" />
 </h:head>
 
 <h:body>
-
-<f:metadata>
-    <f:viewAction action="#{loginBean.checkLogin}" />
-    
-    <f:viewAction action="#{candidateCDIBean.loadUserData}" />
-</f:metadata>
 
 <!-- COMMON HEADER -->
 <ui:include src="/common/header.xhtml"/>
