@@ -1,0 +1,130 @@
+/* ================= PANEL ================= */
+
+.panel{
+    margin-top:20px;
+}
+
+/* ================= GRID ================= */
+
+.applications-grid{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0,1fr));
+    gap:18px;
+}
+
+/* ================= CARD ================= */
+
+.app-card{
+    background:#fff;
+    border-radius:16px;
+    padding:18px;
+    border:1px solid #dfe7f1;
+    box-shadow:0 8px 24px rgba(15, 35, 65, 0.08);
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    transition:0.25s ease;
+}
+
+.app-card:hover{
+    transform:translateY(-4px);
+}
+
+/* ================= TOP ================= */
+
+.app-top{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+}
+
+.job-title{
+    font-size:18px;
+    font-weight:700;
+    color:#1c2b3a;
+}
+
+.job-location{
+    font-size:13px;
+    color:#6d7b8a;
+    margin-top:6px;
+}
+
+/* ================= INFO ================= */
+
+.app-info{
+    margin-top:15px;
+}
+
+.info-row{
+    display:flex;
+    justify-content:space-between;
+    font-size:13px;
+    margin-bottom:10px;
+}
+
+/* ================= BADGE ================= */
+
+.badge{
+    padding:5px 10px;
+    border-radius:999px;
+    font-size:12px;
+    background:#eef3ff;
+    color:#2962ff;
+}
+
+/* status colors */
+.status-Pending{ background:#fff3cd; color:#856404; }
+.status-Accepted{ background:#d4edda; color:#155724; }
+.status-Rejected{ background:#f8d7da; color:#721c24; }
+
+/* ================= FOOTER ================= */
+
+.app-footer{
+    display:flex;
+    justify-content:space-between;
+    margin-top:15px;
+    gap:10px;
+}
+
+/* buttons */
+
+.btn-delete{
+    background:#dc3545;
+    color:white;
+    border:none;
+    padding:10px 14px;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+/* ================= EMPTY ================= */
+
+.empty-state{
+    text-align:center;
+    padding:60px 20px;
+}
+
+.empty-state i{
+    font-size:50px;
+    color:#cbd5e1;
+    margin-bottom:10px;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:1100px){
+    .applications-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+}
+
+@media(max-width:768px){
+    .applications-grid{
+        grid-template-columns:1fr;
+    }
+
+    .app-footer{
+        flex-direction:column;
+    }
+}

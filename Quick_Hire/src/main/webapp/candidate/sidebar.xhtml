@@ -1,0 +1,69 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <ui:param name="activePage" value="#{activePage}" />
+    <aside class="sidebar">
+
+        <div class="sidebar-title">
+            Candidate Menu
+        </div>
+
+        <h:form styleClass="menu-form">
+
+            <!-- DASHBOARD -->
+            <h:link outcome="candidateDashboard"
+                    value="🏠 Dashboard"
+                    styleClass="menu-link #{activePage eq 'dashboard' ? 'active' : ''}" />
+
+            <!-- Profile -->
+            <h:outputLink value="#"
+                styleClass="menu-link"
+                onclick="openCandidateModal(); return false;">
+                  👤 Profile
+            </h:outputLink>
+            <!-- SEARCH JOBS -->
+            <h:link outcome="searchJobs"
+                    value="💼 Search Jobs"
+                    styleClass="menu-link #{activePage eq 'searchJobs' ? 'active' : ''}" />
+
+            <!-- APPLICATIONS -->
+            <h:link outcome="manageApplications"
+                    value="📄 My Applications"
+                    styleClass="menu-link #{activePage eq 'applications' ? 'active' : ''}" />
+
+            <!-- SKILLS -->
+            <h:link outcome="manageSkills"
+                    value="🛠 My Skills"
+                    styleClass="menu-link #{activePage eq 'skills' ? 'active' : ''}" />
+            
+            <!-- INTERVIEWS -->
+            <h:link outcome="interviews"
+                    value="📅 Interviews"
+                    styleClass="menu-link #{activePage eq 'interviews' ? 'active' : ''}" />
+
+            <!-- NOTIFICATIONS -->
+            <h:link outcome="notifications"
+                    value="🔔 Notifications"
+                    styleClass="menu-link #{activePage eq 'notifications' ? 'active' : ''}" />
+
+        </h:form>
+
+        <div class="sidebar-card">
+
+            <h4>
+                Candidate Panel
+            </h4>
+
+            <p>
+                Manage jobs, applications and interviews easily.
+            </p>
+
+        </div>
+
+    </aside>
+
+</ui:composition>

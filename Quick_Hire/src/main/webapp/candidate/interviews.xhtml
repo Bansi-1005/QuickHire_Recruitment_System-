@@ -1,0 +1,249 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+<h:head>
+
+    <title>My Interviews</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+    <h:outputStylesheet library="css" name="/candidate/candidate.css"/>
+    <h:outputStylesheet library="css" name="/candidate/interviews.css"/>
+
+</h:head>
+
+<h:body>
+
+<f:metadata>
+    <f:viewAction action="#{loginBean.checkLogin}" />
+    <f:viewAction action="#{candidateCDIBean.loadInterviews}" />
+</f:metadata>
+
+<ui:include src="/common/header.xhtml"/>
+
+<h:panelGroup rendered="#{loginBean.role eq 'Candidate'}">
+
+<div class="dashboard-layout">
+
+    <!-- SIDEBAR -->
+    <ui:include src="/candidate/sidebar.xhtml">
+        <ui:param name="activePage" value="interviews"/>
+    </ui:include>
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <!-- HERO SECTION -->
+        <section class="hero">
+
+            <div class="hero-grid">
+
+                <div>
+
+                    <div class="welcome-tag">
+                        Interview Dashboard
+                    </div>
+
+                    <h1>
+                        My Interviews
+                        <i class="fa-solid fa-calendar-check"></i>
+                    </h1>
+
+                    <p>
+                        Track upcoming interviews, rounds, schedules,
+                        and interview modes in one place.
+                    </p>
+
+                </div>
+
+                <!-- STATS -->
+                <div class="hero-stats">
+
+                    <div class="hero-mini-card">
+                        <span>Total Interviews</span>
+                        <strong>
+                            #{candidateCDIBean.interviewList.size()}
+                        </strong>
+                    </div>
+
+                    <div class="hero-mini-card">
+                        <span>Upcoming</span>
+                        <strong>
+                            #{candidateCDIBean.interviewList.size()}
+                        </strong>
+                    </div>
+
+                    <div class="hero-mini-card">
+                        <span>Online</span>
+                        <strong>
+                            Online
+                        </strong>
+                    </div>
+
+                    <div class="hero-mini-card">
+                        <span>Status</span>
+                        <strong>
+                            Active
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- INTERVIEW TABLE PANEL -->
+        <section class="panel">
+
+            <div class="panel-header">
+
+                <h3>
+                    Upcoming Interviews
+                </h3>
+
+            </div>
+
+            <h:panelGroup id="interviewPanel">
+
+                <!-- TABLE -->
+                <div class="table-wrapper">
+
+                    <table class="interview-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>#</th>
+                                <th>Job Title</th>
+                                <th>Round</th>
+                                <th>Mode</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            <ui:repeat value="#{candidateCDIBean.interviewList}"
+                                       var="i"
+                                       varStatus="loop">
+
+                                <tr>
+
+                                    <td>
+                                        #{loop.index + 1}
+                                    </td>
+
+                                    <td>
+
+                                        <div class="job-info">
+
+                                            <div class="job-icon">
+                                                <i class="fa-solid fa-microphone"></i>
+                                            </div>
+
+                                            <div>
+
+                                                <div class="job-title">
+                                                    #{i.applicationId.jobId.jobTitle}
+                                                </div>
+
+                                                <div class="job-location">
+                                                    #{i.applicationId.jobId.jobLocation}
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                    <td>
+                                        Round #{i.roundNumber}
+                                    </td>
+
+                                    <td>
+
+                                        <span class="mode-badge">
+                                            #{i.interviewMode}
+                                        </span>
+
+                                    </td>
+
+                                    <td>
+                                        #{i.interviewDate}
+                                    </td>
+
+                                    <td>
+
+                                        <span class="status-badge">
+                                            Scheduled
+                                        </span>
+
+                                    </td>
+
+                                </tr>
+
+                            </ui:repeat>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <!-- EMPTY STATE -->
+                <h:panelGroup rendered="#{empty candidateCDIBean.interviewList}">
+
+                    <div class="empty-state">
+
+                        <i class="fa-regular fa-calendar-xmark"></i>
+
+                        <h3>
+                            No Interviews Scheduled
+                        </h3>
+
+                        <p>
+                            Your interview schedules will appear here.
+                        </p>
+
+                    </div>
+
+                </h:panelGroup>
+
+            </h:panelGroup>
+
+        </section>
+
+    </main>
+
+</div>
+
+</h:panelGroup>
+
+<!-- ACCESS DENIED -->
+<h:panelGroup rendered="#{loginBean.role ne 'Candidate'}">
+
+    <div class="access-denied">
+
+        <h2>
+            Access Denied ❌
+        </h2>
+
+    </div>
+
+</h:panelGroup>
+
+<ui:include src="/common/footer.xhtml"/>
+
+</h:body>
+</html>

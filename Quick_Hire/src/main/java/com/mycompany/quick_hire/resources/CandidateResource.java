@@ -116,43 +116,43 @@ public class CandidateResource {
         }
     }
 
-    // ================= RESUME =================
-    @POST
-    @Path("uploadResume")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response uploadResume(@QueryParam("candidateId") int candidateId,
-                                 @QueryParam("resume") String resume) {
-        try {
-            if (resume == null || resume.trim().isEmpty()) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Resume cannot be empty").build();
-            }
-
-            ejb.uploadResume(candidateId, resume);
-            return Response.ok("Resume Uploaded").build();
-
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
-
-    @GET
-    @Path("getCandidateResume")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getCandidateResume(@QueryParam("candidateId") int candidateId) {
-        try {
-            String res = ejb.getCandidateResume(candidateId);
-
-            if (res == null) {
-                return Response.status(404).entity("Resume not found").build();
-            }
-
-            return Response.ok(res).build();
-
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
+//    // ================= RESUME =================
+//    @POST
+//    @Path("uploadResume")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response uploadResume(@QueryParam("candidateId") int candidateId,
+//                                 @QueryParam("resume") String resume) {
+//        try {
+//            if (resume == null || resume.trim().isEmpty()) {
+//                return Response.status(Response.Status.BAD_REQUEST)
+//                        .entity("Resume cannot be empty").build();
+//            }
+//
+//            ejb.uploadResume(candidateId, resume);
+//            return Response.ok("Resume Uploaded").build();
+//
+//        } catch (Exception e) {
+//            return Response.status(500).entity(e.getMessage()).build();
+//        }
+//    }
+//
+//    @GET
+//    @Path("getCandidateResume")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response getCandidateResume(@QueryParam("candidateId") int candidateId) {
+//        try {
+//            String res = ejb.getCandidateResume(candidateId);
+//
+//            if (res == null) {
+//                return Response.status(404).entity("Resume not found").build();
+//            }
+//
+//            return Response.ok(res).build();
+//
+//        } catch (Exception e) {
+//            return Response.status(500).entity(e.getMessage()).build();
+//        }
+//    }
 
     // ================= SKILLS =================
     @POST
@@ -169,31 +169,31 @@ public class CandidateResource {
         }
     }
     
-    @PUT
-    @Path("updateSkillToCandidate")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response updateSkillToCandidate(@QueryParam("candidateId") int candidateId,
-                                           @QueryParam("skillId") String skillIdsStr) {
-       try {
-            // 🔥 Convert "3,1" → List<Integer>
-            Collection<Integer> skillIds = new ArrayList<>();
-
-            if (skillIdsStr != null && !skillIdsStr.isEmpty()) {
-                String[] parts = skillIdsStr.split(",");
-                for (String p : parts) {
-                    skillIds.add(Integer.parseInt(p.trim()));
-                }
-            }
-
-            ejb.updateSkillToCandidate(candidateId, skillIds);
-
-            return Response.ok("Skills Updated").build();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
+//    @PUT
+//    @Path("updateSkillToCandidate")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response updateSkillToCandidate(@QueryParam("candidateId") int candidateId,
+//                                           @QueryParam("skillId") String skillIdsStr) {
+//       try {
+//            // 🔥 Convert "3,1" → List<Integer>
+//            Collection<Integer> skillIds = new ArrayList<>();
+//
+//            if (skillIdsStr != null && !skillIdsStr.isEmpty()) {
+//                String[] parts = skillIdsStr.split(",");
+//                for (String p : parts) {
+//                    skillIds.add(Integer.parseInt(p.trim()));
+//                }
+//            }
+//
+//            ejb.updateSkillToCandidate(candidateId, skillIds);
+//
+//            return Response.ok("Skills Updated").build();
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return Response.status(500).entity(e.getMessage()).build();
+//        }
+//    }
 
     @DELETE
     @Path("removeSkillFromCandidate")
@@ -226,6 +226,21 @@ public class CandidateResource {
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
+    
+    @GET
+    @Path("getAllSkills")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllSkills() {
+
+        try {
+            return Response.ok(ejb.getAllSkills()).build();
+
+        } catch (Exception e) {
+            return Response.status(500)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
 
     // ================= JOBS =================
     @GET
@@ -240,29 +255,29 @@ public class CandidateResource {
         }
     }
 
-    @GET
-    @Path("searchJobsByLocation")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response searchJobsByLocation(@QueryParam("jobLocation") String jobLocation) {
-        try {
-            return Response.ok(ejb.searchJobsByLocation(jobLocation)).build();
-
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
-
-    @GET
-    @Path("searchJobsBySkill")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response searchJobsBySkill(@QueryParam("skill") String skill) {
-        try {
-            return Response.ok(ejb.searchJobsBySkill(skill)).build();
-
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
+//    @GET
+//    @Path("searchJobsByLocation")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response searchJobsByLocation(@QueryParam("jobLocation") String jobLocation) {
+//        try {
+//            return Response.ok(ejb.searchJobsByLocation(jobLocation)).build();
+//
+//        } catch (Exception e) {
+//            return Response.status(500).entity(e.getMessage()).build();
+//        }
+//    }
+//
+//    @GET
+//    @Path("searchJobsBySkill")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response searchJobsBySkill(@QueryParam("skill") String skill) {
+//        try {
+//            return Response.ok(ejb.searchJobsBySkill(skill)).build();
+//
+//        } catch (Exception e) {
+//            return Response.status(500).entity(e.getMessage()).build();
+//        }
+//    }
 
     // ================= APPLICATION =================
     @POST
@@ -325,23 +340,23 @@ public class CandidateResource {
 
     // ================= STATUS =================
     
-    @GET
-    @Path("getApplicationDetails")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getApplicationDetails(@QueryParam("applicationId") int applicationId) {
-        try {
-            Tblapplication app = ejb.getApplicationDetails(applicationId);
-
-            if (app == null) {
-                return Response.status(404).entity("Application not found").build();
-            }
-
-            return Response.ok(app).build();
-
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
+//    @GET
+//    @Path("getApplicationDetails")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response getApplicationDetails(@QueryParam("applicationId") int applicationId) {
+//        try {
+//            Tblapplication app = ejb.getApplicationDetails(applicationId);
+//
+//            if (app == null) {
+//                return Response.status(404).entity("Application not found").build();
+//            }
+//
+//            return Response.ok(app).build();
+//
+//        } catch (Exception e) {
+//            return Response.status(500).entity(e.getMessage()).build();
+//        }
+//    }
     
     @GET
     @Path("getApplicationStatus")
@@ -418,7 +433,5 @@ public class CandidateResource {
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
-
-    
 
 }

@@ -141,6 +141,11 @@ public class LoginCDIBean implements Serializable {
             role = obj.getString("role");
             
             userId = obj.getInt("userId");
+            
+            FacesContext.getCurrentInstance()
+                    .getExternalContext()
+                    .getSessionMap()
+                    .put("userId", userId);
 
             System.out.println("LOGGED USER ID: " + userId);
             // Redirect based on role

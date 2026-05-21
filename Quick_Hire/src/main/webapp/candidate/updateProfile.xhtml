@@ -1,0 +1,142 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    
+<!-- ================= CANDIDATE PROFILE MODAL ================= -->
+<div id="candidateProfileModal" class="modal-overlay">
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+            <h3>Update Profile</h3>
+            <span class="close-btn" onclick="closeCandidateModal()">×</span>
+        </div>
+
+        <p class="modal-subtitle">
+            Keep your profile updated so recruiters can find you easily.
+        </p>
+
+        <h:form id="candidateForm" styleClass="modal-form" enctype="multipart/form-data">
+
+            <!-- hidden ID -->
+            <h:inputHidden value="#{candidateCDIBean.candidateObj.candidateId}" />
+
+            <div class="form-inner">
+
+                <!-- PHONE -->
+                <div class="form-group">
+                    <label>Phone</label>
+                    <h:inputText value="#{candidateCDIBean.candidateObj.candidatePhone}" />
+                </div>
+
+                <!-- LOCATION -->
+                <div class="form-group">
+                    <label>Location</label>
+                    <h:inputText value="#{candidateCDIBean.candidateObj.candidateLocation}" />
+                </div>
+
+                <!-- DOB -->
+                <div class="form-group">
+                    <label>Date of Birth</label>
+                   <h:inputText type="date"
+                                value="#{candidateCDIBean.candidateObj.candidateDOB}">
+                       <f:convertDateTime pattern="yyyy-MM-dd"/>
+                   </h:inputText>
+                </div>
+
+                <!-- GENDER -->
+                <div class="form-group">
+
+                    <label>Gender</label>
+
+                    <h:selectOneRadio
+                        value="#{candidateCDIBean.candidateObj.candidateGender}"
+                        layout="lineDirection">
+
+                        <f:selectItem itemLabel="Male" itemValue="Male" />
+                        <f:selectItem itemLabel="Female" itemValue="Female" />
+                        <f:selectItem itemLabel="Other" itemValue="Other" />
+
+                    </h:selectOneRadio>
+
+                </div>
+
+                <!-- EXPERIENCE -->
+                <div class="form-group">
+                    <label>Experience (Years)</label>
+                    <h:inputText value="#{candidateCDIBean.candidateObj.candidateExperience}" />
+                </div>
+
+                <!-- RESUME -->
+                <div class="form-group">
+                    <label>Upload Resume</label>
+
+                    <h:inputFile value="#{candidateCDIBean.resumeFile}" />
+
+                    <small>
+                        Upload PDF or DOC/DOCX resume
+                    </small>
+                    
+                    <h:panelGroup rendered="#{not empty candidateCDIBean.candidateObj.candidateResume}">
+
+                        <h:outputLink
+                            value="#{request.contextPath}/resume?file=#{candidateCDIBean.candidateObj.candidateResume}"
+                            target="_blank">
+
+                            View Current Resume
+
+                        </h:outputLink>
+
+                    </h:panelGroup>
+                </div>
+
+                <!-- MESSAGES -->
+                <h:messages id="messages"
+                            globalOnly="true"
+                            layout="list"
+                            styleClass="modal-message"/>
+
+            </div>
+
+            <div class="modal-actions">
+
+                <h:commandButton value="Update"
+                                action="#{candidateCDIBean.updateProfile}"
+                                styleClass="btn-main">
+               </h:commandButton>
+
+                <button type="button"
+                        class="btn-cancel"
+                        onclick="closeCandidateModal()">
+                    Cancel
+                </button>
+
+            </div>
+
+        </h:form>
+    </div>
+</div>
+
+<script>
+function clearCandidateMessages(){
+    var msg = document.getElementById("candidateForm:messages");
+    if(msg){
+        msg.innerHTML = "";
+    }
+}
+
+function openCandidateModal(){
+    clearCandidateMessages();
+    document.getElementById("candidateProfileModal").style.display = "flex";
+}
+
+function closeCandidateModal(){
+    clearCandidateMessages();
+    document.getElementById("candidateProfileModal").style.display = "none";
+}
+</script>
+
+</ui:composition>

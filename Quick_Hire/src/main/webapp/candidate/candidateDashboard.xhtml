@@ -8,13 +8,15 @@
 
 <h:head>
     <title>Candidate Dashboard</title>
-    <h:outputStylesheet library="css" name="recruiter.css" />
+    <h:outputStylesheet library="css" name="/candidate/candidate.css" />
 </h:head>
 
 <h:body>
 
 <f:metadata>
     <f:viewAction action="#{loginBean.checkLogin}" />
+    
+    <f:viewAction action="#{candidateCDIBean.loadUserData}" />
 </f:metadata>
 
 <!-- COMMON HEADER -->
@@ -26,27 +28,12 @@
 <div class="dashboard-layout">
 
     <!-- ================= SIDEBAR ================= -->
-    <aside class="sidebar">
-        <div class="sidebar-title">Candidate Menu</div>
-
-        <h:form styleClass="menu-form">
-            <h:commandLink value="🏠 Dashboard" styleClass="menu-link active"/>
-            <h:commandLink value="💼 Search Jobs" styleClass="menu-link"/>
-            <h:commandLink value="📄 My Applications" styleClass="menu-link"/>
-            <h:commandLink value="📅 Interviews" styleClass="menu-link"/>
-            <h:commandLink value="👤 Profile" styleClass="menu-link"/>
-            <h:commandLink value="📤 Upload Resume" styleClass="menu-link"/>
-            <h:commandLink value="🔔 Notifications" styleClass="menu-link"/>
-        </h:form>
-
-        <div class="sidebar-card">
-            <h4>Your Progress</h4>
-            <p>Track applications, interviews, and job matches easily.</p>
-        </div>
-    </aside>
+    <ui:include src="/candidate/sidebar.xhtml">
+        <ui:param name="activePage" value="dashboard"/>
+    </ui:include>
 
     <!-- ================= MAIN ================= -->
-    <main class="main">
+    <main class="main" id="main">
 
         <!-- HERO -->
         <section class="hero">
@@ -69,7 +56,7 @@
                 <div class="hero-stats">
                     <div class="hero-mini-card">
                         <span>Applied Jobs</span>
-                        <strong>5</strong>
+                        <strong>#{candidateCDIBean.applicationList.size()}</strong>
                     </div>
                     <div class="hero-mini-card">
                         <span>Shortlisted</span>
@@ -95,7 +82,9 @@
                     <h3>Available Jobs</h3>
                     <div class="card-icon">💼</div>
                 </div>
-                <div class="card-value">12</div>
+                <div class="card-value">
+                    #{candidateCDIBean.jobList.size()}
+                </div>
                 <div class="card-note">Based on your profile</div>
             </div>
 
@@ -104,7 +93,9 @@
                     <h3>Applications</h3>
                     <div class="card-icon">📄</div>
                 </div>
-                <div class="card-value">5</div>
+                <div class="card-value">
+                    #{candidateCDIBean.applicationList.size()}
+                </div>
                 <div class="card-note">Track your progress</div>
             </div>
 
@@ -122,7 +113,9 @@
                     <h3>Notifications</h3>
                     <div class="card-icon">🔔</div>
                 </div>
-                <div class="card-value">3</div>
+                <div class="card-value">
+                    #{candidateCDIBean.notificationList.size()}
+                </div>
                 <div class="card-note">Stay updated</div>
             </div>
 
@@ -137,51 +130,55 @@
                     <h3>Recommended Jobs</h3>
                 </div>
 
-                <!-- Job 1 -->
-                <div class="candidate-item">
-                    <div class="person">
-                        <div class="avatar">💼</div>
-                        <div class="person-info">
-                            <h4>Java Developer</h4>
-                            <p>Ahmedabad • 2 yrs</p>
+                <ui:repeat value="#{candidateCDIBean.jobList}" var="job">
+
+                    <div class="candidate-item">
+                        <div class="person">
+                            <div class="avatar">💼</div>
+                            <div class="person-info">
+                                <h4>#{job.jobTitle}</h4>
+                                <p>#{job.jobLocation} • 7 yrs</p>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="score-badge">80%</span>
+                            <h:form>
+                               <h:commandButton
+                                value="#{candidateCDIBean.isApplied(job.jobId) ? 'Applied' : 'Apply'}"
+                                action="#{candidateCDIBean.applyJob(job.jobId, candidateCDIBean.candidateId)}"
+                                styleClass="#{candidateCDIBean.isApplied(job.jobId) ? 'btn-disabled' : 'btn-main'}"
+                                disabled="#{candidateCDIBean.isApplied(job.jobId)}">
+
+                                <f:ajax execute="@this" render="@all"/>
+
+                            </h:commandButton>
+                            </h:form>
                         </div>
                     </div>
-                    <div>
-                        <span class="score-badge">90%</span>
-                        <button class="btn-main">Apply</button>
-                    </div>
+
+                </ui:repeat>
+
+            </div>
+            
+            <!-- MY APPLICATIONS -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h3>My Applications</h3>
                 </div>
 
-                <!-- Job 2 -->
-                <div class="candidate-item">
-                    <div class="person">
-                        <div class="avatar">💼</div>
-                        <div class="person-info">
-                            <h4>Python Developer</h4>
-                            <p>Surat • 1 yr</p>
+                <ui:repeat value="#{candidateCDIBean.applicationList}" var="app">
+
+                    <div class="candidate-item">
+                        <div class="person">
+                            <div class="avatar">📄</div>
+                            <div class="person-info">
+                                <h4>#{app.jobId.jobTitle}</h4>
+                                <p>Status: #{app.applicationStatus}</p>
+                            </div>
                         </div>
                     </div>
-                    <div>
-                        <span class="score-badge">85%</span>
-                        <button class="btn-main">Apply</button>
-                    </div>
-                </div>
 
-                <!-- Job 3 -->
-                <div class="candidate-item">
-                    <div class="person">
-                        <div class="avatar">💼</div>
-                        <div class="person-info">
-                            <h4>Frontend Developer</h4>
-                            <p>Mumbai • 1 yr</p>
-                        </div>
-                    </div>
-                    <div>
-                        <span class="score-badge">80%</span>
-                        <button class="btn-main">Apply</button>
-                    </div>
-                </div>
-
+                </ui:repeat>
             </div>
 
             <!-- INTERVIEWS -->
@@ -212,30 +209,17 @@
                     <h3>Recent Notifications</h3>
                 </div>
 
-                <div class="activity-item">
-                    <div class="activity-dot"></div>
-                    <div>
-                        <h4>Application Submitted</h4>
-                        <p>You applied for Java Developer.</p>
-                    </div>
-                </div>
+                <ui:repeat value="#{candidateCDIBean.notificationList}" var="n">
 
-                <div class="activity-item">
-                    <div class="activity-dot"></div>
-                    <div>
-                        <h4>Interview Scheduled</h4>
-                        <p>Your interview is scheduled tomorrow.</p>
+                    <div class="activity-item">
+                        <div class="activity-dot"></div>
+                        <div>
+                            <h4>#{n.message}</h4>
+                            <p>#{n.message}</p>
+                        </div>
                     </div>
-                </div>
 
-                <div class="activity-item">
-                    <div class="activity-dot"></div>
-                    <div>
-                        <h4>Status Updated</h4>
-                        <p>Your application is shortlisted.</p>
-                    </div>
-                </div>
-
+                </ui:repeat>
             </div>
         </section>
 
@@ -254,6 +238,9 @@
 
 <!-- COMMON FOOTER -->
 <ui:include src="/common/footer.xhtml"/>
+
+<!-- PROFILE MODAL -->
+<ui:include src="/candidate/updateProfile.xhtml"/>
 
 </h:body>
 </html>

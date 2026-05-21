@@ -119,30 +119,30 @@ public class CandidateBean implements CandidateBeanLocal {
     }
 
     // ================= RESUME =================
-    @Override
-    public void uploadResume(int candidateId, String candidateResume) {
-        try {
-            Tblcandidates c = em.find(Tblcandidates.class, candidateId);
-
-            if (c != null) {
-                c.setCandidateResume(candidateResume);
-                c.setResumeUploadDate(new Date());
-                em.merge(c);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public String getCandidateResume(int candidateId) {
-       try {
-            Tblcandidates c = em.find(Tblcandidates.class, candidateId);
-            return (c != null) ? c.getCandidateResume() : null;
-        } catch (Exception e) {
-            return null;
-        }
-    }
+//    @Override
+//    public void uploadResume(int candidateId, String candidateResume) {
+//        try {
+//            Tblcandidates c = em.find(Tblcandidates.class, candidateId);
+//
+//            if (c != null) {
+//                c.setCandidateResume(candidateResume);
+//                c.setResumeUploadDate(new Date());
+//                em.merge(c);
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    @Override
+//    public String getCandidateResume(int candidateId) {
+//       try {
+//            Tblcandidates c = em.find(Tblcandidates.class, candidateId);
+//            return (c != null) ? c.getCandidateResume() : null;
+//        } catch (Exception e) {
+//            return null;
+//        }
+//    }
 
     // ================= SKILLS =================
     @Override
@@ -168,36 +168,36 @@ public class CandidateBean implements CandidateBeanLocal {
         }
     }
 
-    @Override
-    public void updateSkillToCandidate(int candidateId, Collection<Integer> skillIds) {
-        try {
-            Tblcandidates c = em.find(Tblcandidates.class, candidateId);
-
-            if (c != null) {
-
-                // Create NEW list (better than clear)
-                Collection<Tblskills> newSkills = new ArrayList<>();
-
-                for (Integer skillId : skillIds) {
-                    Tblskills s = em.find(Tblskills.class, skillId);
-                    if (s != null) {
-                        newSkills.add(s);
-                    }
-                }
-
-                // Replace entire collection
-                c.setTblskillsCollection(newSkills);
-
-                em.merge(c);
-                em.flush(); // ensure DB update
-
-                System.out.println("Skills Updated: " + newSkills.size());
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+//    @Override
+//    public void updateSkillToCandidate(int candidateId, Collection<Integer> skillIds) {
+//        try {
+//            Tblcandidates c = em.find(Tblcandidates.class, candidateId);
+//
+//            if (c != null) {
+//
+//                // Create NEW list (better than clear)
+//                Collection<Tblskills> newSkills = new ArrayList<>();
+//
+//                for (Integer skillId : skillIds) {
+//                    Tblskills s = em.find(Tblskills.class, skillId);
+//                    if (s != null) {
+//                        newSkills.add(s);
+//                    }
+//                }
+//
+//                // Replace entire collection
+//                c.setTblskillsCollection(newSkills);
+//
+//                em.merge(c);
+//                em.flush(); // ensure DB update
+//
+//                System.out.println("Skills Updated: " + newSkills.size());
+//            }
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     @Override
     public void removeSkillFromCandidate(int candidateId, int skillId) {
@@ -223,6 +223,16 @@ public class CandidateBean implements CandidateBeanLocal {
             return new ArrayList<>();
         }
     }
+    
+    @Override
+    public Collection<Tblskills> getAllSkills() {
+        try {
+            return em.createNamedQuery("Tblskills.findAll", Tblskills.class)       
+                    .getResultList();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
 
     // ================= JOBS =================
     @Override
@@ -235,31 +245,31 @@ public class CandidateBean implements CandidateBeanLocal {
         }
     }
 
-    @Override
-    public Collection<Tbljob> searchJobsByLocation(String jobLocation) {
-        try {
-            return em.createNamedQuery("Tbljob.findByLocation", Tbljob.class)
-                    .setParameter("jobLocation", "%" + jobLocation + "%")
-                    .getResultList();
-        } catch (Exception e) {
-            return new ArrayList<>();
-        }
-    }
-
-    
-    
-    @Override
-    public Collection<Tbljob> searchJobsBySkill(String skillName) {
-        try {
-            return em.createNamedQuery(
-                    "Tbljob.findBySkill",
-                    Tbljob.class)
-                    .setParameter("skillName", "%" + skillName + "%")
-                    .getResultList();
-        } catch (Exception e) {
-            return new ArrayList<>();
-        }
-    }
+//    @Override
+//    public Collection<Tbljob> searchJobsByLocation(String jobLocation) {
+//        try {
+//            return em.createNamedQuery("Tbljob.findByLocation", Tbljob.class)
+//                    .setParameter("jobLocation", "%" + jobLocation + "%")
+//                    .getResultList();
+//        } catch (Exception e) {
+//            return new ArrayList<>();
+//        }
+//    }
+//
+//    
+//    
+//    @Override
+//    public Collection<Tbljob> searchJobsBySkill(String skillName) {
+//        try {
+//            return em.createNamedQuery(
+//                    "Tbljob.findBySkill",
+//                    Tbljob.class)
+//                    .setParameter("skillName", "%" + skillName + "%")
+//                    .getResultList();
+//        } catch (Exception e) {
+//            return new ArrayList<>();
+//        }
+//    }
 
     // ================= APPLICATION =================
     @Override
@@ -370,14 +380,14 @@ public class CandidateBean implements CandidateBeanLocal {
     }
 
     // ================= APPLICATION STATUS =================
-    @Override
-    public Tblapplication getApplicationDetails(int applicationId) {
-        try {
-            return em.find(Tblapplication.class, applicationId);
-        } catch (Exception e) {
-            return null;
-        }
-    }
+//    @Override
+//    public Tblapplication getApplicationDetails(int applicationId) {
+//        try {
+//            return em.find(Tblapplication.class, applicationId);
+//        } catch (Exception e) {
+//            return null;
+//        }
+//    }
 
     @Override
     public String getApplicationStatus(int applicationId) {
