@@ -93,30 +93,33 @@ public class CandidateCDIBean implements Serializable {
     
     @PostConstruct
     public void init() {
-        loadUserData();
-        loadInterviews();
         loadJobs();
         loadJobTypes();
-        loadCandidateSkills();
         loadAllSkills();
+        loadUserData();
+        loadCandidateSkills();
     }
     
     
     // ================= LOAD USER DATA =================
     public void loadUserData() {
+
         int userId = getLoggedInCandidateId();
 
         if (userId > 0) {
+
             loadCandidateProfile(userId);
 
             if (candidateId > 0) {
+
                 loadApplications(candidateId);
+
+                loadInterviews(); // IMPORTANT
             }
 
             loadNotifications(userId);
         }
     }
-
     // ================= LOAD PROFILE =================
     public void loadCandidateProfile(int userId) {
         try {
@@ -452,6 +455,26 @@ public class CandidateCDIBean implements Serializable {
         return false;
     }
     
+    public int getApplicationsByStatus(String status) {
+        int count = 0;
+
+        if (applicationList != null) {
+
+            for (Tblapplication app : applicationList) {
+
+                String currentStatus = applicationStatusMap.get(app.getApplicationId());
+
+                if (currentStatus != null
+                        && currentStatus.equalsIgnoreCase(status)) {
+
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+    
     // ================= SEARCH JOB =================
     public void searchJobs() {
 
@@ -707,7 +730,8 @@ public class CandidateCDIBean implements Serializable {
 
         try {
 
-            interviewList.clear();
+            // RESET LIST
+            interviewList = new ArrayList<>();
 
             if (applicationList != null) {
 
@@ -721,8 +745,27 @@ public class CandidateCDIBean implements Serializable {
                             .request(MediaType.APPLICATION_JSON)
                             .get(new GenericType<Collection<Tblinterview>>() {});
 
-                    if (temp != null) {
-                        interviewList.addAll(temp);
+                    // ADD UNIQUE INTERVIEWS ONLY
+                    if (temp != null && !temp.isEmpty()) {
+
+                        for (Tblinterview interview : temp) {
+
+                            boolean exists = false;
+
+                            for (Tblinterview existing : interviewList) {
+
+                                if (existing.getInterviewId()
+                                        .equals(interview.getInterviewId())) {
+
+                                    exists = true;
+                                    break;
+                                }
+                            }
+
+                            if (!exists) {
+                                interviewList.add(interview);
+                            }
+                        }
                     }
                 }
             }
@@ -731,7 +774,7 @@ public class CandidateCDIBean implements Serializable {
             e.printStackTrace();
         }
     }
-    
+
     // ================= GETTERS-SETTERS =================
 
     public int getCandidateId() {

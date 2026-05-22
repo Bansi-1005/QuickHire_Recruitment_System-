@@ -15,6 +15,7 @@
 <h:head>
     <title>Candidate Dashboard</title>
     <h:outputStylesheet library="css" name="/candidate/candidate.css" />
+    <h:outputStylesheet library="css" name="/candidate/dashboard.css" />
 </h:head>
 
 <h:body>
@@ -60,15 +61,21 @@
                     </div>
                     <div class="hero-mini-card">
                         <span>Shortlisted</span>
-                        <strong>2</strong>
+                        <strong>
+                            #{candidateCDIBean.getApplicationsByStatus('Shortlisted')}
+                        </strong>                    
                     </div>
                     <div class="hero-mini-card">
                         <span>Interviews</span>
-                        <strong>1</strong>
+                        <strong>
+                            #{candidateCDIBean.interviewList.size()}
+                        </strong>
                     </div>
                     <div class="hero-mini-card">
                         <span>Offers</span>
-                        <strong>1</strong>
+                        <strong>
+                            #{candidateCDIBean.getApplicationsByStatus('Selected')}
+                        </strong>
                     </div>
                 </div>
             </div>
@@ -104,7 +111,9 @@
                     <h3>Upcoming Interviews</h3>
                     <div class="card-icon">📅</div>
                 </div>
-                <div class="card-value">1</div>
+                <div class="card-value">
+                    #{candidateCDIBean.interviewList.size()}
+                </div>
                 <div class="card-note">Prepare well</div>
             </div>
 
@@ -173,7 +182,10 @@
                             <div class="avatar">📄</div>
                             <div class="person-info">
                                 <h4>#{app.jobId.jobTitle}</h4>
-                                <p>Status: #{app.applicationStatus}</p>
+                                <p>
+                                    Status:
+                                    #{candidateCDIBean.applicationStatusMap[app.applicationId]}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -181,48 +193,82 @@
                 </ui:repeat>
             </div>
 
-            <!-- INTERVIEWS -->
-            <div class="panel">
-                <div class="panel-header">
-                    <h3>Upcoming Interviews</h3>
-                </div>
+            <!-- LOWER SECTION -->
+            <section class="dashboard-lower">
 
-                <div class="interview-item">
-                    <div class="person">
-                        <div class="avatar">🎤</div>
-                        <div class="person-info">
-                            <h4>Java Developer</h4>
-                            <p>Round 1 • Online</p>
-                        </div>
-                    </div>
-                    <div class="time-badge">20 Mar</div>
-                </div>
+                <!-- INTERVIEWS -->
+                <div class="panel">
 
-            </div>
-
-        </section>
-
-        <!-- NOTIFICATIONS -->
-        <section class="bottom-row">
-            <div class="panel">
-                <div class="panel-header">
-                    <h3>Recent Notifications</h3>
-                </div>
-
-                <ui:repeat value="#{candidateCDIBean.notificationList}" var="n">
-
-                    <div class="activity-item">
-                        <div class="activity-dot"></div>
-                        <div>
-                            <h4>#{n.message}</h4>
-                            <p>#{n.message}</p>
-                        </div>
+                    <div class="panel-header">
+                        <h3>Upcoming Interviews</h3>
                     </div>
 
-                </ui:repeat>
-            </div>
-        </section>
+                    <ui:fragment rendered="#{empty candidateCDIBean.interviewList}">
 
+                        <div class="empty-box">
+                            No interviews scheduled yet
+                        </div>
+
+                    </ui:fragment>
+
+                    <ui:repeat value="#{candidateCDIBean.interviewList}" var="interview">
+
+                        <div class="interview-item">
+
+                            <div class="person">
+
+                                <div class="avatar">🎤</div>
+
+                                <div class="person-info">
+
+                                    <h4>
+                                        #{interview.applicationId.jobId.jobTitle}
+                                    </h4>
+
+                                    <p>
+                                        #{interview.interviewerMode}
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                            <div class="time-badge">
+                                #{interview.interviewDate}
+                            </div>
+
+                        </div>
+
+                    </ui:repeat>
+
+                </div>
+
+                <!-- NOTIFICATIONS -->
+                <div class="panel">
+
+                    <div class="panel-header">
+                        <h3>Recent Notifications</h3>
+                    </div>
+
+                    <ui:repeat value="#{candidateCDIBean.notificationList}" var="n">
+
+                        <div class="activity-item">
+
+                            <div class="activity-dot"></div>
+
+                            <div>
+                                <h4>#{n.message}</h4>
+                                <p>#{n.message}</p>
+                            </div>
+
+                        </div>
+
+                    </ui:repeat>
+
+                </div>
+
+            </section>
+        </section>
     </main>
 
 </div>

@@ -43,8 +43,10 @@
 
                     <!-- CLICKABLE USER (ONLY THIS PART) -->
                     <h:form style="margin:0;">
-                        <h:commandLink onclick="openProfileModal(); return false;"
-                                       style="display:flex; align-items:center; gap:10px; text-decoration:none; color:inherit;">
+                       <h:commandLink
+                            onclick="if('#{loginBean.role}' === 'Candidate'){openCandidateModal();}else{openProfileModal();} return false;"
+                            style="display:flex; align-items:center; gap:10px; text-decoration:none; color:inherit;">
+
 
                             <!-- ✅ DYNAMIC AVATAR -->
                             <div class="user-avatar">

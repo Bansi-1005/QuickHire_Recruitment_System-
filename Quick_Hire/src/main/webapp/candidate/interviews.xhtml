@@ -9,7 +9,6 @@
 
 <f:metadata>
     <f:viewAction action="#{loginBean.checkLogin}" />
-    <f:viewAction action="#{candidateCDIBean.loadInterviews}" />
 </f:metadata>
     
 <h:head>
@@ -168,13 +167,13 @@
                                     </td>
 
                                     <td>
-                                        Round #{i.roundNumber}
+                                        Round #{i.interviewRoundName}
                                     </td>
 
                                     <td>
 
                                         <span class="mode-badge">
-                                            #{i.interviewMode}
+                                            #{i.interviewerMode}
                                         </span>
 
                                     </td>
