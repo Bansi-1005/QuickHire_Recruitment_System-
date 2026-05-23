@@ -41,7 +41,6 @@ import java.util.Date;
     @NamedQuery(name = "Tblusers.findByUserName", query = "SELECT t FROM Tblusers t WHERE t.userName = :userName"),
     @NamedQuery(name = "Tblusers.findByUserEmail", query = "SELECT t FROM Tblusers t WHERE t.userEmail = :userEmail"),
     @NamedQuery(name = "Tblusers.findByUserPassword", query = "SELECT t FROM Tblusers t WHERE t.userPassword = :userPassword"),
-    @NamedQuery(name = "Tblusers.findByUserStatus", query = "SELECT t FROM Tblusers t WHERE t.userStatus = :userStatus"),
     @NamedQuery(name = "Tblusers.findByCreatedDate", query = "SELECT t FROM Tblusers t WHERE t.createdDate = :createdDate"),
     @NamedQuery(name = "Tblusers.findByUpdatedDate", query = "SELECT t FROM Tblusers t WHERE t.updatedDate = :updatedDate"),
     @NamedQuery(name = "Tblusers.findByLastLoginDate", query = "SELECT t FROM Tblusers t WHERE t.lastLoginDate = :lastLoginDate"),
@@ -54,12 +53,6 @@ import java.util.Date;
     @NamedQuery(name = "Tblusers.findByuserName",query = "SELECT u FROM Tblusers u WHERE u.userName = :userName")})
 public class Tblusers implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Basic(optional = false)
-    @Column(name = "userId")
-    private Integer userId;
     @Size(max = 100)
     @Column(name = "userName")
     private String userName;
@@ -69,24 +62,27 @@ public class Tblusers implements Serializable {
     @Size(max = 255)
     @Column(name = "userPassword")
     private String userPassword;
-    @Size(max = 50)
-    @Column(name = "userStatus")
-    private String userStatus;
-    @Basic(optional = false)
-    @NotNull
+    @Size(max = 255)
+    @Column(name = "profilePhoto")
+    private String profilePhoto;
     @Column(name = "createdDate")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
-    @Basic(optional = false)
-    @NotNull
     @Column(name = "updatedDate")
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedDate;
-    @Basic(optional = false)
-    @NotNull
     @Column(name = "lastLoginDate")
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastLoginDate;
+    @Column(name = "userIsActive")
+    private Boolean userIsActive;
+
+    private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Basic(optional = false)
+    @Column(name = "userId")
+    private Integer userId;
     @ManyToMany(mappedBy = "tblusersCollection")
     private Collection<Tblinterview> tblinterviewCollection;
     @OneToMany(mappedBy = "userId")
@@ -119,62 +115,6 @@ public class Tblusers implements Serializable {
 
     public void setUserId(Integer userId) {
         this.userId = userId;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public String getUserEmail() {
-        return userEmail;
-    }
-
-    public void setUserEmail(String userEmail) {
-        this.userEmail = userEmail;
-    }
-
-    public String getUserPassword() {
-        return userPassword;
-    }
-
-    public void setUserPassword(String userPassword) {
-        this.userPassword = userPassword;
-    }
-
-    public String getUserStatus() {
-        return userStatus;
-    }
-
-    public void setUserStatus(String userStatus) {
-        this.userStatus = userStatus;
-    }
-
-    public Date getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    public Date getUpdatedDate() {
-        return updatedDate;
-    }
-
-    public void setUpdatedDate(Date updatedDate) {
-        this.updatedDate = updatedDate;
-    }
-
-    public Date getLastLoginDate() {
-        return lastLoginDate;
-    }
-
-    public void setLastLoginDate(Date lastLoginDate) {
-        this.lastLoginDate = lastLoginDate;
     }
 
     @XmlTransient
@@ -248,6 +188,72 @@ public class Tblusers implements Serializable {
     @Override
     public String toString() {
         return "Entity.Tblusers[ userId=" + userId + " ]";
+    }
+
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public Date getUpdatedDate() {
+        return updatedDate;
+    }
+
+    public void setUpdatedDate(Date updatedDate) {
+        this.updatedDate = updatedDate;
+    }
+
+    public Date getLastLoginDate() {
+        return lastLoginDate;
+    }
+
+    public void setLastLoginDate(Date lastLoginDate) {
+        this.lastLoginDate = lastLoginDate;
+    }
+
+
+    public Boolean getUserIsActive() {
+        return userIsActive;
+    }
+
+    public void setUserIsActive(Boolean userIsActive) {
+        this.userIsActive = userIsActive;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
+    }
+
+    public String getUserPassword() {
+        return userPassword;
+    }
+
+    public void setUserPassword(String userPassword) {
+        this.userPassword = userPassword;
+    }
+
+    public String getProfilePhoto() {
+        return profilePhoto;
+    }
+
+    public void setProfilePhoto(String profilePhoto) {
+        this.profilePhoto = profilePhoto;
     }
     
 }

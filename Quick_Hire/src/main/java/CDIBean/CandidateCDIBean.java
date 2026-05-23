@@ -41,6 +41,8 @@ public class CandidateCDIBean implements Serializable {
     private int candidateId;
     private Tblcandidates candidateObj = new Tblcandidates();
     private Part resumeFile;
+    private Collection<Tblresume> resumeList = new ArrayList<>();
+    private Part profilePhoto;
     
     private String searchTitle;
     private String searchLocation;
@@ -98,6 +100,7 @@ public class CandidateCDIBean implements Serializable {
         loadAllSkills();
         loadUserData();
         loadCandidateSkills();
+        loadResumes();
     }
     
     
@@ -140,6 +143,113 @@ public class CandidateCDIBean implements Serializable {
         }
     }
     
+    // ================= LOAD RESUMES =================
+    public void loadResumes() {
+
+        try {
+
+            WebTarget target = getClient()
+                    .target(BASE_URL + "/getCandidateResumes")
+                    .queryParam("candidateId", candidateId);
+
+            resumeList = target.request(MediaType.APPLICATION_JSON)
+                    .get(new GenericType<Collection<Tblresume>>() {});
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    // ================= UPLOAD RESUME =================
+    public void uploadResume() {
+
+        try {
+
+            if (resumeFile != null && resumeFile.getSize() > 0) {
+
+                String basePath = "D:/QuickHireUploads/resumes/";
+
+                Files.createDirectories(Paths.get(basePath));
+
+                String fileName = Paths.get(
+                        resumeFile.getSubmittedFileName()
+                ).getFileName().toString();
+
+                String uniqueName =
+                        System.currentTimeMillis() + "_RESUME_" + fileName;
+
+                InputStream input = resumeFile.getInputStream();
+
+                Files.copy(
+                        input,
+                        Paths.get(basePath + uniqueName),
+                        StandardCopyOption.REPLACE_EXISTING
+                );
+
+                WebTarget target = getClient()
+                        .target(BASE_URL + "/uploadResume")
+                        .queryParam("candidateId", candidateId)
+                        .queryParam("resumeFile", uniqueName);
+
+                target.request().post(null);
+
+                loadResumes();
+
+                FacesContext.getCurrentInstance().addMessage(
+                        null,
+                        new FacesMessage("Resume Uploaded")
+                );
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    // ================= DELETE RESUME =================
+    public void deleteResume(int resumeId) {
+
+        try {
+
+            WebTarget target = getClient()
+                    .target(BASE_URL + "/deleteResume")
+                    .queryParam("resumeId", resumeId);
+
+            target.request().delete();
+
+            loadResumes();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // ================= TOGGLE STATUS =================
+    public void toggleResumeStatus(Tblresume resume) {
+
+        try {
+
+            System.out.println("Resume ID = " + resume.getResumeId());
+            System.out.println("Status = " + resume.getIsActive());
+
+            WebTarget target = getClient()
+                    .target(BASE_URL + "/toggleResumeStatus")
+                    .queryParam("resumeId", resume.getResumeId())
+                    .queryParam("status", resume.getIsActive());
+
+            Response response = target.request().put(
+                    jakarta.ws.rs.client.Entity.text("")
+            );
+
+            System.out.println("API Status = " + response.getStatus());
+
+            loadResumes();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
 //    public void updateProfile() {
 //        try {
 //
@@ -161,120 +271,231 @@ public class CandidateCDIBean implements Serializable {
 //    }
     
         // ================= UPDATE PROFILE =================
-    public void updateProfile() {
+        
+        public void updateProfile() {
 
-        try {
+            try {
 
-            // ================= SAVE RESUME FILE =================
-            if (resumeFile != null && resumeFile.getSize() > 0){
+                // ================= PROFILE PHOTO FOLDER =================
+                String basePath = "D:/QuickHireUploads/";
+                String profilePhotoPath = basePath + "profilephotos/";
 
-                String originalFileName = Paths.get(
-                        resumeFile.getSubmittedFileName()
-                ).getFileName().toString();
+                Files.createDirectories(Paths.get(profilePhotoPath));
 
-                // validate extension
-                String lowerFile = originalFileName.toLowerCase();
+                // ================= PROFILE PHOTO =================
+                if (profilePhoto != null && profilePhoto.getSize() > 0) {
 
-                if (!(lowerFile.endsWith(".pdf")
-                        || lowerFile.endsWith(".doc")
-                        || lowerFile.endsWith(".docx"))) {
+                    String photoName = Paths.get(
+                            profilePhoto.getSubmittedFileName()
+                    ).getFileName().toString();
 
-                    FacesContext.getCurrentInstance().addMessage(
-                            null,
-                            new FacesMessage(
-                                    FacesMessage.SEVERITY_ERROR,
-                                    "Invalid File",
-                                    "Only PDF/DOC/DOCX files allowed"
-                            )
+                    String lowerPhoto = photoName.toLowerCase();
+
+                    // VALIDATION
+                    if (!(lowerPhoto.endsWith(".png")
+                            || lowerPhoto.endsWith(".jpg")
+                            || lowerPhoto.endsWith(".jpeg"))) {
+
+                        FacesContext.getCurrentInstance().addMessage(
+                                null,
+                                new FacesMessage(
+                                        FacesMessage.SEVERITY_ERROR,
+                                        "Invalid Photo",
+                                        "Only PNG/JPG/JPEG allowed"
+                                )
+                        );
+                        return;
+                    }
+
+                    // UNIQUE FILE NAME
+                    String uniquePhotoName =
+                            System.currentTimeMillis() + "_PHOTO_" + photoName;
+
+                    // SAVE FILE
+                    InputStream photoInput = profilePhoto.getInputStream();
+
+                    Files.copy(
+                            photoInput,
+                            Paths.get(profilePhotoPath + uniquePhotoName),
+                            StandardCopyOption.REPLACE_EXISTING
                     );
-                    return;
+
+                    // SAVE INTO USER TABLE
+                    if (candidateObj.getUserId() != null) {
+                        candidateObj.getUserId().setProfilePhoto(uniquePhotoName);
+                    }                
                 }
 
-                // folder path
-                String uploadPath = "D:/QuickHireUploads/";
+                // ================= API CALL =================
+                WebTarget target = getClient()
+                        .target(BASE_URL + "/updateCandidateProfile");
 
-                // create folder if not exists
-                Files.createDirectories(Paths.get(uploadPath));
+                Response response = target
+                        .request(MediaType.APPLICATION_JSON)
+                        .put(
+                                jakarta.ws.rs.client.Entity.entity(
+                                        candidateObj,
+                                        MediaType.APPLICATION_JSON
+                                )
+                        );
 
-                // create unique filename
-                String uniqueFileName =
-                        System.currentTimeMillis() + "_" + originalFileName;
+                String responseMsg = response.readEntity(String.class);
 
-                // save file
-                InputStream input = resumeFile.getInputStream();
+                FacesMessage message;
 
-                Files.copy(
-                        input,
-                        Paths.get(uploadPath + uniqueFileName),
-                        StandardCopyOption.REPLACE_EXISTING
-                );
+                if (response.getStatus() == 200) {
 
-                // save filename in database
-                candidateObj.setCandidateResume(uniqueFileName);
-            }
-            
-            WebTarget target = getClient()
-                    .target(BASE_URL + "/updateCandidateProfile");
-
-            // API CALL
-            jakarta.ws.rs.core.Response response = target
-                    .request(MediaType.APPLICATION_JSON)
-                    .put(
-                            jakarta.ws.rs.client.Entity.entity(
-                                    candidateObj,
-                                    MediaType.APPLICATION_JSON
-                            )
+                    message = new FacesMessage(
+                            FacesMessage.SEVERITY_INFO,
+                            "Profile updated successfully",
+                            null
                     );
 
-            String responseMsg = response.readEntity(String.class);
+                    loadUserData();
 
-            System.out.println("SERVER RESPONSE: " + responseMsg);
+                } else {
 
-            jakarta.faces.application.FacesMessage message;
-
-            // SUCCESS
-            if (response.getStatus() == 200) {
-
-                message = new jakarta.faces.application.FacesMessage(
-                        jakarta.faces.application.FacesMessage.SEVERITY_INFO,
-                        "Profile updated successfully",
-                        "Your profile has been updated."
-                );
-
-                // reload latest data
-                loadUserData();
-
-            } else {
-
-                // ERROR MESSAGE
-                message = new jakarta.faces.application.FacesMessage(
-                        jakarta.faces.application.FacesMessage.SEVERITY_ERROR,
-                        "Update failed",
-                        responseMsg
-                );
-            }
-
-            // SHOW MESSAGE IN XHTML
-            jakarta.faces.context.FacesContext
-                    .getCurrentInstance()
-                    .addMessage(null, message);
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-            jakarta.faces.context.FacesContext
-                    .getCurrentInstance()
-                    .addMessage(
-                            null,
-                            new jakarta.faces.application.FacesMessage(
-                                    jakarta.faces.application.FacesMessage.SEVERITY_ERROR,
-                                    "Update failed",
-                                    "Something went wrong while updating profile."
-                            )
+                    message = new FacesMessage(
+                            FacesMessage.SEVERITY_ERROR,
+                            "Update failed",
+                            responseMsg
                     );
+                }
+
+                FacesContext.getCurrentInstance()
+                        .addMessage(null, message);
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                FacesContext.getCurrentInstance()
+                        .addMessage(
+                                null,
+                                new FacesMessage(
+                                        FacesMessage.SEVERITY_ERROR,
+                                        "Error",
+                                        "Something went wrong"
+                                )
+                        );
+            }
         }
-    }
+    
+    
+//    public void updateProfile() {
+//
+//        try {
+//
+//            // ================= SAVE RESUME FILE =================
+//            if (resumeFile != null && resumeFile.getSize() > 0){
+//
+//                String originalFileName = Paths.get(
+//                        resumeFile.getSubmittedFileName()
+//                ).getFileName().toString();
+//
+//                // validate extension
+//                String lowerFile = originalFileName.toLowerCase();
+//
+//                if (!(lowerFile.endsWith(".pdf")
+//                        || lowerFile.endsWith(".doc")
+//                        || lowerFile.endsWith(".docx"))) {
+//
+//                    FacesContext.getCurrentInstance().addMessage(
+//                            null,
+//                            new FacesMessage(
+//                                    FacesMessage.SEVERITY_ERROR,
+//                                    "Invalid File",
+//                                    "Only PDF/DOC/DOCX files allowed"
+//                            )
+//                    );
+//                    return;
+//                }
+//
+//                // folder path
+//                String uploadPath = "D:/QuickHireUploads/";
+//
+//                // create folder if not exists
+//                Files.createDirectories(Paths.get(uploadPath));
+//
+//                // create unique filename
+//                String uniqueFileName =
+//                        System.currentTimeMillis() + "_" + originalFileName;
+//
+//                // save file
+//                InputStream input = resumeFile.getInputStream();
+//
+//                Files.copy(
+//                        input,
+//                        Paths.get(uploadPath + uniqueFileName),
+//                        StandardCopyOption.REPLACE_EXISTING
+//                );
+//
+//                // save filename in database
+//                candidateObj.setCandidateResume(uniqueFileName);
+//            }
+//            
+//            WebTarget target = getClient()
+//                    .target(BASE_URL + "/updateCandidateProfile");
+//
+//            // API CALL
+//            jakarta.ws.rs.core.Response response = target
+//                    .request(MediaType.APPLICATION_JSON)
+//                    .put(
+//                            jakarta.ws.rs.client.Entity.entity(
+//                                    candidateObj,
+//                                    MediaType.APPLICATION_JSON
+//                            )
+//                    );
+//
+//            String responseMsg = response.readEntity(String.class);
+//
+//            System.out.println("SERVER RESPONSE: " + responseMsg);
+//
+//            jakarta.faces.application.FacesMessage message;
+//
+//            // SUCCESS
+//            if (response.getStatus() == 200) {
+//
+//                message = new jakarta.faces.application.FacesMessage(
+//                        jakarta.faces.application.FacesMessage.SEVERITY_INFO,
+//                        "Profile updated successfully",
+//                        "Your profile has been updated."
+//                );
+//
+//                // reload latest data
+//                loadUserData();
+//
+//            } else {
+//
+//                // ERROR MESSAGE
+//                message = new jakarta.faces.application.FacesMessage(
+//                        jakarta.faces.application.FacesMessage.SEVERITY_ERROR,
+//                        "Update failed",
+//                        responseMsg
+//                );
+//            }
+//
+//            // SHOW MESSAGE IN XHTML
+//            jakarta.faces.context.FacesContext
+//                    .getCurrentInstance()
+//                    .addMessage(null, message);
+//
+//        } catch (Exception e) {
+//
+//            e.printStackTrace();
+//
+//            jakarta.faces.context.FacesContext
+//                    .getCurrentInstance()
+//                    .addMessage(
+//                            null,
+//                            new jakarta.faces.application.FacesMessage(
+//                                    jakarta.faces.application.FacesMessage.SEVERITY_ERROR,
+//                                    "Update failed",
+//                                    "Something went wrong while updating profile."
+//                            )
+//                    );
+//        }
+//    }
     
     // ================= LOAD JOBS =================
     public void loadJobs() {
@@ -799,6 +1020,22 @@ public class CandidateCDIBean implements Serializable {
 
     public void setResumeFile(Part resumeFile) {
         this.resumeFile = resumeFile;
+    }
+    
+    public Collection<Tblresume> getResumeList() {
+        return resumeList;
+    }
+
+    public void setResumeList(Collection<Tblresume> resumeList) {
+        this.resumeList = resumeList;
+    }
+    
+    public Part getProfilePhoto() {
+        return profilePhoto;
+    }
+
+    public void setProfilePhoto(Part profilePhoto) {
+        this.profilePhoto = profilePhoto;
     }
     
     public String getSearchTitle() {

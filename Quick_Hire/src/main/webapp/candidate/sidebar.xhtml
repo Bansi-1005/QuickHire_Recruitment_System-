@@ -23,8 +23,14 @@
             <h:outputLink value="#"
                 styleClass="menu-link"
                 onclick="openCandidateModal(); return false;">
-                  👤 Profile
+                  👤 Manage Profile
             </h:outputLink>
+            
+            <!-- Resume -->
+            <h:link outcome="manageResume"
+                value="📄 Manage Resume"
+                styleClass="menu-link #{activePage eq 'resume' ? 'active' : ''}" />
+            
             <!-- SEARCH JOBS -->
             <h:link outcome="searchJobs"
                     value="💼 Search Jobs"

@@ -1,0 +1,686 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+<!-- ================= METADATA ================= -->
+<f:metadata>
+    <f:viewAction action="#{loginBean.checkLogin}" />
+    <f:viewAction action="#{candidateCDIBean.loadUserData}" />
+    <f:viewAction action="#{candidateCDIBean.loadResumes}" />
+</f:metadata>
+
+<h:head>
+
+    <title>Manage Resume</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+    <!-- COMMON CANDIDATE CSS -->
+    <h:outputStylesheet library="css" name="/candidate/candidate.css" />
+    <h:outputStylesheet library="css" name="/candidate/profile.css"/>
+
+    <style>
+
+        /* =========================================================
+           PANEL
+        ========================================================= */
+
+        .panel{
+            background:#ffffff;
+            border-radius:22px;
+            padding:28px;
+            margin-top:25px;
+            border:1px solid #edf2f7;
+            box-shadow:0 8px 24px rgba(15,35,65,0.08);
+        }
+
+        .panel-header{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:24px;
+        }
+
+        .panel-header h3{
+            margin:0;
+            color:#1e3c72;
+            font-size:24px;
+            font-weight:700;
+        }
+
+        /* =========================================================
+           UPLOAD SECTION
+        ========================================================= */
+
+        .upload-box{
+            padding:40px 24px;
+            text-align:center;
+            border-radius:20px;
+            border:2px dashed #0f9b8e;
+            background:#f8fffd;
+        }
+
+        .upload-icon{
+            width:82px;
+            height:82px;
+            margin:0 auto 20px;
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:34px;
+            color:#fff;
+            background:linear-gradient(135deg,#2962ff,#0f9b8e);
+            box-shadow:0 8px 20px rgba(41,98,255,0.25);
+        }
+
+        .upload-title{
+            margin-bottom:10px;
+            color:#1e3c72;
+            font-size:26px;
+            font-weight:800;
+        }
+
+        .upload-subtitle{
+            margin-bottom:24px;
+            color:#6d7b8a;
+            font-size:15px;
+        }
+
+        .file-input{
+            width:100%;
+            max-width:420px;
+            padding:14px;
+            margin-bottom:20px;
+            border-radius:12px;
+            border:1px solid #dbe4ef;
+            background:#fff;
+        }
+
+        .upload-btn{
+            border:none;
+            padding:14px 28px;
+            border-radius:12px;
+            cursor:pointer;
+            font-size:15px;
+            font-weight:700;
+            color:#fff;
+            background:linear-gradient(135deg,#2962ff,#5b8cff);
+            box-shadow:0 6px 16px rgba(41,98,255,0.20);
+            transition:0.3s ease;
+        }
+
+        .upload-btn:hover{
+            transform:translateY(-2px);
+            box-shadow:0 10px 24px rgba(41,98,255,0.30);
+        }
+
+        /* =========================================================
+           TABLE
+        ========================================================= */
+
+        .table-responsive{
+            width:100%;
+            overflow-x:auto;
+        }
+
+        .resume-table{
+            width:100%;
+            min-width:850px;
+            border-collapse:collapse;
+        }
+
+        .resume-table th{
+            padding:16px;
+            text-align:left;
+            color:#fff;
+            font-size:14px;
+            font-weight:700;
+            background:linear-gradient(90deg,#1e3c72,#185a9d);
+        }
+
+        .resume-table th:first-child{
+            border-top-left-radius:14px;
+        }
+
+        .resume-table th:last-child{
+            border-top-right-radius:14px;
+        }
+
+        .resume-table td{
+            padding:18px 16px;
+            vertical-align:middle;
+            border-bottom:1px solid #edf2f7;
+            color:#334155;
+        }
+
+        .resume-table tr:hover{
+            background:#f8fbff;
+        }
+
+        /* =========================================================
+           ACTION BUTTONS
+        ========================================================= */
+
+        .action-btn{
+            display:inline-block;
+            margin:4px;
+            padding:10px 16px;
+            border:none;
+            border-radius:10px;
+            text-decoration:none;
+            cursor:pointer;
+            font-size:13px;
+            font-weight:700;
+            transition:0.3s ease;
+        }
+
+        .action-btn:hover{
+            transform:translateY(-2px);
+        }
+
+        .btn-view{
+            background:#2962ff;
+            color:#fff;
+        }
+
+        .btn-delete{
+            background:#dc3545;
+            color:#fff;
+        }
+
+        /* =========================================================
+           TOGGLE SWITCH
+        ========================================================= */
+
+        .switch{
+            position:relative;
+            display:inline-block;
+            width:58px;
+            height:30px;
+        }
+
+        .switch input{
+            opacity:0;
+            width:0;
+            height:0;
+        }
+
+        .slider{
+            position:absolute;
+            inset:0;
+            cursor:pointer;
+            border-radius:34px;
+            background:#dc3545;
+            transition:0.4s;
+        }
+
+        .slider:before{
+            content:"";
+            position:absolute;
+            width:22px;
+            height:22px;
+            left:4px;
+            bottom:4px;
+            border-radius:50%;
+            background:#fff;
+            transition:0.4s;
+        }
+
+        .switch input:checked + .slider{
+            background:#0f9b8e;
+        }
+
+        .switch input:checked + .slider:before{
+            transform:translateX(28px);
+        }
+
+        /* =========================================================
+           TOGGLE LABEL
+        ========================================================= */
+
+        .toggle-label-active{
+            color:#0f9b8e;
+            font-size:14px;
+            font-weight:700;
+        }
+
+        .toggle-label-inactive{
+            color:#dc3545;
+            font-size:14px;
+            font-weight:700;
+        }
+
+        /* =========================================================
+           EMPTY STATE
+        ========================================================= */
+
+        .empty-box{
+            padding:70px 20px;
+            text-align:center;
+        }
+
+        .empty-box i{
+            margin-bottom:18px;
+            color:#cbd5e1;
+            font-size:72px;
+        }
+
+        .empty-box h2{
+            margin:0 0 10px;
+            color:#1e3c72;
+            font-size:28px;
+        }
+
+        .empty-box p{
+            margin:0;
+            color:#6d7b8a;
+        }
+
+        /* =========================================================
+           MESSAGE
+        ========================================================= */
+
+        .msg{
+            margin-bottom:18px;
+            color:#dc3545;
+            font-weight:600;
+        }
+
+        /* =========================================================
+           RESPONSIVE
+        ========================================================= */
+
+        @media(max-width:992px){
+
+            .resume-table{
+                min-width:700px;
+            }
+        }
+
+        @media(max-width:768px){
+
+            .panel{
+                padding:18px;
+            }
+
+            .panel-header{
+                flex-direction:column;
+                align-items:flex-start;
+                gap:10px;
+            }
+
+            .panel-header h3{
+                font-size:20px;
+            }
+
+            .upload-box{
+                padding:30px 18px;
+            }
+
+            .upload-title{
+                font-size:22px;
+            }
+
+            .upload-subtitle{
+                font-size:14px;
+            }
+
+            .upload-btn{
+                width:100%;
+            }
+
+            .action-btn{
+                width:100%;
+                margin:6px 0;
+                text-align:center;
+            }
+
+            .resume-table td,
+            .resume-table th{
+                padding:14px 12px;
+            }
+        }
+
+        @media(max-width:576px){
+
+            .panel{
+                padding:15px;
+                border-radius:18px;
+            }
+
+            .upload-icon{
+                width:70px;
+                height:70px;
+                font-size:28px;
+            }
+
+            .upload-title{
+                font-size:20px;
+            }
+
+            .switch{
+                width:52px;
+                height:28px;
+            }
+
+            .slider:before{
+                width:20px;
+                height:20px;
+            }
+
+            .switch input:checked + .slider:before{
+                transform:translateX(24px);
+            }
+
+            .toggle-label-active,
+            .toggle-label-inactive{
+                font-size:13px;
+            }
+        }
+    </style>
+
+</h:head>
+
+<h:body>
+
+    <!-- HEADER -->
+    <ui:include src="/common/header.xhtml"/>
+
+    <h:panelGroup rendered="#{loginBean.role eq 'Candidate'}">
+
+        <div class="dashboard-layout">
+
+            <!-- SIDEBAR -->
+            <ui:include src="/candidate/sidebar.xhtml">
+                <ui:param name="activePage" value="resume"/>
+            </ui:include>
+
+            <!-- MAIN -->
+            <main class="main">
+
+                <!-- HERO -->
+                <section class="hero">
+
+                    <div class="hero-grid">
+
+                        <div>
+
+                            <div class="welcome-tag">
+                                Resume Management
+                            </div>
+
+                            <h1>
+                                Manage Your Resumes
+                                <i class="fa-solid fa-file-lines"></i>
+                            </h1>
+
+                            <p>
+                                Upload, activate and manage your professional
+                                resumes for better job opportunities.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+                <!-- UPLOAD PANEL -->
+                <section class="panel">
+
+                    <div class="panel-header">
+
+                        <h3>
+                            Upload New Resume
+                        </h3>
+
+                    </div>
+
+                    <h:messages globalOnly="true" styleClass="msg"/>
+
+                    <h:form enctype="multipart/form-data">
+
+                        <div class="upload-box">
+
+                            <div class="upload-icon">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                            </div>
+
+                            <div class="upload-title">
+                                Upload Resume
+                            </div>
+
+                            <div class="upload-subtitle">
+                                Supported formats: PDF, DOC, DOCX
+                            </div>
+
+                            <h:inputFile
+                                value="#{candidateCDIBean.resumeFile}"
+                                styleClass="file-input"/>
+
+                            <br/>
+
+                            <h:commandButton
+                                value="Upload Resume"
+                                action="#{candidateCDIBean.uploadResume}"
+                                styleClass="upload-btn">
+
+                                <f:ajax
+                                    execute="@form"
+                                    render="@all"/>
+
+                            </h:commandButton>
+
+                        </div>
+
+                    </h:form>
+
+                </section>
+
+                <!-- RESUME TABLE -->
+                <section class="panel">
+
+                    <div class="panel-header">
+
+                        <h3>
+                            Your Resumes
+                        </h3>
+
+                    </div>
+
+                    <h:panelGroup rendered="#{not empty candidateCDIBean.resumeList}">
+
+                        <div class="table-responsive">
+
+                            <table class="resume-table">
+
+                                <thead>
+
+                                    <tr>
+                                        <th>Resume File</th>
+                                        <th>Upload Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                    <ui:repeat
+                                        value="#{candidateCDIBean.resumeList}"
+                                        var="resume">
+
+                                        <tr>
+
+                                            <!-- FILE -->
+                                            <td>
+
+                                                <!-- PDF ICON -->
+                                                <h:panelGroup
+                                                    rendered="#{resume.resumeFile.toLowerCase().endsWith('.pdf')}">
+
+                                                    <i class="fa-solid fa-file-pdf"
+                                                       style="color:#dc3545; margin-right:8px;"></i>
+
+                                                </h:panelGroup>
+
+                                                <!-- DOC/DOCX ICON -->
+                                                <h:panelGroup
+                                                    rendered="#{resume.resumeFile.toLowerCase().endsWith('.doc')
+                                                                or resume.resumeFile.toLowerCase().endsWith('.docx')}">
+
+                                                    <i class="fa-solid fa-file-word"
+                                                       style="color:#2962ff; margin-right:8px;"></i>
+
+                                                </h:panelGroup>
+
+                                                #{resume.resumeFile}
+
+                                            </td>
+
+                                            <!-- DATE -->
+                                            <td>
+
+                                                <h:outputText
+                                                    value="#{resume.uploadDate}">
+
+                                                    <f:convertDateTime
+                                                        pattern="dd-MM-yyyy hh:mm a"/>
+
+                                                </h:outputText>
+
+                                            </td>
+
+                                            <!-- STATUS -->
+                                            <td>
+
+                                                <h:form id="toggleForm">
+
+                                                    <div style="display:flex; align-items:center; gap:12px;">
+
+                                                        <!-- LABEL -->
+                                                        <h:outputText
+                                                            value="#{resume.isActive ? 'Active' : 'Inactive'}"
+                                                            styleClass="#{resume.isActive ? 'toggle-label-active' : 'toggle-label-inactive'}"/>
+
+                                                        <!-- TOGGLE -->
+                                                        <label class="switch">
+
+                                                            <h:selectBooleanCheckbox
+                                                                value="#{resume.isActive}">
+
+                                                                <f:ajax
+                                                                    execute="@form"
+                                                                    render="@form"
+                                                                    listener="#{candidateCDIBean.toggleResumeStatus(resume)}"/>
+
+                                                            </h:selectBooleanCheckbox>
+
+                                                            <span class="slider"></span>
+
+                                                        </label>
+
+                                                    </div>
+
+                                                </h:form>
+
+                                            </td>
+
+                                            <!-- ACTIONS -->
+                                            <td>
+
+                                                <!-- VIEW -->
+                                                <h:outputLink
+                                                    value="#{request.contextPath}/resume?file=#{resume.resumeFile}"
+                                                    target="_blank"
+                                                    styleClass="action-btn btn-view">
+
+                                                    <i class="fa-solid fa-eye"></i>
+                                                    View
+
+                                                </h:outputLink>
+
+                                                <!-- DELETE -->
+                                                <h:form style="display:inline;">
+
+                                                    <h:commandButton
+                                                        value="Delete"
+                                                        action="#{candidateCDIBean.deleteResume(resume.resumeId)}"
+                                                        styleClass="action-btn btn-delete"
+                                                        onclick="return confirm('Delete this resume?')">
+
+                                                        <f:ajax
+                                                            execute="@this"
+                                                            render="@all"/>
+
+                                                    </h:commandButton>
+
+                                                </h:form>
+
+                                            </td>
+
+                                        </tr>
+
+                                    </ui:repeat>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </h:panelGroup>
+
+                    <!-- EMPTY -->
+                    <h:panelGroup rendered="#{empty candidateCDIBean.resumeList}">
+
+                        <div class="empty-box">
+
+                            <i class="fa-regular fa-folder-open"></i>
+
+                            <h2>
+                                No Resume Uploaded
+                            </h2>
+
+                            <p>
+                                Upload your first resume to start applying for jobs.
+                            </p>
+
+                        </div>
+
+                    </h:panelGroup>
+
+                </section>
+
+            </main>
+
+        </div>
+
+    </h:panelGroup>
+
+    <!-- ACCESS DENIED -->
+    <h:panelGroup rendered="#{loginBean.role ne 'Candidate'}">
+
+        <div style="padding-top:120px; text-align:center;">
+
+            <h2 style="color:red;">
+                Access Denied ❌
+            </h2>
+
+        </div>
+
+    </h:panelGroup>
+
+    <!-- PROFILE MODAL -->
+    <ui:include src="/candidate/updateProfile.xhtml"/>
+
+</h:body>
+
+</html>

@@ -21,7 +21,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlTransient;
@@ -40,17 +39,32 @@ import java.util.Date;
     @NamedQuery(name = "Tblcandidates.findAll", query = "SELECT t FROM Tblcandidates t"),
     @NamedQuery(name = "Tblcandidates.findByCandidateId", query = "SELECT t FROM Tblcandidates t WHERE t.candidateId = :candidateId"),
     @NamedQuery(name = "Tblcandidates.findByCandidatePhone", query = "SELECT t FROM Tblcandidates t WHERE t.candidatePhone = :candidatePhone"),
-    @NamedQuery(name = "Tblcandidates.findByCandidateLocation", query = "SELECT t FROM Tblcandidates t WHERE t.candidateLocation = :candidateLocation"),
     @NamedQuery(name = "Tblcandidates.findByCandidateDOB", query = "SELECT t FROM Tblcandidates t WHERE t.candidateDOB = :candidateDOB"),
     @NamedQuery(name = "Tblcandidates.findByCandidateGender", query = "SELECT t FROM Tblcandidates t WHERE t.candidateGender = :candidateGender"),
     @NamedQuery(name = "Tblcandidates.findByCandidateExperience", query = "SELECT t FROM Tblcandidates t WHERE t.candidateExperience = :candidateExperience"),
-    @NamedQuery(name = "Tblcandidates.findByCandidateResume", query = "SELECT t FROM Tblcandidates t WHERE t.candidateResume = :candidateResume"),
-    @NamedQuery(name = "Tblcandidates.findByResumeUploadDate", query = "SELECT t FROM Tblcandidates t WHERE t.resumeUploadDate = :resumeUploadDate"),
 
     @NamedQuery(name = "Tblcandidates.findByUser", query = "SELECT t FROM Tblcandidates t WHERE t.userId.userId = :userId"),
     @NamedQuery(name="Tblcandidates.count", query="SELECT COUNT(t) FROM Tblcandidates t")
 })
 public class Tblcandidates implements Serializable {
+
+    @Size(max = 15)
+    @Column(name = "candidatePhone")
+    private String candidatePhone;
+    @Size(max = 20)
+    @Column(name = "candidateGender")
+    private String candidateGender;
+    @Size(max = 100)
+    @Column(name = "candidateArea")
+    private String candidateArea;
+    @Size(max = 100)
+    @Column(name = "candidateCity")
+    private String candidateCity;
+    @Size(max = 100)
+    @Column(name = "candidateState")
+    private String candidateState;
+    @OneToMany(mappedBy = "candidateId")
+    private Collection<Tblresume> tblresumeCollection;
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -58,27 +72,11 @@ public class Tblcandidates implements Serializable {
     @Basic(optional = false)
     @Column(name = "candidateId")
     private Integer candidateId;
-    @Size(max = 15)
-    @Column(name = "candidatePhone")
-    private String candidatePhone;
-    @Size(max = 100)
-    @Column(name = "candidateLocation")
-    private String candidateLocation;
     @Column(name = "candidateDOB")
     @Temporal(TemporalType.DATE)
     private Date candidateDOB;
-    @Size(max = 20)
-    @Column(name = "candidateGender")
-    private String candidateGender;
     @Column(name = "candidateExperience")
     private Integer candidateExperience;
-    @Size(max = 255)
-    @Column(name = "candidateResume")
-    private String candidateResume;
-    @Basic(optional = true)
-    @Column(name = "resumeUploadDate", nullable = true)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date resumeUploadDate;
     @JoinTable(name = "tblcandidate_skills", joinColumns = {
         @JoinColumn(name = "candidateId", referencedColumnName = "candidateId")}, inverseJoinColumns = {
         @JoinColumn(name = "skillId", referencedColumnName = "skillId")})
@@ -107,33 +105,12 @@ public class Tblcandidates implements Serializable {
         this.candidateId = candidateId;
     }
 
-    public Tblcandidates(Integer candidateId, Date resumeUploadDate) {
-        this.candidateId = candidateId;
-        this.resumeUploadDate = resumeUploadDate;
-    }
-
     public Integer getCandidateId() {
         return candidateId;
     }
 
     public void setCandidateId(Integer candidateId) {
         this.candidateId = candidateId;
-    }
-
-    public String getCandidatePhone() {
-        return candidatePhone;
-    }
-
-    public void setCandidatePhone(String candidatePhone) {
-        this.candidatePhone = candidatePhone;
-    }
-
-    public String getCandidateLocation() {
-        return candidateLocation;
-    }
-
-    public void setCandidateLocation(String candidateLocation) {
-        this.candidateLocation = candidateLocation;
     }
 
     public Date getCandidateDOB() {
@@ -144,36 +121,12 @@ public class Tblcandidates implements Serializable {
         this.candidateDOB = candidateDOB;
     }
 
-    public String getCandidateGender() {
-        return candidateGender;
-    }
-
-    public void setCandidateGender(String candidateGender) {
-        this.candidateGender = candidateGender;
-    }
-
     public Integer getCandidateExperience() {
         return candidateExperience;
     }
 
     public void setCandidateExperience(Integer candidateExperience) {
         this.candidateExperience = candidateExperience;
-    }
-
-    public String getCandidateResume() {
-        return candidateResume;
-    }
-
-    public void setCandidateResume(String candidateResume) {
-        this.candidateResume = candidateResume;
-    }
-
-    public Date getResumeUploadDate() {
-        return resumeUploadDate;
-    }
-
-    public void setResumeUploadDate(Date resumeUploadDate) {
-        this.resumeUploadDate = resumeUploadDate;
     }
 
     @XmlTransient
@@ -247,6 +200,55 @@ public class Tblcandidates implements Serializable {
     @Override
     public String toString() {
         return "Entity.Tblcandidates[ candidateId=" + candidateId + " ]";
+    }
+    
+    @XmlTransient
+    @JsonbTransient
+    public Collection<Tblresume> getTblresumeCollection() {
+        return tblresumeCollection;
+    }
+    public void setTblresumeCollection(Collection<Tblresume> tblresumeCollection) {
+        this.tblresumeCollection = tblresumeCollection;
+    }
+
+    public String getCandidatePhone() {
+        return candidatePhone;
+    }
+
+    public void setCandidatePhone(String candidatePhone) {
+        this.candidatePhone = candidatePhone;
+    }
+
+    public String getCandidateGender() {
+        return candidateGender;
+    }
+
+    public void setCandidateGender(String candidateGender) {
+        this.candidateGender = candidateGender;
+    }
+
+    public String getCandidateArea() {
+        return candidateArea;
+    }
+
+    public void setCandidateArea(String candidateArea) {
+        this.candidateArea = candidateArea;
+    }
+
+    public String getCandidateCity() {
+        return candidateCity;
+    }
+
+    public void setCandidateCity(String candidateCity) {
+        this.candidateCity = candidateCity;
+    }
+
+    public String getCandidateState() {
+        return candidateState;
+    }
+
+    public void setCandidateState(String candidateState) {
+        this.candidateState = candidateState;
     }
     
 }

@@ -39,20 +39,19 @@ import java.util.Date;
     @NamedQuery(name = "Tblrolemaster.findByCreatedDate", query = "SELECT t FROM Tblrolemaster t WHERE t.createdDate = :createdDate")})
 public class Tblrolemaster implements Serializable {
 
+    @Size(max = 50)
+    @Column(name = "roleName")
+    private String roleName;
+    @Column(name = "createdDate")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdDate;
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
     @Column(name = "roleId")
     private Integer roleId;
-    @Size(max = 50)
-    @Column(name = "roleName")
-    private String roleName;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "createdDate")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdDate;
     @OneToMany(mappedBy = "roleId")
     private Collection<Tblusers> tblusersCollection;
 
@@ -76,21 +75,6 @@ public class Tblrolemaster implements Serializable {
         this.roleId = roleId;
     }
 
-    public String getRoleName() {
-        return roleName;
-    }
-
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
-    }
-
-    public Date getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
-    }
 
     @XmlTransient
     @JsonbTransient
@@ -125,6 +109,23 @@ public class Tblrolemaster implements Serializable {
     @Override
     public String toString() {
         return "Entity.Tblrolemaster[ roleId=" + roleId + " ]";
+    }
+
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
     }
     
 }

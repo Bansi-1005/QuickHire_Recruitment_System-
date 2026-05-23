@@ -24,6 +24,10 @@ public interface CandidateBeanLocal {
     void updateCandidateProfile(Tblcandidates candidate);
 
     // RESUME
+    Collection<Tblresume> getCandidateResumes(int candidateId);
+    void uploadResume(int candidateId, String resumeFile);
+    void deleteResume(int resumeId);
+    void toggleResumeStatus(int resumeId, boolean status);
 //    void uploadResume(int candidateId, String candidateResume);
 //    String getCandidateResume(int candidateId);
 

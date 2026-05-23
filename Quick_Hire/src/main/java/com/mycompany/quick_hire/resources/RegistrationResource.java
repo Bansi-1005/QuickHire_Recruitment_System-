@@ -84,8 +84,12 @@ public class RegistrationResource {
             user.setUserName((String) body.get("userName"));
             user.setUserEmail((String) body.get("userEmail"));
             user.setUserPassword((String) body.get("userPassword"));
-            user.setUserStatus((String) body.get("userStatus"));
+            Object activeObj = body.get("userIsActive");
 
+            if (activeObj != null) {
+                user.setUserIsActive((Boolean) activeObj);
+            }
+            
             // ================= ROLE =================
             Map<String, Object> roleMap = (Map<String, Object>) body.get("roleId");
             
@@ -112,9 +116,10 @@ public class RegistrationResource {
                     candidate = new Tblcandidates();
 
                     candidate.setCandidatePhone((String) candMap.get("candidatePhone"));
-                    candidate.setCandidateLocation((String) candMap.get("candidateLocation"));
+                    candidate.setCandidateArea((String) candMap.get("candidateArea"));
+                    candidate.setCandidateCity((String) candMap.get("candidateCity"));
+                    candidate.setCandidateState((String) candMap.get("candidateState"));                    
                     candidate.setCandidateGender((String) candMap.get("candidateGender"));
-                    
                     Object expObj = candMap.get("candidateExperience");
 
                     if (expObj != null) {
@@ -122,7 +127,6 @@ public class RegistrationResource {
                     } else {
                         candidate.setCandidateExperience(0); // or default value
                     }
-                    candidate.setCandidateResume((String) candMap.get("candidateResume"));
 
                     String dobStr = (String) candMap.get("candidateDOB");
                     if (dobStr != null && !dobStr.isEmpty()) {

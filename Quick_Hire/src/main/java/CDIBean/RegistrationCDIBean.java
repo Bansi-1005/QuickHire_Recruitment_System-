@@ -35,6 +35,9 @@ public class RegistrationCDIBean {
     @PostConstruct
     public void init() {
         recruiter.setCompanyId(new Tblcompany());
+        
+        // Default Active
+        user.setUserIsActive(true);
     }
     public RegistrationBeanLocal getEjb() {
         return ejb;
@@ -88,7 +91,7 @@ public String registerUser() {
         body.put("userName", user.getUserName());
         body.put("userEmail", user.getUserEmail());
         body.put("userPassword", user.getUserPassword());
-        body.put("userStatus", "Active");
+        body.put("userIsActive", user.getUserIsActive());
 
         // Role
         if (roleId == null) {
@@ -106,7 +109,9 @@ public String registerUser() {
                 Map<String, Object> candMap = new HashMap<>();
 
                 candMap.put("candidatePhone", candidate.getCandidatePhone());
-                candMap.put("candidateLocation", candidate.getCandidateLocation());
+                candMap.put("candidateArea", candidate.getCandidateArea());
+                candMap.put("candidateCity", candidate.getCandidateCity());
+                candMap.put("candidateState", candidate.getCandidateState());
                 candMap.put("candidateGender", candidate.getCandidateGender());
                 candMap.put("candidateExperience", candidate.getCandidateExperience());
                 candMap.put("candidateResume", "");
@@ -145,7 +150,6 @@ public String registerUser() {
             
             
             System.out.println("PHONE: " + candidate.getCandidatePhone());
-            System.out.println("LOCATION: " + candidate.getCandidateLocation());
             System.out.println("DESIGNATION: " + recruiter.getDesignation());
 
             client.close();

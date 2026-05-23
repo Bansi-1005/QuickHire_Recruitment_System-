@@ -76,7 +76,7 @@ public class AdminBean implements AdminBeanLocal {
 
             Tblusers user = em.find(Tblusers.class, userId);
             if (user != null) {
-                user.setUserStatus(userStatus);
+//                user.setUserStatus(userStatus);
                 user.setUpdatedDate(new Date());
                 em.merge(user);
             }

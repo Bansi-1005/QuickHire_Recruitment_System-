@@ -116,7 +116,86 @@ public class CandidateResource {
         }
     }
 
-//    // ================= RESUME =================
+    // ================= RESUME =================
+    
+    @GET
+    @Path("getCandidateResumes")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getCandidateResumes(
+            @QueryParam("candidateId") int candidateId) {
+
+        try {
+            return Response.ok(
+                    ejb.getCandidateResumes(candidateId)
+            ).build();
+
+        } catch (Exception e) {
+
+            return Response.status(500)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+    
+    @POST
+    @Path("uploadResume")
+    public Response uploadResume(
+            @QueryParam("candidateId") int candidateId,
+            @QueryParam("resumeFile") String resumeFile) {
+
+        try {
+
+            ejb.uploadResume(candidateId, resumeFile);
+
+            return Response.ok("Resume Uploaded").build();
+
+        } catch (Exception e) {
+
+            return Response.status(500)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+    
+    @DELETE
+    @Path("deleteResume")
+    public Response deleteResume(
+            @QueryParam("resumeId") int resumeId) {
+
+        try {
+
+            ejb.deleteResume(resumeId);
+
+            return Response.ok("Resume Deleted").build();
+
+        } catch (Exception e) {
+
+            return Response.status(500)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+    
+    // ================= TOGGLE RESUME =================
+    @PUT
+    @Path("toggleResumeStatus")
+    public Response toggleResumeStatus(
+            @QueryParam("resumeId") int resumeId,  @QueryParam("status") boolean status) {
+
+        try {
+
+            ejb.toggleResumeStatus(resumeId, status);
+
+            return Response.ok("Resume Updated").build();
+
+        } catch (Exception e) {
+
+            return Response.status(500)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+    
 //    @POST
 //    @Path("uploadResume")
 //    @Produces(MediaType.APPLICATION_JSON)

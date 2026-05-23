@@ -370,65 +370,6 @@ body{
     font-size: 24px;
     font-weight: 800;
 }
-
-/* =========================
-   PROFILE MODAL
-========================= */
-
-.modal-overlay{
-    position: fixed;
-    inset: 0;
-    background: rgba(10, 26, 60, 0.70);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-    padding: 20px;
-}
-
-.modal-box{
-    width: 520px;
-    max-width: 95%;
-    background: #ffffff;
-    border-radius: 30px;
-    padding: 30px;
-}
-
-.modal-header{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.close-btn{
-    font-size: 24px;
-    cursor: pointer;
-}
-
-.form-group{
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 14px;
-}
-
-.form-group input{
-    padding: 12px 14px;
-    border-radius: 14px;
-    border: 1px solid #c9d6f0;
-}
-
-.modal-actions{
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-}
-
-.btn-cancel{
-    padding: 11px 22px;
-    border-radius: 999px;
-    border: none;
-}
-
 /* =========================
    FOOTER
 ========================= */

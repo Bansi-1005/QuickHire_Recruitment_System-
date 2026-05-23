@@ -11,6 +11,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
@@ -49,12 +50,6 @@ import java.util.Date;
 })
 public class Tblcompany implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Basic(optional = false)
-    @Column(name = "companyId")
-    private Integer companyId;
     @Size(max = 200)
     @Column(name = "companyName")
     private String companyName;
@@ -70,11 +65,24 @@ public class Tblcompany implements Serializable {
     @Size(max = 50)
     @Column(name = "companyStatus")
     private String companyStatus;
-    @Basic(optional = false)
-    @NotNull
     @Column(name = "createdDate")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
+    @Lob()
+    @Size(max = 65535)
+    @Column(name = "companyDescription")
+    private String companyDescription;
+    @Size(max = 50)
+    @Column(name = "companySize")
+    private String companySize;
+    @Column(name = "foundedYear")
+    private Integer foundedYear;
+    private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Basic(optional = false)
+    @Column(name = "companyId")
+    private Integer companyId;
     @OneToMany(mappedBy = "companyId")
     private Collection<Tblrecruiters> tblrecruitersCollection;
 
@@ -96,6 +104,42 @@ public class Tblcompany implements Serializable {
 
     public void setCompanyId(Integer companyId) {
         this.companyId = companyId;
+    }
+
+
+    @XmlTransient
+    @JsonbTransient
+    public Collection<Tblrecruiters> getTblrecruitersCollection() {
+        return tblrecruitersCollection;
+    }
+
+    public void setTblrecruitersCollection(Collection<Tblrecruiters> tblrecruitersCollection) {
+        this.tblrecruitersCollection = tblrecruitersCollection;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 0;
+        hash += (companyId != null ? companyId.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof Tblcompany)) {
+            return false;
+        }
+        Tblcompany other = (Tblcompany) object;
+        if ((this.companyId == null && other.companyId != null) || (this.companyId != null && !this.companyId.equals(other.companyId))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "Entity.Tblcompany[ companyId=" + companyId + " ]";
     }
 
     public String getCompanyName() {
@@ -146,39 +190,28 @@ public class Tblcompany implements Serializable {
         this.createdDate = createdDate;
     }
 
-    @XmlTransient
-    @JsonbTransient
-    public Collection<Tblrecruiters> getTblrecruitersCollection() {
-        return tblrecruitersCollection;
+    public String getCompanyDescription() {
+        return companyDescription;
     }
 
-    public void setTblrecruitersCollection(Collection<Tblrecruiters> tblrecruitersCollection) {
-        this.tblrecruitersCollection = tblrecruitersCollection;
+    public void setCompanyDescription(String companyDescription) {
+        this.companyDescription = companyDescription;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (companyId != null ? companyId.hashCode() : 0);
-        return hash;
+    public String getCompanySize() {
+        return companySize;
     }
 
-    @Override
-    public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof Tblcompany)) {
-            return false;
-        }
-        Tblcompany other = (Tblcompany) object;
-        if ((this.companyId == null && other.companyId != null) || (this.companyId != null && !this.companyId.equals(other.companyId))) {
-            return false;
-        }
-        return true;
+    public void setCompanySize(String companySize) {
+        this.companySize = companySize;
     }
 
-    @Override
-    public String toString() {
-        return "Entity.Tblcompany[ companyId=" + companyId + " ]";
+    public Integer getFoundedYear() {
+        return foundedYear;
+    }
+
+    public void setFoundedYear(Integer foundedYear) {
+        this.foundedYear = foundedYear;
     }
     
 }

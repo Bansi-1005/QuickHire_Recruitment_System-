@@ -111,14 +111,98 @@ public class CandidateBean implements CandidateBeanLocal {
     @Override
     public void updateCandidateProfile(Tblcandidates candidate) {
         try {
-            candidate.setResumeUploadDate(new Date());
-            em.merge(candidate);
+            Tblcandidates existing = em.find(Tblcandidates.class, candidate.getCandidateId());
+
+            if (existing != null) {
+
+                // update candidate fields
+                existing.setCandidatePhone(candidate.getCandidatePhone());
+                existing.setCandidateCity(candidate.getCandidateCity());
+                existing.setCandidateState(candidate.getCandidateState());
+                existing.setCandidateArea(candidate.getCandidateArea());
+                existing.setCandidateDOB(candidate.getCandidateDOB());
+                existing.setCandidateExperience(candidate.getCandidateExperience());
+                existing.setCandidateGender(candidate.getCandidateGender());
+
+                // IMPORTANT: update USER separately
+                if (candidate.getUserId() != null) {
+
+                    Tblusers user = em.find(Tblusers.class,
+                            candidate.getUserId().getUserId());
+
+                    if (user != null) {
+                        user.setUserName(candidate.getUserId().getUserName());
+                        user.setUserEmail(candidate.getUserId().getUserEmail());
+
+                        // ⭐ THIS IS THE FIX
+                        user.setProfilePhoto(candidate.getUserId().getProfilePhoto());
+
+                        em.merge(user);
+                    }
+                }
+
+                em.merge(existing);
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     // ================= RESUME =================
+    
+    @Override
+    public Collection<Tblresume> getCandidateResumes(int candidateId) {
+
+        return em.createQuery(
+                "SELECT r FROM Tblresume r WHERE r.candidateId.candidateId = :cid ORDER BY r.uploadDate DESC",
+                Tblresume.class
+        )
+        .setParameter("cid", candidateId)
+        .getResultList();
+    }
+    
+    @Override
+    public void uploadResume(int candidateId, String resumeFile) {
+
+        Tblresume r = new Tblresume();
+
+        r.setResumeFile(resumeFile);
+
+        r.setUploadDate(new Date());
+
+        r.setIsActive(true);
+
+        Tblcandidates c = em.find(Tblcandidates.class, candidateId);
+
+        r.setCandidateId(c);
+
+        em.persist(r);
+    }
+    
+    @Override
+    public void deleteResume(int resumeId) {
+
+        Tblresume r = em.find(Tblresume.class, resumeId);
+
+        if (r != null) {
+            em.remove(r);
+        }
+    }
+    
+    @Override
+    public void toggleResumeStatus(int resumeId, boolean status) {
+
+        Tblresume r = em.find(Tblresume.class, resumeId);
+
+        if (r != null) {
+
+            r.setIsActive(status);
+
+            em.merge(r);
+        }
+    }
+    
 //    @Override
 //    public void uploadResume(int candidateId, String candidateResume) {
 //        try {
@@ -308,17 +392,31 @@ public class CandidateBean implements CandidateBeanLocal {
             }
 
             application.setCandidateId(candidate);
-            application.setResumeSnapshot(candidate.getCandidateResume());
-            application.setJobId(job);
+            
+            String latestResume = null;
 
+            if (candidate.getTblresumeCollection() != null && !candidate.getTblresumeCollection().isEmpty()) {
+
+                latestResume = candidate.getTblresumeCollection()
+                        .stream()
+                        .filter(r -> Boolean.TRUE.equals(r.getIsActive()))
+                        .sorted((r1, r2) -> r2.getUploadDate().compareTo(r1.getUploadDate()))
+                        .map(Tblresume::getResumeFile)
+                        .findFirst()
+                        .orElse(null);
+            }
+
+            application.setResumeSnapshot(latestResume);
+            
+            application.setJobId(job);
             application.setApplicationAppliedDate(new Date());
             application.setLastUpdatedDate(new Date());
             application.setApplicationStatus("Applied");
 
             em.persist(application);
             em.flush();
-            
-           // notified recruiter
+
+            // recruiter + candidate users
             Tblrecruiters recruiter = job.getRecruiterId();
 
             if (recruiter != null && recruiter.getUserId() != null) {
@@ -326,6 +424,28 @@ public class CandidateBean implements CandidateBeanLocal {
                 Tblusers recruiterUser = recruiter.getUserId();
                 Tblusers candidateUser = candidate.getUserId();
 
+                 // ================= CREATE NOTIFICATION =================
+
+                Tblnotification notification = new Tblnotification();
+
+                notification.setUserId(recruiterUser);
+
+                notification.setMessage(
+                    candidateUser.getUserName()
+                    + " applied for job: "
+                    + job.getJobTitle()
+                );
+
+                notification.setNotificationType("Application");
+
+                notification.setNotificationStatus("Unread");
+
+                notification.setCreatedDate(new Date());
+
+                em.persist(notification);
+                
+                // ================= SEND EMAIL =================
+                
                 if (recruiterUser.getUserEmail() != null && candidateUser != null) {
 
                     String recruiterEmail = job.getRecruiterId().getUserId().getUserEmail();
@@ -339,7 +459,7 @@ public class CandidateBean implements CandidateBeanLocal {
                                     + "Candidate Details:\n"
                                     + "Name: " + candidateUser.getUserName() + "\n"
                                     + "Candidate ID: " + candidate.getCandidateId() + "\n"
-                                    + "Resume: " + candidate.getCandidateResume() + "\n\n"
+                                    + "Resume: " + latestResume + "\n\n"
                                     + "Please log in to your recruiter dashboard to review the application and take further action.\n\n"
                                     + "Best Regards,\n"
                                     + "QuickHire Team";

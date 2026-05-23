@@ -16,6 +16,7 @@
     <title>Candidate Dashboard</title>
     <h:outputStylesheet library="css" name="/candidate/candidate.css" />
     <h:outputStylesheet library="css" name="/candidate/dashboard.css" />
+    <h:outputStylesheet library="css" name="/candidate/profile.css"/>
 </h:head>
 
 <h:body>
@@ -36,49 +37,98 @@
     <!-- ================= MAIN ================= -->
     <main class="main" id="main">
 
-        <!-- HERO -->
         <section class="hero">
+
             <div class="hero-grid">
-                <div>
-                    <div class="welcome-tag">Candidate Dashboard</div>
-                    <h1>Welcome, #{loginBean.username} 👋</h1>
 
-                    <p>
-                        Explore jobs, track applications, and manage your career journey.
-                    </p>
+                <!-- LEFT -->
+                <div class="hero-left">
 
-                    <div class="hero-actions">
-                        <button class="btn-main">🔍 Find Jobs</button>
-                        <button class="btn-light">📄 My Applications</button>
+                    <div class="hero-profile-section">
+
+                        <!-- PROFILE PHOTO -->
+                        <ui:fragment rendered="#{not empty candidateCDIBean.candidateObj.userId.profilePhoto}">
+
+                            <img
+                                src="/D/QuickHireUploads/profilephotos/#{candidateCDIBean.candidateObj.userId.profilePhoto}"
+                                class="hero-profile-img"/>
+
+                        </ui:fragment>
+
+                        <ui:fragment rendered="#{empty candidateCDIBean.candidateObj.userId.profilePhoto}">
+
+                            <div class="hero-avatar">
+                                #{candidateCDIBean.candidateObj.userId.userName.substring(0,1)}
+                            </div>
+
+                        </ui:fragment>
+
+                        <div>
+
+                            <div class="welcome-tag">
+                                Candidate Dashboard
+                            </div>
+
+                            <h1>
+                                Welcome,
+                                #{candidateCDIBean.candidateObj.userId.userName}
+                                👋
+                            </h1>
+
+                            <p>
+
+                                #{candidateCDIBean.candidateObj.candidateCity},
+
+                                #{candidateCDIBean.candidateObj.candidateState}
+
+                                •
+
+                                #{candidateCDIBean.candidateObj.candidateExperience}
+                                Years Experience
+
+                            </p>
+
+                        </div>
+
                     </div>
+
                 </div>
 
-                <!-- STATS -->
+                <!-- RIGHT -->
                 <div class="hero-stats">
+
                     <div class="hero-mini-card">
-                        <span>Applied Jobs</span>
-                        <strong>#{candidateCDIBean.applicationList.size()}</strong>
+                        <span>Applications</span>
+                        <strong>
+                            #{candidateCDIBean.applicationList.size()}
+                        </strong>
                     </div>
+
                     <div class="hero-mini-card">
                         <span>Shortlisted</span>
                         <strong>
                             #{candidateCDIBean.getApplicationsByStatus('Shortlisted')}
-                        </strong>                    
+                        </strong>
                     </div>
+
                     <div class="hero-mini-card">
                         <span>Interviews</span>
                         <strong>
                             #{candidateCDIBean.interviewList.size()}
                         </strong>
                     </div>
+
                     <div class="hero-mini-card">
-                        <span>Offers</span>
+                        <span>Skills</span>
                         <strong>
-                            #{candidateCDIBean.getApplicationsByStatus('Selected')}
+                            #{candidateCDIBean.candidateSkills.size()}
                         </strong>
                     </div>
+
                 </div>
+
             </div>
+
         </section>
 
         <!-- CARDS -->
@@ -282,11 +332,11 @@
     </div>
 </h:panelGroup>
 
-<!-- COMMON FOOTER -->
-<ui:include src="/common/footer.xhtml"/>
+    <!-- FOOTER -->
+    <ui:include src="/common/footer.xhtml"/>
 
-<!-- PROFILE MODAL -->
-<ui:include src="/candidate/updateProfile.xhtml"/>
+    <!-- PROFILE MODAL -->
+    <ui:include src="/candidate/updateProfile.xhtml"/>
 
 </h:body>
 </html>

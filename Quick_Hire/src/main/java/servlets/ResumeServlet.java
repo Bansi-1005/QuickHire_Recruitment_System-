@@ -60,22 +60,68 @@ public class ResumeServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         //processRequest(request, response);
-         String fileName = request.getParameter("file");
+        String fileName = request.getParameter("file");
 
-        if (fileName == null || fileName.isEmpty()) {
+        if (fileName == null || fileName.trim().isEmpty()) {
+
             response.getWriter().println("File not found");
             return;
         }
 
-        File file = new File("D:/QuickHireUploads/" + fileName);
+        // ================= FILE PATH =================
+        String filePath = "D:/QuickHireUploads/resumes/" + fileName;
 
+        File file = new File(filePath);
+
+        System.out.println("Resume Path : " + file.getAbsolutePath());
+
+        // ================= FILE EXISTS =================
         if (!file.exists()) {
+
             response.getWriter().println("Resume does not exist");
             return;
         }
 
-        response.setContentType("application/pdf");
+        // ================= FILE EXTENSION =================
+        String lowerFile = fileName.toLowerCase();
 
+        // PDF
+        if (lowerFile.endsWith(".pdf")) {
+
+            response.setContentType("application/pdf");
+
+        // DOC
+        } else if (lowerFile.endsWith(".doc")) {
+
+            response.setContentType("application/msword");
+
+        // DOCX
+        } else if (lowerFile.endsWith(".docx")) {
+
+            response.setContentType(
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            );
+
+        } else {
+
+            response.setContentType("application/octet-stream");
+        }
+
+        // ================= HEADER =================
+
+        /*
+            inline  -> open in browser if supported
+            attachment -> force download
+        */
+
+        response.setHeader(
+                "Content-Disposition",
+                "inline; filename=\"" + file.getName() + "\""
+        );
+
+        response.setContentLengthLong(file.length());
+
+        // ================= SEND FILE =================
         Files.copy(file.toPath(), response.getOutputStream());
 
         response.getOutputStream().flush();

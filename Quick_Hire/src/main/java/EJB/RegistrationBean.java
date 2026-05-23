@@ -66,27 +66,18 @@ public class RegistrationBean implements RegistrationBeanLocal {
             // ROLE BASED LOGIC
             // ============================
 
-            // Candidate (Assume roleId = 2)
-
+            // Candidate (roleId = 2)
             if (managedRole.getRoleId() == 2 && candidate != null) {
 
                 candidate.setUserId(user);
-                if (candidate.getCandidateResume() != null && 
-                    !candidate.getCandidateResume().trim().equals("") &&
-                    !candidate.getCandidateResume().equalsIgnoreCase("null")) {
-
-                    candidate.setResumeUploadDate(now);
-
-                } else {
-                    candidate.setCandidateResume(null);
-                    candidate.setResumeUploadDate(null);
-}
 
                 em.persist(candidate);
 
-                //  Email
+                // Email
                 if (user.getUserEmail() != null) {
+
                     String subject = "Welcome to QuickHire";
+
                     String message = "Hello " + user.getUserName() + ",\n\n"
                             + "Your account has been successfully created.\n"
                             + "You can now apply for jobs.\n\n"

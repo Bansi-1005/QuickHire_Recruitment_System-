@@ -37,9 +37,22 @@ import java.util.Date;
     @NamedQuery(name = "Tblnotification.findByCreatedDate", query = "SELECT t FROM Tblnotification t WHERE t.createdDate = :createdDate"),
     @NamedQuery(name = "Tblnotification.findByNotificationStatus", query = "SELECT t FROM Tblnotification t WHERE t.notificationStatus = :notificationStatus"),
     
-    @NamedQuery(name = "Tblnotification.findByUser", query = "SELECT t FROM Tblnotification t WHERE t.userId.userId = :userId")
+    @NamedQuery(name = "Tblnotification.findByUser", query = "SELECT t FROM Tblnotification t WHERE t.userId.userId = :userId ORDER BY t.createdDate DESC")
 })
 public class Tblnotification implements Serializable {
+
+    @Size(max = 500)
+    @Column(name = "message")
+    private String message;
+    @Column(name = "createdDate")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdDate;
+    @Size(max = 50)
+    @Column(name = "notificationStatus")
+    private String notificationStatus;
+    @Size(max = 50)
+    @Column(name = "notificationType")
+    private String notificationType;
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -47,17 +60,6 @@ public class Tblnotification implements Serializable {
     @Basic(optional = false)
     @Column(name = "notificationId")
     private Integer notificationId;
-    @Size(max = 500)
-    @Column(name = "message")
-    private String message;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "createdDate")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdDate;
-    @Size(max = 50)
-    @Column(name = "notificationStatus")
-    private String notificationStatus;
     @JoinColumn(name = "userId", referencedColumnName = "userId")
     @ManyToOne
     private Tblusers userId;
@@ -82,29 +84,6 @@ public class Tblnotification implements Serializable {
         this.notificationId = notificationId;
     }
 
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public Date getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    public String getNotificationStatus() {
-        return notificationStatus;
-    }
-
-    public void setNotificationStatus(String notificationStatus) {
-        this.notificationStatus = notificationStatus;
-    }
 
     public Tblusers getUserId() {
         return userId;
@@ -137,6 +116,38 @@ public class Tblnotification implements Serializable {
     @Override
     public String toString() {
         return "Entity.Tblnotification[ notificationId=" + notificationId + " ]";
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public String getNotificationStatus() {
+        return notificationStatus;
+    }
+
+    public void setNotificationStatus(String notificationStatus) {
+        this.notificationStatus = notificationStatus;
+    }
+
+    public String getNotificationType() {
+        return notificationType;
+    }
+
+    public void setNotificationType(String notificationType) {
+        this.notificationType = notificationType;
     }
     
 }
