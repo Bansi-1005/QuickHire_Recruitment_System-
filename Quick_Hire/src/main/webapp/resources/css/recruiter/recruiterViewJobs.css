@@ -2,8 +2,9 @@
 Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
 Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to edit this template
 */
+
 /* 
-    Created on : May 21, 2026, 6:53:19 PM
+    Created on : May 21, 2026, 6:53:19 PM
     Author     : RINKAL
 */
 
@@ -17,6 +18,8 @@ VIEW JOBS PAGE
 }
 
 .viewjobs-hero{
+    position:relative;
+    overflow:hidden;
     width:100%;
     background:linear-gradient(120deg, rgba(30,60,114,0.97), rgba(15,155,142,0.95));
     color:var(--white);
@@ -30,6 +33,32 @@ VIEW JOBS PAGE
     animation:panelFadeUp 0.75s ease both;
 }
 
+.viewjobs-hero::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(90deg, rgba(255,255,255,0.05) 0%, transparent 30%, transparent 70%, rgba(255,255,255,0.06) 100%);
+    pointer-events:none;
+}
+
+.viewjobs-hero::after{
+    content:"";
+    position:absolute;
+    top:0;
+    left:-35%;
+    width:35%;
+    height:100%;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+    transform:skewX(-18deg);
+    animation:heroShine 7s ease-in-out infinite;
+    pointer-events:none;
+}
+
+.viewjobs-hero-content{
+    position:relative;
+    z-index:1;
+}
+
 .viewjobs-page-tag{
     display:inline-block;
     background:rgba(255,255,255,0.14);
@@ -39,11 +68,13 @@ VIEW JOBS PAGE
     font-size:13px;
     font-weight:600;
     margin-bottom:14px;
+    animation:fadeSlideIn 0.7s ease both;
 }
 
 .viewjobs-hero h1{
     margin:0 0 10px;
     font-size:30px;
+    animation:fadeSlideIn 0.85s ease both;
 }
 
 .viewjobs-hero p{
@@ -51,15 +82,19 @@ VIEW JOBS PAGE
     max-width:780px;
     color:rgba(255,255,255,0.90);
     line-height:1.7;
+    animation:fadeSlideIn 1s ease both;
 }
 
 .viewjobs-hero-actions{
+    position:relative;
+    z-index:1;
     display:flex;
     gap:12px;
     flex-wrap:wrap;
     justify-content:flex-end;
     align-items:center;
     flex-shrink:0;
+    animation:fadeSlideIn 1.05s ease both;
 }
 
 .viewjobs-btn{
@@ -72,9 +107,28 @@ VIEW JOBS PAGE
     cursor:pointer;
     font-weight:700;
     font-size:14px;
-    transition:all 0.25s ease;
+    transition:all 0.28s ease;
     text-decoration:none;
     white-space:nowrap;
+    position:relative;
+    overflow:hidden;
+}
+
+.viewjobs-btn::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(120deg, transparent, rgba(255,255,255,0.18), transparent);
+    transform:translateX(-120%);
+    transition:transform 0.45s ease;
+}
+
+.viewjobs-btn:hover::before{
+    transform:translateX(120%);
+}
+
+.viewjobs-btn:hover{
+    transform:translateY(-2px) scale(1.01);
 }
 
 .viewjobs-btn-primary{
@@ -94,10 +148,6 @@ VIEW JOBS PAGE
     color:var(--primary-dark);
 }
 
-.viewjobs-btn:hover{
-    transform:translateY(-2px);
-}
-
 .viewjobs-stats{
     display:grid;
     grid-template-columns:repeat(4, minmax(0, 1fr));
@@ -106,12 +156,50 @@ VIEW JOBS PAGE
 }
 
 .viewjobs-stat-card{
+    position:relative;
+    overflow:hidden;
     background:var(--white);
     border:1px solid var(--border);
     border-radius:var(--radius-lg);
     padding:18px 18px 16px;
     box-shadow:var(--shadow-sm);
-    animation:panelFadeUp 0.72s ease both;
+    animation:cardReveal 0.65s ease both;
+    transition:transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+}
+
+.viewjobs-stat-card:nth-child(1){ animation-delay:0.10s; }
+.viewjobs-stat-card:nth-child(2){ animation-delay:0.18s; }
+.viewjobs-stat-card:nth-child(3){ animation-delay:0.26s; }
+.viewjobs-stat-card:nth-child(4){ animation-delay:0.34s; }
+
+.viewjobs-stat-card::after{
+    content:"";
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:4px;
+    background:linear-gradient(90deg, var(--primary-teal), var(--primary-dark));
+}
+
+.viewjobs-stat-card::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(120deg, transparent, rgba(15,155,142,0.05), transparent);
+    opacity:0;
+    transition:opacity 0.28s ease;
+    pointer-events:none;
+}
+
+.viewjobs-stat-card:hover{
+    transform:translateY(-6px);
+    box-shadow:var(--shadow-md);
+    border-color:rgba(15,155,142,0.18);
+}
+
+.viewjobs-stat-card:hover::before{
+    opacity:1;
 }
 
 .viewjobs-stat-label{
@@ -142,8 +230,99 @@ VIEW JOBS PAGE
     margin-top:22px;
 }
 
+.viewjobs-filter-panel{
+    position:relative;
+    overflow:hidden;
+}
+
+.viewjobs-filter-panel::before{
+    content:"";
+    position:absolute;
+    top:0;
+    left:-45%;
+    width:45%;
+    height:100%;
+    background:linear-gradient(90deg, transparent, rgba(15,155,142,0.08), transparent);
+    transform:skewX(-18deg);
+    animation:panelShine 6.5s ease-in-out infinite;
+    pointer-events:none;
+}
+
 .viewjobs-filter-form{
     width:100%;
+    position:relative;
+    z-index:1;
+}
+
+.viewjobs-section-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom:18px;
+    padding:16px 18px;
+    border-radius:18px;
+    background:linear-gradient(135deg, rgba(15,155,142,0.08), rgba(30,60,114,0.06));
+    border:1px solid rgba(15,155,142,0.10);
+    box-shadow:0 10px 24px rgba(15,35,65,0.05);
+}
+
+.viewjobs-section-title{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    min-width:0;
+}
+
+.viewjobs-section-icon{
+    width:46px;
+    height:46px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:16px;
+    background:linear-gradient(135deg, rgba(15,155,142,0.16), rgba(30,60,114,0.14));
+    color:var(--primary-dark);
+    font-size:20px;
+    flex-shrink:0;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.75);
+    transition:all 0.25s ease;
+}
+
+.viewjobs-section-title h2{
+    margin:0;
+    font-size:22px;
+    color:var(--text);
+    line-height:1.2;
+}
+
+.viewjobs-section-title p{
+    margin:5px 0 0;
+    font-size:13px;
+    color:var(--text-muted);
+    line-height:1.6;
+}
+
+.viewjobs-section-badge{
+    display:inline-flex;
+    align-items:center;
+    padding:9px 14px;
+    border-radius:999px;
+    background:linear-gradient(90deg, var(--primary-teal), var(--primary-dark));
+    color:var(--white);
+    font-size:12px;
+    font-weight:700;
+    box-shadow:0 10px 22px rgba(15,155,142,0.18);
+    white-space:nowrap;
+    transition:all 0.25s ease;
+}
+
+.viewjobs-section-header:hover .viewjobs-section-icon{
+    transform:scale(1.06) rotate(-4deg);
+}
+
+.viewjobs-section-header:hover .viewjobs-section-badge{
+    transform:translateY(-1px);
 }
 
 .viewjobs-filter-grid{
@@ -163,6 +342,9 @@ VIEW JOBS PAGE
     font-size:14px;
     font-weight:700;
     color:var(--text);
+    display:flex;
+    align-items:center;
+    gap:4px;
 }
 
 .viewjobs-filter-group.full{
@@ -187,13 +369,18 @@ VIEW JOBS PAGE
         0 4px 10px rgba(15,35,65,0.04);
 }
 
-.viewjobs-form-control:hover,
+.viewjobs-form-control:hover{
+    border-color:#c5d3e3;
+    background:linear-gradient(180deg, #ffffff, #f5faff);
+}
+
 .viewjobs-form-control:focus{
     border-color:var(--primary-teal);
     background:#ffffff;
     box-shadow:
         0 0 0 4px rgba(15,155,142,0.10),
         0 10px 24px rgba(15,155,142,0.08);
+    transform:translateY(-1px);
 }
 
 .viewjobs-form-control::placeholder{
@@ -230,6 +417,7 @@ VIEW JOBS PAGE
 
 .viewjobs-select-wrap:hover::after{
     border-color:var(--primary-teal);
+    transform:translateY(-55%) rotate(45deg) scale(1.06);
 }
 
 .viewjobs-filter-actions{
@@ -248,6 +436,12 @@ VIEW JOBS PAGE
     color:var(--primary-dark);
     font-size:13px;
     font-weight:700;
+    box-shadow:0 6px 16px rgba(15,35,65,0.06);
+    transition:transform 0.25s ease;
+}
+
+.viewjobs-result-badge:hover{
+    transform:translateY(-2px);
 }
 
 .viewjobs-table-wrap{
@@ -255,6 +449,7 @@ VIEW JOBS PAGE
     overflow-x:auto;
     border-radius:18px;
     border:1px solid var(--border);
+    box-shadow:0 10px 26px rgba(15,35,65,0.05);
 }
 
 .viewjobs-table{
@@ -276,6 +471,7 @@ VIEW JOBS PAGE
     letter-spacing:0.02em;
     border-bottom:1px solid var(--border);
     white-space:nowrap;
+    z-index:1;
 }
 
 .viewjobs-table tbody td{
@@ -285,7 +481,18 @@ VIEW JOBS PAGE
     color:var(--text);
     font-size:14px;
     background:var(--white);
+    transition:background 0.25s ease, transform 0.25s ease;
 }
+
+.viewjobs-table tbody tr{
+    animation:fadeScaleIn 0.5s ease both;
+}
+
+.viewjobs-table tbody tr:nth-child(1){ animation-delay:0.06s; }
+.viewjobs-table tbody tr:nth-child(2){ animation-delay:0.12s; }
+.viewjobs-table tbody tr:nth-child(3){ animation-delay:0.18s; }
+.viewjobs-table tbody tr:nth-child(4){ animation-delay:0.24s; }
+.viewjobs-table tbody tr:nth-child(5){ animation-delay:0.30s; }
 
 .viewjobs-table tbody tr:hover td{
     background:#fbfdff;
@@ -317,6 +524,12 @@ VIEW JOBS PAGE
     font-size:12px;
     font-weight:700;
     white-space:nowrap;
+    transition:transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.viewjobs-pill:hover{
+    transform:translateY(-1px);
+    box-shadow:0 8px 16px rgba(15,35,65,0.08);
 }
 
 .viewjobs-pill-remote{
@@ -360,12 +573,30 @@ VIEW JOBS PAGE
     color:var(--primary-dark);
     text-decoration:none;
     padding:8px 0;
-    transition:color 0.2s ease, transform 0.2s ease;
+    transition:color 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+    position:relative;
+}
+
+.viewjobs-action-link::after{
+    content:"";
+    position:absolute;
+    left:0;
+    bottom:2px;
+    width:100%;
+    height:2px;
+    background:currentColor;
+    transform:scaleX(0);
+    transform-origin:left;
+    transition:transform 0.22s ease;
 }
 
 .viewjobs-action-link:hover{
     color:var(--primary-teal);
     transform:translateY(-1px);
+}
+
+.viewjobs-action-link:hover::after{
+    transform:scaleX(1);
 }
 
 .viewjobs-action-link.danger{
@@ -382,12 +613,38 @@ VIEW JOBS PAGE
     gap:14px;
 }
 
+.viewjobs-job-list{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:18px;
+}
+
 .viewjobs-job-card{
+    position:relative;
+    overflow:hidden;
     background:var(--white);
     border:1px solid var(--border);
-    border-radius:20px;
+    border-radius:22px;
     padding:18px;
     box-shadow:var(--shadow-sm);
+    animation:activityCardIn 0.55s ease both;
+    transition:transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+}
+
+.viewjobs-job-card:hover{
+    transform:translateY(-6px);
+    box-shadow:var(--shadow-md);
+    border-color:rgba(15,155,142,0.18);
+}
+
+.viewjobs-job-card::before{
+    content:"";
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:4px;
+    background:linear-gradient(90deg, var(--primary-teal), var(--primary-dark));
 }
 
 .viewjobs-job-card-top{
@@ -395,15 +652,17 @@ VIEW JOBS PAGE
     justify-content:space-between;
     gap:14px;
     align-items:flex-start;
+    margin-bottom:14px;
 }
 
-.viewjobs-job-card-top h3{
+.viewjobs-job-title-wrap h3{
     margin:0 0 6px;
-    font-size:18px;
+    font-size:19px;
     color:var(--text);
+    line-height:1.3;
 }
 
-.viewjobs-job-card-top p{
+.viewjobs-job-title-wrap p{
     margin:0;
     color:var(--text-muted);
     font-size:13px;
@@ -419,6 +678,7 @@ VIEW JOBS PAGE
 
 .viewjobs-job-meta span{
     display:inline-flex;
+    align-items:center;
     padding:7px 12px;
     border-radius:999px;
     background:#f3f7fc;
@@ -441,20 +701,132 @@ VIEW JOBS PAGE
     padding:12px 12px 10px;
 }
 
-.viewjobs-job-grid small{
-    display:block;
-    font-size:11px;
-    color:var(--text-muted);
-    margin-bottom:6px;
-    text-transform:uppercase;
-    letter-spacing:0.04em;
-    font-weight:700;
+.viewjobs-job-extra{
+    margin-top:14px;
 }
 
-.viewjobs-job-grid strong{
-    display:block;
-    font-size:14px;
+.viewjobs-job-chip-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+}
+
+.viewjobs-info-chip{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:7px 12px;
+    border-radius:999px;
+    background:#eef6ff;
+    color:var(--primary-dark);
+    font-size:12px;
+    font-weight:700;
+    border:1px solid rgba(24,90,157,0.10);
+}
+
+.viewjobs-empty-state{
+    text-align:center;
+    padding:32px 18px;
+    border:1px dashed #cfd8e3;
+    border-radius:20px;
+    background:#fbfdff;
+}
+
+.viewjobs-empty-state h3{
+    margin:0 0 8px;
     color:var(--text);
+}
+
+.viewjobs-empty-state p{
+    margin:0;
+    color:var(--text-muted);
+}
+.viewjobs-job-skills{
+    display:block;
+    margin-top:4px;
+    font-size:13px;
+    color:#6b7280;
+    line-height:1.5;
+}
+
+@keyframes heroShine{
+    0%{
+        left:-35%;
+        opacity:0;
+    }
+    12%{
+        opacity:0.55;
+    }
+    30%{
+        left:120%;
+        opacity:0;
+    }
+    100%{
+        left:120%;
+        opacity:0;
+    }
+}
+
+@keyframes panelShine{
+    0%{
+        left:-45%;
+        opacity:0;
+    }
+    15%{
+        opacity:0.7;
+    }
+    35%{
+        left:120%;
+        opacity:0;
+    }
+    100%{
+        left:120%;
+        opacity:0;
+    }
+}
+
+@keyframes fadeSlideIn{
+    0%{
+        opacity:0;
+        transform:translateY(14px);
+    }
+    100%{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+@keyframes fadeScaleIn{
+    0%{
+        opacity:0;
+        transform:translateY(12px) scale(0.97);
+    }
+    100%{
+        opacity:1;
+        transform:translateY(0) scale(1);
+    }
+}
+
+@keyframes cardReveal{
+    0%{
+        opacity:0;
+        transform:translateY(18px) scale(0.98);
+    }
+    100%{
+        opacity:1;
+        transform:translateY(0) scale(1);
+    }
+}
+
+@keyframes activityCardIn{
+    0%{
+        opacity:0;
+        transform:translateY(22px) scale(0.98);
+    }
+    100%{
+        opacity:1;
+        transform:translateY(0) scale(1);
+    }
 }
 
 @media (max-width:1100px){
@@ -464,6 +836,10 @@ VIEW JOBS PAGE
 
     .viewjobs-filter-grid{
         grid-template-columns:repeat(2, minmax(0, 1fr));
+    }
+
+    .viewjobs-job-list{
+        grid-template-columns:1fr;
     }
 }
 
@@ -507,6 +883,11 @@ VIEW JOBS PAGE
         text-align:center;
     }
 
+    .viewjobs-section-header{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
     .viewjobs-table-wrap{
         display:none;
     }
@@ -531,5 +912,19 @@ VIEW JOBS PAGE
 
     .viewjobs-job-card-top{
         flex-direction:column;
+    }
+
+    .viewjobs-section-title h2{
+        font-size:18px;
+    }
+}
+
+@media (prefers-reduced-motion:reduce){
+    *,
+    *::before,
+    *::after{
+        animation:none !important;
+        transition:none !important;
+        scroll-behavior:auto !important;
     }
 }

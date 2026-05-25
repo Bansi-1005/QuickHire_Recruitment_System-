@@ -9,6 +9,7 @@ import Entity.*;
 import jakarta.ejb.EJB;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
@@ -18,9 +19,11 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -114,56 +117,92 @@ public class RecruiterResource {
         }
     }
 
-    // ================= COMPANY =================
-    @GET
-    @Path("getCompany")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getCompany(@QueryParam("recruiterId") int recruiterId) {
-        try {
-            if (recruiterId <= 0) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Invalid recruiterId")
-                        .build();
-            }
-
-            Tblcompany company = ejb.getCompanyDetails(recruiterId);
-
-            if (company == null) {
-                return Response.status(Response.Status.NOT_FOUND)
-                        .entity("Company not found")
-                        .build();
-            }
-
-            return Response.ok(company).build();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
-
+//    // ================= COMPANY =================
+//    @GET
+//    @Path("getCompany")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response getCompany(@QueryParam("recruiterId") int recruiterId) {
+//        try {
+//            if (recruiterId <= 0) {
+//                return Response.status(Response.Status.BAD_REQUEST)
+//                        .entity("Invalid recruiterId")
+//                        .build();
+//            }
+//
+//            Tblcompany company = ejb.getCompanyDetails(recruiterId);
+//
+//            if (company == null) {
+//                return Response.status(Response.Status.NOT_FOUND)
+//                        .entity("Company not found")
+//                        .build();
+//            }
+//
+//            return Response.ok(company).build();
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return Response.status(500).entity(e.getMessage()).build();
+//        }
+//    }
+//
 // ================= JOB MANAGEMENT =================
     @POST
     @Path("createJob")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response createJob(Tbljob job) {
+    public Response createJob(Tbljob job,@QueryParam("skillIds") String skillIdsStr) {
+
         try {
-            if (job == null || job.getRecruiterId() == null) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Job data or recruiter missing")
-                        .build();
+
+            Collection<Integer> skillIds = new ArrayList<>();
+
+            if (skillIdsStr != null && !skillIdsStr.isEmpty()) {
+
+                String[] arr = skillIdsStr.split(",");
+
+                for (String s : arr) {
+
+                    if (!s.trim().isEmpty()) {
+
+                        skillIds.add(Integer.valueOf(s.trim()));
+                    }
+                }
             }
 
-            ejb.createJob(job);
+            ejb.createJob(job, skillIds);
 
             return Response.ok("Job Created Successfully").build();
 
         } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
+
+            e.printStackTrace();
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build();
         }
     }
 
+    ////    @PUT
+////    @Path("updateJob")
+////    @Consumes(MediaType.APPLICATION_JSON)
+////    @Produces(MediaType.TEXT_PLAIN)
+////    public Response updateJob(Tbljob job) {
+////        try {
+////            if (job == null || job.getJobId() == null) {
+////                return Response.status(Response.Status.BAD_REQUEST)
+////                        .entity("Job ID required")
+////                        .build();
+////            }
+////
+////            ejb.updateJob(job);
+////
+////            return Response.ok("Job Updated Successfully").build();
+////
+////        } catch (Exception e) {
+////            return Response.status(500).entity(e.getMessage()).build();
+////        }
+////    }
 //    @PUT
 //    @Path("updateJob")
 //    @Consumes(MediaType.APPLICATION_JSON)
@@ -172,123 +211,107 @@ public class RecruiterResource {
 //        try {
 //            if (job == null || job.getJobId() == null) {
 //                return Response.status(Response.Status.BAD_REQUEST)
-//                        .entity("Job ID required")
+//                        .entity("Job ID is required")
 //                        .build();
 //            }
-//
 //            ejb.updateJob(job);
 //
 //            return Response.ok("Job Updated Successfully").build();
 //
 //        } catch (Exception e) {
+//            e.printStackTrace();
+//            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+//                    .entity("Error updating job: " + e.getMessage())
+//                    .build();
+//        }
+//    }
+//
+//    @DELETE
+//    @Path("deleteJob")
+//    @Produces(MediaType.TEXT_PLAIN)
+//    public Response deleteJob(@QueryParam("jobId") int jobId,
+//            @QueryParam("recruiterId") int recruiterId) {
+//        try {
+//            if (jobId <= 0 || recruiterId <= 0) {
+//                return Response.status(Response.Status.BAD_REQUEST)
+//                        .entity("Invalid IDs")
+//                        .build();
+//            }
+//
+//            ejb.deleteJob(jobId, recruiterId);
+//
+//            return Response.ok("Job Deleted Successfully").build();
+//
+//        } catch (Exception e) {
 //            return Response.status(500).entity(e.getMessage()).build();
 //        }
 //    }
-    @PUT
-    @Path("updateJob")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response updateJob(Tbljob job) {
-        try {
-            if (job == null || job.getJobId() == null) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Job ID is required")
-                        .build();
-            }
-            ejb.updateJob(job);
-
-            return Response.ok("Job Updated Successfully").build();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Error updating job: " + e.getMessage())
-                    .build();
-        }
-    }
-
-    @DELETE
-    @Path("deleteJob")
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response deleteJob(@QueryParam("jobId") int jobId,
-            @QueryParam("recruiterId") int recruiterId) {
-        try {
-            if (jobId <= 0 || recruiterId <= 0) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Invalid IDs")
-                        .build();
-            }
-
-            ejb.deleteJob(jobId, recruiterId);
-
-            return Response.ok("Job Deleted Successfully").build();
-
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
-
-    //multiple,single and all job delete logic
-//    @DELETE
-//@Path("deleteJob")
-//@Produces(MediaType.TEXT_PLAIN)
-//public Response deleteJob(@QueryParam("jobId") Integer jobId,
-//                          @QueryParam("jobIds") List<Integer> jobIds,
-//                          @QueryParam("recruiterId") int recruiterId) {
-//    try {
 //
-//        if (recruiterId <= 0) {
-//            return Response.status(Response.Status.BAD_REQUEST)
-//                    .entity("Recruiter ID required")
-//                    .build();
+//    //multiple,single and all job delete logic
+////    @DELETE
+////@Path("deleteJob")
+////@Produces(MediaType.TEXT_PLAIN)
+////public Response deleteJob(@QueryParam("jobId") Integer jobId,
+////                          @QueryParam("jobIds") List<Integer> jobIds,
+////                          @QueryParam("recruiterId") int recruiterId) {
+////    try {
+////
+////        if (recruiterId <= 0) {
+////            return Response.status(Response.Status.BAD_REQUEST)
+////                    .entity("Recruiter ID required")
+////                    .build();
+////        }
+////
+////        ejb.deleteJob(jobId, jobIds, recruiterId);
+////
+////        // Response messages
+////        if (jobId != null && jobId == 0) {
+////            return Response.ok("All Jobs Deleted Successfully").build();
+////        } else if (jobIds != null && !jobIds.isEmpty()) {
+////            return Response.ok("Multiple Jobs Deleted Successfully").build();
+////        } else if (jobId != null && jobId > 0) {
+////            return Response.ok("Single Job Deleted Successfully").build();
+////        } else {
+////            return Response.status(Response.Status.BAD_REQUEST)
+////                    .entity("Provide jobId or jobIds")
+////                    .build();
+////        }
+////
+////    } catch (Exception e) {
+////        return Response.status(500).entity(e.getMessage()).build();
+////    }
+////
+    /// @param userId}
+//    @PUT
+//    @Path("updateJobStatus")
+//    @Produces(MediaType.TEXT_PLAIN)
+//    public Response updateJobStatus(@QueryParam("jobId") int jobId,
+//            @QueryParam("status") String status) {
+//        try {
+//            if (jobId <= 0 || status == null || status.isEmpty()) {
+//                return Response.status(Response.Status.BAD_REQUEST)
+//                        .entity("JobId or Status missing")
+//                        .build();
+//            }
+//
+//            ejb.updateJobStatus(jobId, status);
+//
+//            return Response.ok("Status Updated Successfully").build();
+//
+//        } catch (Exception e) {
+//            return Response.status(500).entity(e.getMessage()).build();
 //        }
-//
-//        ejb.deleteJob(jobId, jobIds, recruiterId);
-//
-//        // Response messages
-//        if (jobId != null && jobId == 0) {
-//            return Response.ok("All Jobs Deleted Successfully").build();
-//        } else if (jobIds != null && !jobIds.isEmpty()) {
-//            return Response.ok("Multiple Jobs Deleted Successfully").build();
-//        } else if (jobId != null && jobId > 0) {
-//            return Response.ok("Single Job Deleted Successfully").build();
-//        } else {
-//            return Response.status(Response.Status.BAD_REQUEST)
-//                    .entity("Provide jobId or jobIds")
-//                    .build();
-//        }
-//
-//    } catch (Exception e) {
-//        return Response.status(500).entity(e.getMessage()).build();
 //    }
-//}
-    @PUT
-    @Path("updateJobStatus")
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response updateJobStatus(@QueryParam("jobId") int jobId,
-            @QueryParam("status") String status) {
-        try {
-            if (jobId <= 0 || status == null || status.isEmpty()) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("JobId or Status missing")
-                        .build();
-            }
-
-            ejb.updateJobStatus(jobId, status);
-
-            return Response.ok("Status Updated Successfully").build();
-
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
-
+//
     @GET
     @Path("getJobs")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getJobs(@QueryParam("recruiterId") int recruiterId) {
+
         try {
+
             if (recruiterId <= 0) {
+
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity("Invalid Recruiter ID")
                         .build();
@@ -296,61 +319,198 @@ public class RecruiterResource {
 
             Collection<Tbljob> jobs = ejb.getJobs(recruiterId);
 
-            if (jobs == null || jobs.isEmpty()) {
-                return Response.status(Response.Status.NOT_FOUND)
-                        .entity("No jobs found")
-                        .build();
+            if (jobs == null) {
+                jobs = new ArrayList<>();
             }
 
             return Response.ok(jobs).build();
 
         } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
+
+            e.printStackTrace();
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build();
         }
     }
 
     // ================= JOB SKILLS =================
+    @GET
+    @Path("getAllSkills")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllSkills(
+            @QueryParam("userId") Integer userId) {
+
+        try {
+
+            return Response.ok(
+                    ejb.getAllSkills(userId)
+            ).build();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error fetching skills")
+                    .build();
+        }
+    }
+
+    @GET
+    @Path("getSkillCategories")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getSkillCategories(
+            @QueryParam("userId") Integer userId) {
+
+        try {
+
+            Collection<Tblskillcategory> categories
+                    = ejb.getSkillCategories(userId);
+
+            if (categories == null) {
+                categories = new ArrayList<>();
+            }
+
+            return Response.ok(categories).build();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error fetching skill categories")
+                    .build();
+        }
+    }
+
+    @GET
+    @Path("getSkillsByCategory")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getSkillsByCategory(
+            @QueryParam("categoryId") Integer categoryId,
+            @QueryParam("userId") Integer userId) {
+
+        try {
+
+            Collection<Tblskills> skills
+                    = ejb.getSkillsByCategory(categoryId, userId);
+
+            if (skills == null) {
+                skills = new ArrayList<>();
+            }
+
+            return Response.ok(skills).build();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error fetching skills")
+                    .build();
+        }
+    }
+
     @POST
-    @Path("addSkillToJob")
+    @Path("addSkillCategory")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response addSkillToJob(@QueryParam("jobId") int jobId,
-            @QueryParam("skillId") int skillId) {
+    public Response addSkillCategory(@QueryParam("categoryName") String categoryName, @QueryParam("userId") Integer userId) {
+
         try {
-            if (jobId <= 0 || skillId <= 0) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("JobId or SkillId missing")
-                        .build();
-            }
 
-            ejb.addSkillToJob(jobId, skillId);
+            ejb.addSkillCategory(
+                    categoryName,
+                    userId
+            );
 
-            return Response.ok("Skill Added Successfully").build();
+            return Response
+                    .ok("Category Added")
+                    .build();
 
         } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
+
+            e.printStackTrace();
+
+            return Response
+                    .status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error adding category")
+                    .build();
         }
     }
 
-    @DELETE
-    @Path("removeSkillFromJob")
+    @POST
+    @Path("addSkill")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response removeSkillFromJob(@QueryParam("jobId") int jobId,
-            @QueryParam("skillId") int skillId) {
+    public Response addSkill(@QueryParam("skillName") String skillName,@QueryParam("categoryId") Integer categoryId,@QueryParam("userId") Integer userId) {
+
         try {
-            if (jobId <= 0 || skillId <= 0) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("JobId or SkillId missing")
-                        .build();
-            }
 
-            ejb.removeSkillFromJob(jobId, skillId);
+            ejb.addSkill(
+                    skillName,
+                    categoryId,
+                    userId
+            );
 
-            return Response.ok("Skill Removed Successfully").build();
+            return Response
+                    .ok("Skill Added")
+                    .build();
 
         } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
+
+            e.printStackTrace();
+
+            return Response
+                    .status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error adding skill")
+                    .build();
         }
     }
+//    @POST
+//    @Path("addSkillToJob")
+//    @Produces(MediaType.TEXT_PLAIN)
+//    public Response addSkillToJob(@QueryParam("jobId") int jobId,
+//            @QueryParam("skillId") int skillId) {
+//        try {
+//            if (jobId <= 0 || skillId <= 0) {
+//                return Response.status(Response.Status.BAD_REQUEST)
+//                        .entity("JobId or SkillId missing")
+//                        .build();
+//            }
+//
+//            ejb.addSkillToJob(jobId, skillId);
+//
+//            return Response.ok("Skill Added Successfully").build();
+//
+//        } catch (Exception e) {
+//            return Response.status(500).entity(e.getMessage()).build();
+//        }
+//    }
+//
+//    @DELETE
+//    @Path("removeSkillFromJob")
+//    @Produces(MediaType.TEXT_PLAIN)
+//    public Response removeSkillFromJob(@QueryParam("jobId") int jobId,
+//            @QueryParam("skillId") int skillId) {
+//        try {
+//            if (jobId <= 0 || skillId <= 0) {
+//                return Response.status(Response.Status.BAD_REQUEST)
+//                        .entity("JobId or SkillId missing")
+//                        .build();
+//            }
+//
+//            ejb.removeSkillFromJob(jobId, skillId);
+//
+//            return Response.ok("Skill Removed Successfully").build();
+//
+//        } catch (Exception e) {
+//            return Response.status(500).entity(e.getMessage()).build();
+//        }
+//    }
+//
 
     @GET
     @Path("getJobSkills")
@@ -378,283 +538,336 @@ public class RecruiterResource {
         }
     }
 
-    // ================= APPLICATION =================
-    @GET
-    @Path("getApplications")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getApplications(@QueryParam("jobId") int jobId) {
-        try {
-            if (jobId <= 0) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Invalid Job ID")
-                        .build();
-            }
-
-            Collection<Tblapplication> apps = ejb.getApplications(jobId);
-
-            if (apps == null || apps.isEmpty()) {
-                return Response.status(Response.Status.NOT_FOUND)
-                        .entity("No applications found")
-                        .build();
-            }
-
-            return Response.ok(apps).build();
-
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
-
-    @PUT
-    @Path("updateApplicationStatus")
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response updateApplicationStatus(@QueryParam("applicationId") int id,
-            @QueryParam("status") String status) {
-        try {
-            if (id <= 0 || status == null || status.isEmpty()) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("ApplicationId or Status missing")
-                        .build();
-            }
-
-            ejb.updateApplicationStatus(id, status);
-
-            return Response.ok("Application Status Updated Successfully").build();
-
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
-
-    // ================= APPLICATION HISTORY =================
-    @POST
-    @Path("addApplicationHistory")
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response addApplicationHistory(@QueryParam("applicationId") int applicationId,
-            @QueryParam("oldStatus") String oldStatus,
-            @QueryParam("newStatus") String newStatus) {
-        try {
-
-            if (applicationId <= 0 || oldStatus == null || newStatus == null) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Missing required fields")
-                        .build();
-            }
-
-            ejb.addApplicationStatusHistory(applicationId, oldStatus, newStatus);
-
-            return Response.ok("History Added Successfully").build();
-
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
-
-    // ================= SCREENING =================
-    @POST
-    @Path("generateScore")
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response generateScore(@QueryParam("applicationId") int id) {
-        try {
-            if (id <= 0) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Invalid Application ID")
-                        .build();
-            }
-
-            ejb.generateScreeningScore(id);
-
-            return Response.ok("Score Generated Successfully").build();
-
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
-
-    @GET
-    @Path("getScore")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getScore(@QueryParam("applicationId") int applicationId) {
-        try {
-            if (applicationId <= 0) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Invalid Application ID")
-                        .build();
-            }
-
-            Tblscreeningscore score = ejb.getScore(applicationId);
-
-            if (score == null) {
-                return Response.status(Response.Status.NOT_FOUND)
-                        .entity("Score not found")
-                        .build();
-            }
-
-            return Response.ok(score).build();
-
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
-
-//    // ================= SHORTLIST =================
-    @GET
-    @Path("topCandidates")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response topCandidates(@QueryParam("jobId") int jobId) {
-        try {
-            if (jobId <= 0) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Invalid Job ID").build();
-            }
-
-            Collection<Tblapplication> list = ejb.getTopCandidates(jobId);
-
-            if (list == null || list.isEmpty()) {
-                return Response.status(Response.Status.NOT_FOUND)
-                        .entity("No candidates found").build();
-            }
-
-            return Response.ok(list).build();
-
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
-
-    @GET
-    @Path("filterCandidates")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response filterCandidates(@QueryParam("jobId") int jobId,
-            @QueryParam("score") double score) {
-        try {
-            if (jobId <= 0 || score < 0) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Invalid input").build();
-            }
-
-            Collection<Tblapplication> list
-                    = ejb.filterCandidatesByScore(jobId, score);
-
-            if (list == null || list.isEmpty()) {
-                return Response.status(Response.Status.NOT_FOUND)
-                        .entity("No candidates found").build();
-            }
-
-            return Response.ok(list).build();
-
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
-//    // ================= INTERVIEW =================
-
-    @POST
-    @Path("scheduleInterview")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response scheduleInterview(Tblinterview i) {
-        try {
-            if (i == null || i.getApplicationId() == null) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Application ID required").build();
-            }
-
-            ejb.scheduleInterview(i);
-
-            return Response.ok("Interview Scheduled Successfully").build();
-
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
-
-    @PUT
-    @Path("updateInterview")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response updateInterview(Tblinterview i) {
-        try {
-            if (i == null || i.getInterviewId() == null) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Interview ID required").build();
-            }
-
-            ejb.updateInterview(i);
-
-            return Response.ok("Interview Updated Successfully").build();
-
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
-
-    @PUT
-    @Path("updateFeedback")
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response updateFeedback(@QueryParam("interviewId") int id,
-            @QueryParam("feedback") String feedback,
-            @QueryParam("result") String result) {
-        try {
-            if (id <= 0 || feedback == null || result == null) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Missing data").build();
-            }
-
-            ejb.updateInterviewFeedback(id, feedback, result);
-
-            return Response.ok("Feedback Updated Successfully").build();
-
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
-    // ================= NOTIFICATION =================
-
-    @POST
-    @Path("sendNotification")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response sendNotification(Tblnotification n) {
-        try {
-            if (n == null || n.getUserId() == null) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("User ID required").build();
-            }
-
-            ejb.sendNotification(n);
-
-            return Response.ok("Notification Sent").build();
-
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
-
-    @GET
-    @Path("getNotifications")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getNotifications(@QueryParam("userId") int userId) {
-        try {
-            if (userId <= 0) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Invalid User ID").build();
-            }
-
-            Collection<Tblnotification> list
-                    = ejb.getRecruiterNotifications(userId);
-
-            if (list == null || list.isEmpty()) {
-                return Response.status(Response.Status.NOT_FOUND)
-                        .entity("No notifications found").build();
-            }
-
-            return Response.ok(list).build();
-
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
+//    @GET
+//    @Path("getJobSkillWeights")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response getJobSkillWeights(@QueryParam("jobId") int jobId) {
+//        try {
+//            if (jobId <= 0) {
+//                return Response.status(Response.Status.BAD_REQUEST)
+//                        .entity("Invalid jobId")
+//                        .build();
+//            }
+//
+//            Collection<Tbljobskillweightage> list = ejb.getJobSkillWeightage(jobId);
+//
+//            if (list == null) {
+//                list = new ArrayList<>();
+//            }
+//
+//            return Response.ok(list).build();
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return Response.status(500)
+//                    .entity(e.getMessage())
+//                    .build();
+//        }
+//    }
+//
+//    @POST
+//    @Path("addJobSkillWeight")
+//    @Produces(MediaType.TEXT_PLAIN)
+//    public Response addJobSkillWeight(@QueryParam("jobId") int jobId,
+//            @QueryParam("skillId") int skillId,
+//            @QueryParam("weight") int weight) {
+//        try {
+//            if (jobId <= 0 || skillId <= 0 || weight <= 0) {
+//                return Response.status(Response.Status.BAD_REQUEST)
+//                        .entity("Invalid input")
+//                        .build();
+//            }
+//
+//            // FIX: call correct method
+//            ejb.updateJobSkillWeightage(jobId, skillId, weight);
+//
+//            return Response.ok("Skill weight updated successfully").build();
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return Response.status(500)
+//                    .entity(e.getMessage())
+//                    .build();
+//        }
+//    }
+//
+//    // ================= APPLICATION =================
+//    @GET
+//    @Path("getApplications")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response getApplications(@QueryParam("jobId") int jobId) {
+//        try {
+//            if (jobId <= 0) {
+//                return Response.status(Response.Status.BAD_REQUEST)
+//                        .entity("Invalid Job ID")
+//                        .build();
+//            }
+//
+//            Collection<Tblapplication> apps = ejb.getApplications(jobId);
+//
+//            if (apps == null || apps.isEmpty()) {
+//                return Response.status(Response.Status.NOT_FOUND)
+//                        .entity("No applications found")
+//                        .build();
+//            }
+//
+//            return Response.ok(apps).build();
+//
+//        } catch (Exception e) {
+//            return Response.status(500).entity(e.getMessage()).build();
+//        }
+//    }
+//
+//    @PUT
+//    @Path("updateApplicationStatus")
+//    @Produces(MediaType.TEXT_PLAIN)
+//    public Response updateApplicationStatus(@QueryParam("applicationId") int id,
+//            @QueryParam("status") String status) {
+//        try {
+//            if (id <= 0 || status == null || status.isEmpty()) {
+//                return Response.status(Response.Status.BAD_REQUEST)
+//                        .entity("ApplicationId or Status missing")
+//                        .build();
+//            }
+//
+//            ejb.updateApplicationStatus(id, status);
+//
+//            return Response.ok("Application Status Updated Successfully").build();
+//
+//        } catch (Exception e) {
+//            return Response.status(500).entity(e.getMessage()).build();
+//        }
+//    }
+//
+//    // ================= APPLICATION HISTORY =================
+//    @POST
+//    @Path("addApplicationHistory")
+//    @Produces(MediaType.TEXT_PLAIN)
+//    public Response addApplicationHistory(@QueryParam("applicationId") int applicationId,
+//            @QueryParam("oldStatus") String oldStatus,
+//            @QueryParam("newStatus") String newStatus) {
+//        try {
+//
+//            if (applicationId <= 0 || oldStatus == null || newStatus == null) {
+//                return Response.status(Response.Status.BAD_REQUEST)
+//                        .entity("Missing required fields")
+//                        .build();
+//            }
+//
+//            ejb.addApplicationStatusHistory(applicationId, oldStatus, newStatus);
+//
+//            return Response.ok("History Added Successfully").build();
+//
+//        } catch (Exception e) {
+//            return Response.status(500).entity(e.getMessage()).build();
+//        }
+//    }
+//
+//    // ================= SCREENING =================
+//    @POST
+//    @Path("generateScore")
+//    @Produces(MediaType.TEXT_PLAIN)
+//    public Response generateScore(@QueryParam("applicationId") int id) {
+//        try {
+//            if (id <= 0) {
+//                return Response.status(Response.Status.BAD_REQUEST)
+//                        .entity("Invalid Application ID")
+//                        .build();
+//            }
+//
+//            ejb.generateScreeningScore(id);
+//
+//            return Response.ok("Score Generated Successfully").build();
+//
+//        } catch (Exception e) {
+//            return Response.status(500).entity(e.getMessage()).build();
+//        }
+//    }
+//
+//    @GET
+//    @Path("getScore")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response getScore(@QueryParam("applicationId") int applicationId) {
+//        try {
+//            if (applicationId <= 0) {
+//                return Response.status(Response.Status.BAD_REQUEST)
+//                        .entity("Invalid Application ID")
+//                        .build();
+//            }
+//
+//            Tblscreeningscore score = ejb.getScore(applicationId);
+//
+//            if (score == null) {
+//                return Response.status(Response.Status.NOT_FOUND)
+//                        .entity("Score not found")
+//                        .build();
+//            }
+//
+//            return Response.ok(score).build();
+//
+//        } catch (Exception e) {
+//            return Response.status(500).entity(e.getMessage()).build();
+//        }
+//    }
+//
+    ////    // ================= SHORTLIST =================
+//    @GET
+//    @Path("topCandidates")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response topCandidates(@QueryParam("jobId") int jobId) {
+//        try {
+//            if (jobId <= 0) {
+//                return Response.status(Response.Status.BAD_REQUEST)
+//                        .entity("Invalid Job ID").build();
+//            }
+//
+//            Collection<Tblapplication> list = ejb.getTopCandidates(jobId);
+//
+//            if (list == null || list.isEmpty()) {
+//                return Response.status(Response.Status.NOT_FOUND)
+//                        .entity("No candidates found").build();
+//            }
+//
+//            return Response.ok(list).build();
+//
+//        } catch (Exception e) {
+//            return Response.status(500).entity(e.getMessage()).build();
+//        }
+//    }
+//
+//    @GET
+//    @Path("filterCandidates")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response filterCandidates(@QueryParam("jobId") int jobId,
+//            @QueryParam("score") double score) {
+//        try {
+//            if (jobId <= 0 || score < 0) {
+//                return Response.status(Response.Status.BAD_REQUEST)
+//                        .entity("Invalid input").build();
+//            }
+//
+//            Collection<Tblapplication> list
+//                    = ejb.filterCandidatesByScore(jobId, score);
+//
+//            if (list == null || list.isEmpty()) {
+//                return Response.status(Response.Status.NOT_FOUND)
+//                        .entity("No candidates found").build();
+//            }
+//
+//            return Response.ok(list).build();
+//
+//        } catch (Exception e) {
+//            return Response.status(500).entity(e.getMessage()).build();
+//        }
+//    }
+////    // ================= INTERVIEW =================
+//
+//    @POST
+//    @Path("scheduleInterview")
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.TEXT_PLAIN)
+//    public Response scheduleInterview(Tblinterview i) {
+//        try {
+//            if (i == null || i.getApplicationId() == null) {
+//                return Response.status(Response.Status.BAD_REQUEST)
+//                        .entity("Application ID required").build();
+//            }
+//
+//            ejb.scheduleInterview(i);
+//
+//            return Response.ok("Interview Scheduled Successfully").build();
+//
+//        } catch (Exception e) {
+//            return Response.status(500).entity(e.getMessage()).build();
+//        }
+//    }
+//
+//    @PUT
+//    @Path("updateInterview")
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.TEXT_PLAIN)
+//    public Response updateInterview(Tblinterview i) {
+//        try {
+//            if (i == null || i.getInterviewId() == null) {
+//                return Response.status(Response.Status.BAD_REQUEST)
+//                        .entity("Interview ID required").build();
+//            }
+//
+//            ejb.updateInterview(i);
+//
+//            return Response.ok("Interview Updated Successfully").build();
+//
+//        } catch (Exception e) {
+//            return Response.status(500).entity(e.getMessage()).build();
+//        }
+//    }
+//
+//    @PUT
+//    @Path("updateFeedback")
+//    @Produces(MediaType.TEXT_PLAIN)
+//    public Response updateFeedback(@QueryParam("interviewId") int id,
+//            @QueryParam("feedback") String feedback,
+//            @QueryParam("result") String result) {
+//        try {
+//            if (id <= 0 || feedback == null || result == null) {
+//                return Response.status(Response.Status.BAD_REQUEST)
+//                        .entity("Missing data").build();
+//            }
+//
+//            ejb.updateInterviewFeedback(id, feedback, result);
+//
+//            return Response.ok("Feedback Updated Successfully").build();
+//
+//        } catch (Exception e) {
+//            return Response.status(500).entity(e.getMessage()).build();
+//        }
+//    }
+//    // ================= NOTIFICATION =================
+//
+//    @POST
+//    @Path("sendNotification")
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.TEXT_PLAIN)
+//    public Response sendNotification(Tblnotification n) {
+//        try {
+//            if (n == null || n.getUserId() == null) {
+//                return Response.status(Response.Status.BAD_REQUEST)
+//                        .entity("User ID required").build();
+//            }
+//
+//            ejb.sendNotification(n);
+//
+//            return Response.ok("Notification Sent").build();
+//
+//        } catch (Exception e) {
+//            return Response.status(500).entity(e.getMessage()).build();
+//        }
+//    }
+//
+//    @GET
+//    @Path("getNotifications")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response getNotifications(@QueryParam("userId") int userId) {
+//        try {
+//            if (userId <= 0) {
+//                return Response.status(Response.Status.BAD_REQUEST)
+//                        .entity("Invalid User ID").build();
+//            }
+//
+//            Collection<Tblnotification> list
+//                    = ejb.getRecruiterNotifications(userId);
+//
+//            if (list == null || list.isEmpty()) {
+//                return Response.status(Response.Status.NOT_FOUND)
+//                        .entity("No notifications found").build();
+//            }
+//
+//            return Response.ok(list).build();
+//
+//        } catch (Exception e) {
+//            return Response.status(500).entity(e.getMessage()).build();
+//        }
+//    }
 
     @GET
     @Path("todayInterviews")
@@ -801,6 +1014,7 @@ public class RecruiterResource {
         try {
 
             if (recruiterId <= 0) {
+
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity("Invalid Recruiter ID")
                         .build();
@@ -809,16 +1023,16 @@ public class RecruiterResource {
             Collection<Tblscreeningscore> list
                     = ejb.getDashboardTopCandidates(recruiterId);
 
-            if (list == null || list.isEmpty()) {
-
-                return Response.status(Response.Status.NOT_FOUND)
-                        .entity("No candidates found")
-                        .build();
+            // IMPORTANT FIX
+            if (list == null) {
+                list = new ArrayList<>();
             }
 
             return Response.ok(list).build();
 
         } catch (Exception e) {
+
+            e.printStackTrace();
 
             return Response.status(500)
                     .entity(e.getMessage())
@@ -844,24 +1058,23 @@ public class RecruiterResource {
             Collection<Tblinterview> list
                     = ejb.getDashboardUpcomingInterviews(recruiterId);
 
-            if (list == null || list.isEmpty()) {
-
-                return Response.status(Response.Status.NOT_FOUND)
-                        .entity("No interviews found")
-                        .build();
+            // IMPORTANT FIX
+            if (list == null) {
+                list = new ArrayList<>();
             }
 
             return Response.ok(list).build();
 
         } catch (Exception e) {
 
+            e.printStackTrace();
+
             return Response.status(500)
                     .entity(e.getMessage())
                     .build();
         }
     }
-    
-    
+
     @GET
     @Path("recentActivities")
     @Produces(MediaType.APPLICATION_JSON)
@@ -878,12 +1091,19 @@ public class RecruiterResource {
                         .build();
             }
 
-            Collection<Tblnotification> list =
-                    ejb.getRecentActivities(userId);
+            Collection<Tblnotification> list
+                    = ejb.getRecentActivities(userId);
+
+            // IMPORTANT FIX
+            if (list == null) {
+                list = new ArrayList<>();
+            }
 
             return Response.ok(list).build();
 
         } catch (Exception e) {
+
+            e.printStackTrace();
 
             return Response.status(500)
                     .entity(e.getMessage())
@@ -891,4 +1111,3 @@ public class RecruiterResource {
         }
     }
 }
-

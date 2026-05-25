@@ -12,6 +12,7 @@
             <f:viewAction action="#{loginBean.checkLogin}" />
             <f:viewAction action="#{recruiterCDIBean.loadProfile}" />
             <f:viewAction action="#{recruiterCDIBean.initLocationData}" />
+            <f:viewAction action="#{recruiterCDIBean.initializeJobForm}" />
         </f:metadata>
 
         <h:head>
@@ -88,7 +89,6 @@
 
                                 <h:form id="postJobForm" styleClass="postjob-job-form">
 
-
                                     <div class="postjob-form-grid">
 
                                         <!-- JOB TITLE -->
@@ -107,7 +107,7 @@
                                                 <f:validateLength minimum="3" maximum="100" />
 
                                                 <f:ajax event="keyup"
-                                                        delay="200"
+                                                        delay="100"
                                                         execute="@this"
                                                         render="jobTitleMessage" />
                                             </h:inputText>
@@ -116,32 +116,40 @@
                                                        for="jobTitle"
                                                        styleClass="postjob-field-error" />
                                         </div>
-
-                                        <!-- REQUIRED SKILLS -->
+                                        <!-- JOB TYPE -->
                                         <div class="postjob-form-group">
-                                            <label for="skills">Required Skills</label>
+                                            <label for="jobType">Job Type</label>
 
-                                            <h:inputText id="skills"
-                                                         value="#{recruiterCDIBean.skillInput}"
-                                                         required="true"
-                                                         requiredMessage="Skills are required"
-                                                         styleClass="postjob-form-control"
-                                                         pt:placeholder="Java, Spring Boot, SQL, REST API">
+                                            <div class="postjob-select-wrap">
+                                                <h:selectOneMenu id="jobType"
+                                                                 value="#{recruiterCDIBean.job.jobType}"
+                                                                 required="true"
+                                                                 requiredMessage="Please select job type"
+                                                                 styleClass="postjob-form-control postjob-select-control">
 
-                                                <f:ajax event="keyup"
-                                                        delay="200"
-                                                        execute="@this"
-                                                        render="skillsMessage" />
-                                            </h:inputText>
+                                                    <f:selectItem itemLabel="Select Job Type"
+                                                                  itemValue="#{null}"
+                                                                  noSelectionOption="true" />
 
-                                            <h:message id="skillsMessage"
-                                                       for="skills"
+                                                    <f:selectItem itemLabel="Full-time" itemValue="Full-time" />
+                                                    <f:selectItem itemLabel="Part-time" itemValue="Part-time" />
+                                                    <f:selectItem itemLabel="Internship" itemValue="Internship" />
+                                                    <f:selectItem itemLabel="Contract" itemValue="Contract" />
+
+                                                    <f:ajax event="change"
+                                                            delay="100"
+                                                            execute="@this"
+                                                            render="jobTypeMessage" />
+                                                </h:selectOneMenu>
+                                            </div>
+
+                                            <h:message id="jobTypeMessage"
+                                                       for="jobType"
                                                        styleClass="postjob-field-error" />
-
-                                            <small class="postjob-hint-text">
-                                                Enter skills separated by commas.
-                                            </small>
                                         </div>
+                                        <!-- EMPTY GRID PARTNER FOR FIRST ROW BALANCE -->
+                                        <div class="postjob-form-group postjob-empty-slot"></div>
+
 
                                         <!-- WORK MODE -->
                                         <div class="postjob-form-group full">
@@ -227,7 +235,7 @@
                                                                 <f:selectItems value="#{recruiterCDIBean.availableStates}" />
 
                                                                 <f:ajax execute="@this"
-                                                                        delay="200"
+                                                                        delay="100"
                                                                         listener="#{recruiterCDIBean.onStateChange}"
                                                                         render="jobCitySelect generatedLocationPreview generatedLocationInput cityHint stateMessage" />
                                                             </h:selectOneMenu>
@@ -262,7 +270,7 @@
                                                                 <f:selectItems value="#{recruiterCDIBean.availableCities}" />
 
                                                                 <f:ajax execute="@this"
-                                                                        delay="200"
+                                                                        delay="100"
                                                                         listener="#{recruiterCDIBean.onCityChange}"
                                                                         render="generatedLocationPreview generatedLocationInput cityMessage" />
                                                             </h:selectOneMenu>
@@ -332,7 +340,7 @@
                                                 <f:validateLongRange minimum="0" maximum="50" />
 
                                                 <f:ajax event="keyup"
-                                                        delay="200"
+                                                        delay="100"
                                                         execute="@this"
                                                         render="experienceMessage" />
                                             </h:inputText>
@@ -342,37 +350,7 @@
                                                        styleClass="postjob-field-error" />
                                         </div>
 
-                                        <!-- JOB TYPE -->
-                                        <div class="postjob-form-group">
-                                            <label for="jobType">Job Type</label>
 
-                                            <div class="postjob-select-wrap">
-                                                <h:selectOneMenu id="jobType"
-                                                                 value="#{recruiterCDIBean.job.jobType}"
-                                                                 required="true"
-                                                                 requiredMessage="Please select job type"
-                                                                 styleClass="postjob-form-control postjob-select-control">
-
-                                                    <f:selectItem itemLabel="Select Job Type"
-                                                                  itemValue="#{null}"
-                                                                  noSelectionOption="true" />
-
-                                                    <f:selectItem itemLabel="Full-time" itemValue="Full-time" />
-                                                    <f:selectItem itemLabel="Part-time" itemValue="Part-time" />
-                                                    <f:selectItem itemLabel="Internship" itemValue="Internship" />
-                                                    <f:selectItem itemLabel="Contract" itemValue="Contract" />
-
-                                                    <f:ajax event="change"
-                                                            delay="200"
-                                                            execute="@this"
-                                                            render="jobTypeMessage" />
-                                                </h:selectOneMenu>
-                                            </div>
-
-                                            <h:message id="jobTypeMessage"
-                                                       for="jobType"
-                                                       styleClass="postjob-field-error" />
-                                        </div>
 
                                         <!-- JOB STATUS -->
                                         <div class="postjob-form-group">
@@ -394,7 +372,7 @@
                                                     <f:selectItem itemLabel="Onhold" itemValue="Onhold" />
 
                                                     <f:ajax event="change"
-                                                            delay="200"
+                                                            delay="100"
                                                             execute="@this"
                                                             render="jobStatusMessage" />
                                                 </h:selectOneMenu>
@@ -425,7 +403,7 @@
 
                                                     <f:ajax event="change"
                                                             execute="@this"
-                                                            delay="200"
+                                                            delay="100"
                                                             render="compensationTypeMessage" />
                                                 </h:selectOneMenu>
                                             </div>
@@ -444,15 +422,15 @@
                                                          required="true"
                                                          requiredMessage="Minimum compensation is required"
                                                          converterMessage="Enter valid minimum amount"
-                                                         validatorMessage="Minimum compensation must be greater than 0"
+                                                         validatorMessage="Compensation must be greater than 0"
                                                          styleClass="postjob-form-control"
-                                                         pt:placeholder="Example: 22000">
+                                                         pt:placeholder="Example: 21000">
 
                                                 <f:validateDoubleRange minimum="0.01" />
 
                                                 <f:ajax event="keyup"
                                                         execute="@this"
-                                                        delay="200"
+                                                        delay="100"
                                                         listener="#{recruiterCDIBean.syncMaxCompensation}"
                                                         render="compensationMinMessage compensationMaxWrapper" />
                                             </h:inputText>
@@ -471,15 +449,16 @@
                                                          required="true"
                                                          requiredMessage="Maximum compensation is required"
                                                          converterMessage="Enter valid maximum amount"
-                                                         validatorMessage="Maximum compensation must be greater than 0"
+                                                         validator="#{recruiterCDIBean.validateCompensation}"
+                                                         validatorMessage="Compensation must be greater than 0"
                                                          styleClass="postjob-form-control"
-                                                         pt:placeholder="Example: 42000">
+                                                         pt:placeholder="Example: 41000">
 
                                                 <f:validateDoubleRange minimum="0.01" />
 
                                                 <f:ajax event="keyup"
                                                         execute="@this"
-                                                        delay="200"
+                                                        delay="100"
                                                         render="compensationMaxMessage" />
                                             </h:inputText>
 
@@ -508,7 +487,7 @@
 
                                                     <f:ajax event="change"
                                                             execute="@this"
-                                                            delay="200"
+                                                            delay="100"
                                                             render="compensationPeriodMessage" />
                                                 </h:selectOneMenu>
                                             </div>
@@ -535,7 +514,7 @@
 
                                                 <f:ajax event="keyup"
                                                         execute="@this"
-                                                        delay="200"
+                                                        delay="100"
                                                         render="vacanciesMessage" />
                                             </h:inputText>
 
@@ -561,7 +540,7 @@
 
                                                 <f:ajax event="change"
                                                         execute="@this"
-                                                        delay="200"
+                                                        delay="100"
                                                         render="expiryDateMessage" />
                                             </h:inputText>
 
@@ -573,7 +552,6 @@
                                                 Select the application closing date.
                                             </small>
                                         </div>
-
                                         <!-- DESCRIPTION -->
                                         <div class="postjob-form-group full">
                                             <label for="jobDescription">Job Description</label>
@@ -591,7 +569,7 @@
 
                                                 <f:ajax event="keyup"
                                                         execute="@this"
-                                                        delay="200"
+                                                        delay="100"
                                                         render="descriptionMessage" />
                                             </h:inputTextarea>
 
@@ -600,6 +578,275 @@
                                                        styleClass="postjob-field-error" />
                                         </div>
                                     </div>
+                                    <!-- Required Skills -->
+                                    <h:panelGroup id="skillsSection" layout="block" styleClass="postjob-form-group full">
+
+                                        <div class="postjob-skills-layout postjob-skills-layout-single">
+
+                                            <!-- TOP CARD -->
+                                            <div class="postjob-skills-picker-card">
+
+                                                <div class="postjob-skills-card-head">
+                                                    <div>
+                                                        <div class="postjob-skills-card-title">Add Skills</div>
+                                                        <div class="postjob-skills-card-subtitle">
+                                                            Choose a category, search skills, and review selected skills below
+                                                        </div>
+                                                    </div>
+
+                                                    <h:panelGroup id="selectedSkillCount"
+                                                                  layout="block"
+                                                                  styleClass="postjob-skill-count-badge-wrap">
+                                                        <span class="postjob-skill-count-badge" id="skillCountBadge">
+                                                            #{empty recruiterCDIBean.selectedSkillIds ? 0 : recruiterCDIBean.selectedSkillIds.size()} Selected
+                                                        </span>
+                                                    </h:panelGroup>
+                                                </div>
+
+                                                <div class="postjob-skill-actions">
+                                                    <button type="button"
+                                                            class="postjob-add-skill-btn"
+                                                            onclick="openSkillModal()">
+                                                        + Add New Skill / Category
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <!-- HIDDEN JSF LISTBOX -->
+                                            <div style="display:none;">
+                                                <h:selectManyListbox id="skills"
+                                                                     value="#{recruiterCDIBean.selectedSkillIds}"
+                                                                     styleClass="postjob-hidden-skills-listbox"
+                                                                     size="10"
+                                                                     required="true"
+                                                                     requiredMessage="Please select at least one skill">
+                                                    <f:selectItems value="#{recruiterCDIBean.allSkills}"
+                                                                   var="s"
+                                                                   itemLabel="#{s.skillName}"
+                                                                   itemValue="#{s.skillId}" />
+                                                </h:selectManyListbox>
+                                            </div>
+
+                                            <!-- ALL SKILLS JSON FOR CHIP DISPLAY -->
+                                          <!-- ALL SKILLS JSON FOR CHIP DISPLAY -->
+<h:panelGroup id="allSkillsJsonWrapper" layout="block">
+    <script type="application/json" id="allSkillsJson">
+        [<ui:repeat value="#{recruiterCDIBean.allSkills}" var="skill" varStatus="vs">{"id":"#{skill.skillId}","name":"#{skill.skillName}"}#{vs.last ? '' : ','}</ui:repeat>]
+    </script>
+</h:panelGroup>
+
+                                            <!-- FILTERED SKILLS JSON FOR CATEGORY-WISE SUGGESTIONS -->
+                                            <h:panelGroup id="filteredSkillsJsonWrapper" layout="block">
+
+                                                <script type="application/json" id="filteredSkillsJson">
+                                                    [
+                                                    <ui:repeat value="#{recruiterCDIBean.filteredSkills}" var="skill" varStatus="vs">
+                                                    {
+                                                    "id":"#{skill.skillId}",
+                                                    "name":"#{skill.skillName}"
+                                                    }#{vs.last ? '' : ','}
+                                                    </ui:repeat>
+                                                    ]
+                                                </script>
+
+                                            </h:panelGroup>
+
+                                            <div class="postjob-skills-main-grid">
+
+                                                <!-- CATEGORY -->
+                                                <div class="postjob-form-group postjob-skill-category-group">
+                                                    <label for="skillCategory">Skill Category</label>
+
+                                                    <div class="postjob-select-wrap">
+                                                        <h:selectOneMenu id="skillCategory"
+                                                                         value="#{recruiterCDIBean.selectedSkillCategory}"
+                                                                         styleClass="postjob-form-control postjob-select-control postjob-skill-category-select"
+                                                                         converter="jakarta.faces.Integer">
+
+                                                            <f:selectItem itemLabel="All Categories"
+                                                                          itemValue="#{null}"/>
+
+                                                            <f:selectItems value="#{recruiterCDIBean.skillCategories}"
+                                                                           var="cat"
+                                                                           itemLabel="#{cat.categoryName}"
+                                                                           itemValue="#{cat.categoryId}" />
+
+                                                            <f:ajax execute="@this"
+        listener="#{recruiterCDIBean.loadSkillsByCategory}"
+        render="filteredSkillsJsonWrapper allSkillsJsonWrapperallSkillsJson"
+        onevent="handleSkillCategoryChange" />
+                                                        </h:selectOneMenu>
+                                                    </div>
+                                                </div>
+
+                                                <!-- SEARCH -->
+                                                <div class="postjob-form-group postjob-skill-search-group">
+                                                    <label for="skillSearchInput">Add Skill</label>
+                                                    <input type="text"
+                                                           id="skillSearchInput"
+                                                           class="postjob-form-control postjob-skill-search-input"
+                                                           placeholder="Type skill..."
+                                                           autocomplete="off" />
+                                                </div>
+
+                                                <!-- SELECTED SKILLS -->
+                                                <div class="postjob-selected-row">
+                                                    <div class="postjob-selected-skills-live-card">
+
+                                                        <div class="postjob-selected-skills-head">
+                                                            <div class="postjob-suggestion-header">Selected Skills</div>
+
+                                                            <h:panelGroup id="selectedSkillIdsSummary"
+                                                                          layout="block"
+                                                                          styleClass="postjob-selected-skill-summary">
+                                                                <span id="selectedSkillsSummaryText">
+                                                                    Total Skills Added:
+                                                                    #{empty recruiterCDIBean.selectedSkillIds ? 0 : recruiterCDIBean.selectedSkillIds.size()}
+                                                                </span>
+                                                            </h:panelGroup>
+                                                        </div>
+
+                                                        <div class="postjob-selected-skills-scroll">
+                                                            <div id="selectedSkillChips" class="postjob-selected-skill-tags">
+                                                                <ui:repeat value="#{recruiterCDIBean.allSkills}" var="skill">
+                                                                    <ui:fragment rendered="#{not empty recruiterCDIBean.selectedSkillIds and recruiterCDIBean.selectedSkillIds.contains(skill.skillId)}">
+                                                                        <span class="postjob-skill-tag postjob-skill-tag-selected"
+                                                                              data-skill-id="#{skill.skillId}"
+                                                                              data-skill-name="#{skill.skillName}">
+                                                                            <span>#{skill.skillName}</span>
+                                                                            <button type="button"
+                                                                                    class="postjob-skill-tag-remove"
+                                                                                    onclick="removeSkillTag('#{skill.skillId}')">
+                                                                                ✕
+                                                                            </button>
+                                                                        </span>
+                                                                    </ui:fragment>
+                                                                </ui:repeat>
+                                                            </div>
+
+                                                            <div id="selectedSkillsEmptyState"
+                                                                 class="postjob-selected-empty"
+                                                                 style="#{not empty recruiterCDIBean.selectedSkillIds ? 'display:none;' : 'display:flex;'}">
+                                                                No skills selected yet.
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- SUGGESTIONS -->
+                                                <div class="postjob-skills-suggestions-row">
+                                                    <div id="skillSuggestionsBox" class="postjob-skill-suggestions-box">
+                                                        <div class="postjob-suggestion-header">Suggestions</div>
+                                                        <div id="skillSuggestionsList" class="postjob-suggestion-list"></div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                            <h:message id="skillsMessage"
+                                                       for="skills"
+                                                       styleClass="postjob-field-error" />
+
+                                            <h:panelGroup id="selectedSkillIdsPreview"
+                                                          layout="block"
+                                                          style="display:none;">
+                                                <ui:repeat value="#{recruiterCDIBean.allSkills}" var="skill">
+                                                    <ui:fragment rendered="#{not empty recruiterCDIBean.selectedSkillIds and recruiterCDIBean.selectedSkillIds.contains(skill.skillId)}">
+                                                        <span class="postjob-skill-tag">#{skill.skillName}</span>
+                                                    </ui:fragment>
+                                                </ui:repeat>
+                                            </h:panelGroup>
+
+                                        </div>
+
+                                        <!-- MODAL -->
+                                        <!-- MODAL -->
+                                        <div id="skillModalOverlay" class="postjob-modal-overlay" style="display:none;">
+                                            <div class="postjob-modal-box">
+
+                                                <div class="postjob-modal-header">
+                                                    <h3>Add New Skill / Category</h3>
+                                                    <button type="button"
+                                                            class="postjob-modal-close"
+                                                            onclick="closeSkillModal()">
+                                                        ✕
+                                                    </button>
+                                                </div>
+
+                                                <div class="postjob-modal-body">
+
+                                                    <!-- ACTION TYPE -->
+                                                    <div class="postjob-form-group">
+                                                        <label for="skillActionType">What do you want to add?</label>
+                                                        <select id="skillActionType"
+                                                                class="postjob-form-control"
+                                                                onchange="toggleSkillModalSections()">
+                                                            <option value="">Select Option</option>
+                                                            <option value="category">New Category</option>
+                                                            <option value="skill">New Skill</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <!-- CATEGORY FORM -->
+                                                    <div id="categorySection" style="display:none;">
+                                                        <div class="postjob-form-group">
+                                                            <label for="newCategoryName">Category Name</label>
+                                                            <h:inputText id="newCategoryName"
+                                                                         value="#{recruiterCDIBean.newCategoryName}"
+                                                                         styleClass="postjob-form-control" />
+                                                        </div>
+
+                                                        <h:commandButton value="Create Category"
+                                                                         action="#{recruiterCDIBean.createCategory}"
+                                                                         styleClass="postjob-btn postjob-btn-primary">
+                                                            <f:ajax execute="@form"
+                                                                    render="filteredSkillsJsonWrapper"
+                                                                    onevent="handleCategoryCreatedAndSwitchToSkill" />
+                                                        </h:commandButton>
+                                                    </div>
+
+                                                    <!-- SKILL FORM -->
+                                                    <div id="skillSection" style="display:none;">
+                                                        <div class="postjob-form-group">
+                                                            <label for="modalSkillCategory">Select Category</label>
+                                                            <div class="postjob-select-wrap">
+                                                                <h:selectOneMenu id="modalSkillCategory"
+                                                                                 value="#{recruiterCDIBean.selectedSkillCategory}"
+                                                                                 styleClass="postjob-form-control postjob-select-control">
+                                                                    <f:selectItem itemLabel="Select Category"
+                                                                                  itemValue="0"
+                                                                                 />
+                                                                    <f:selectItems value="#{recruiterCDIBean.skillCategories}"
+                                                                                   var="cat"
+                                                                                   itemLabel="#{cat.categoryName}"
+                                                                                   itemValue="#{cat.categoryId}" />
+                                                                </h:selectOneMenu>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="postjob-form-group">
+                                                            <label for="newSkillName">Skill Name</label>
+                                                            <h:inputText id="newSkillName"
+                                                                         value="#{recruiterCDIBean.newSkillName}"
+                                                                         styleClass="postjob-form-control" />
+                                                        </div>
+
+                                                        <h:commandButton value="Create Skill"
+                                                                         action="#{recruiterCDIBean.createSkill}"
+                                                                         styleClass="postjob-btn postjob-btn-primary">
+                                                            <f:ajax execute="@form"
+                                                                    render="messages skillsSection skillCategory modalSkillCategory"
+                                                                    onevent="handleSkillCreated" />
+                                                        </h:commandButton>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </h:panelGroup>
+
+
                                     <div id="globalMessageBox">
                                         <h:messages id="messages"
                                                     globalOnly="true"
@@ -615,21 +862,22 @@
                                     <!-- BUTTONS -->
                                     <div class="postjob-form-actions">
 
+
                                         <h:commandButton value="Publish Job"
                                                          action="#{recruiterCDIBean.saveJob}"
                                                          styleClass="postjob-btn postjob-btn-primary">
 
                                             <f:ajax execute="@form"
-                                                    render="@form messages" />
-
+                                                    render="@form messages" 
+                                                    onevent="handleValidationGlobalMessage"/>
                                         </h:commandButton>
+
 
                                         <h:commandButton value="Back to Dashboard"
                                                          action="recruiterDashboard?faces-redirect=true"
                                                          immediate="true"
                                                          styleClass="postjob-btn postjob-btn-light" />
                                     </div>
-
 
                                 </h:form>
                             </div>
@@ -648,41 +896,581 @@
 
             <ui:include src="/common/footer.xhtml"/>
 
-
             <script type="text/javascript">
+                //<![CDATA[
+                
+                                            function handleValidationGlobalMessage(data) {
+                                if (data.status === 'success') {
+                                    var hasFieldErrors = document.querySelectorAll('.postjob-field-error').length > 0;
+                                    var msgBox = document.getElementById('globalMessageBox');
+            
+                                    if (hasFieldErrors && msgBox) {
+                                        if (msgBox.innerText.trim() === '') {
+                                            msgBox.innerHTML =
+                                                    '<ul>' +
+                                                    '<li class="postjob-msg postjob-msg-error">' +
+                                                    'Error While Creating Job' +
+                                                    '</li>' +
+                                                    '</ul>';
+                                        }
+            
+                                        msgBox.style.display = 'block';
+                                        msgBox.style.opacity = '1';
+                                    }
+            
+                                    handleGlobalMessages();
+                                }
+                            }
+            
+                            function handleGlobalMessages() {
+                                var msgBox = document.getElementById('globalMessageBox');
+            
+                                if (!msgBox)
+                                    return;
+            
+                                var text = msgBox.innerText || msgBox.textContent || '';
+                                if (text.trim() === '')
+                                    return;
+            
+                                msgBox.style.display = 'block';
+                                msgBox.style.opacity = '1';
+            
+                                var isSuccess = msgBox.innerHTML.includes('postjob-msg-success');
+            
+                                if (isSuccess) {
+                                    setTimeout(function () {
+                                        msgBox.style.transition = 'opacity 0.5s ease';
+                                        msgBox.style.opacity = '0';
+            
+                                        setTimeout(function () {
+                                            msgBox.style.display = 'none';
+                                        }, 500);
+                                    }, 3000);
+                                }
+                            }
+                function getHiddenSkillsListbox() {
+                    return document.getElementById('postJobForm:skills');
+                }
 
-                function handleGlobalMessages() {
+                function getSkillSearchInput() {
+                    return document.getElementById('skillSearchInput');
+                }
 
-                    const msgBox = document.getElementById('globalMessageBox');
+                function getSkillSuggestionsBox() {
+                    return document.getElementById('skillSuggestionsBox');
+                }
 
-                    if (msgBox &amp; &amp; msgBox.innerText.trim() !== ''){
+                function getSkillSuggestionsList() {
+                    return document.getElementById('skillSuggestionsList');
+                }
 
-                        msgBox.style.display = "block";
-                        msgBox.style.opacity = "1";
+                function getSelectedSkillChips() {
+                    return document.getElementById('selectedSkillChips');
+                }
 
-                        setTimeout(() => {
+                function getSelectedSkillsEmptyState() {
+                    return document.getElementById('selectedSkillsEmptyState');
+                }
 
-                            msgBox.style.transition = "opacity 0.5s ease";
-                            msgBox.style.opacity = "0";
+                function getSkillCountBadge() {
+                    return document.getElementById('skillCountBadge');
+                }
 
-                            setTimeout(() => {
-                                msgBox.style.display = "none";
-                            }, 500);
+                function getSelectedSkillsSummaryText() {
+                    return document.getElementById('selectedSkillsSummaryText');
+                }
 
-                        }, 2000);
+                function getCategoryDropdown() {
+                    return document.getElementById('postJobForm:skillCategory');
+                }
+
+                function getModalOverlay() {
+                    return document.getElementById('skillModalOverlay');
+                }
+
+                function getSkillActionType() {
+                    return document.getElementById('skillActionType');
+                }
+
+                function getCategorySection() {
+                    return document.getElementById('categorySection');
+                }
+
+                function getSkillSection() {
+                    return document.getElementById('skillSection');
+                }
+
+                function getAllSkillsData() {
+                    var scriptTag = document.getElementById('allSkillsJson');
+                    if (!scriptTag) {
+                        return [];
+                    }
+
+                    try {
+                        return JSON.parse(scriptTag.textContent.trim());
+                    } catch (e) {
+                        console.error('Invalid allSkillsJson', e);
+                        return [];
                     }
                 }
 
-                window.addEventListener('load', handleGlobalMessages);
-
-                jsf.ajax.addOnEvent(function (data) {
-
-                    if (data.status === 'success') 
-                        handleGlobalMessages();
+                function getFilteredSkillsData() {
+                    var scriptTag = document.getElementById('filteredSkillsJson');
+                    if (!scriptTag) {
+                        return [];
                     }
 
+                    try {
+                        return JSON.parse(scriptTag.textContent.trim());
+                    } catch (e) {
+                        console.error('Invalid filteredSkillsJson', e);
+                        return [];
+                    }
+                }
+
+                function extractSkillsFromListbox() {
+                    var listbox = getHiddenSkillsListbox();
+                    var skills = [];
+
+                    if (!listbox) {
+                        return skills;
+                    }
+
+                    for (var i = 0; i < listbox.options.length; i++) {
+                        skills.push({
+                            id: String(listbox.options[i].value),
+                            name: listbox.options[i].text
+                        });
+                    }
+
+                    return skills;
+                }
+
+                function getSelectedSkillIds() {
+                    var selected = [];
+
+                    if (window.persistedSelectedSkills && Array.isArray(window.persistedSelectedSkills)) {
+                        selected = window.persistedSelectedSkills.slice();
+                    }
+
+                    var listbox = getHiddenSkillsListbox();
+
+                    if (listbox) {
+                        for (var i = 0; i < listbox.options.length; i++) {
+                            if (listbox.options[i].selected) {
+                                var value = String(listbox.options[i].value);
+                                if (selected.indexOf(value) === -1) {
+                                    selected.push(value);
+                                }
+                            }
+                        }
+                    }
+
+                    return selected;
+                }
+
+                function setSelectedInListbox(skillId, shouldSelect) {
+                    var listbox = getHiddenSkillsListbox();
+
+                    if (!window.persistedSelectedSkills || !Array.isArray(window.persistedSelectedSkills)) {
+                        window.persistedSelectedSkills = [];
+                    }
+
+                    if (listbox) {
+                        for (var i = 0; i < listbox.options.length; i++) {
+                            if (String(listbox.options[i].value) === String(skillId)) {
+                                listbox.options[i].selected = shouldSelect;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (shouldSelect) {
+                        if (window.persistedSelectedSkills.indexOf(String(skillId)) === -1) {
+                            window.persistedSelectedSkills.push(String(skillId));
+                        }
+                    } else {
+                        window.persistedSelectedSkills = window.persistedSelectedSkills.filter(function (id) {
+                            return id !== String(skillId);
+                        });
+                    }
+
+                    syncPersistedSkillsToListbox();
+                }
+
+                function syncPersistedSkillsToListbox() {
+                    var listbox = getHiddenSkillsListbox();
+
+                    if (!listbox) {
+                        return;
+                    }
+
+                    if (!window.persistedSelectedSkills || !Array.isArray(window.persistedSelectedSkills)) {
+                        window.persistedSelectedSkills = [];
+                    }
+
+                    for (var i = 0; i < listbox.options.length; i++) {
+                        listbox.options[i].selected =
+                                window.persistedSelectedSkills.indexOf(String(listbox.options[i].value)) !== -1;
+                    }
+                }
+
+                function updateSelectedSkillUi() {
+                    var allSkills = getAllSkillsData();
+                    var selectedIds = getSelectedSkillIds();
+                    var selectedChipBox = getSelectedSkillChips();
+                    var emptyState = getSelectedSkillsEmptyState();
+                    var countBadge = getSkillCountBadge();
+                    var summaryText = getSelectedSkillsSummaryText();
+
+                    if (!selectedChipBox) {
+                        return;
+                    }
+
+                    selectedChipBox.innerHTML = '';
+                    var selectedCount = 0;
+
+                    for (var i = 0; i < allSkills.length; i++) {
+                        if (selectedIds.indexOf(String(allSkills[i].id)) !== -1) {
+                            selectedCount++;
+
+                            var chip = document.createElement('span');
+                            chip.className = 'postjob-skill-tag postjob-skill-tag-selected';
+                            chip.innerHTML =
+                                    '<span>' + escapeHtml(allSkills[i].name) + '</span>' +
+                                    '<button type="button" class="postjob-skill-tag-remove" onclick="removeSkillTag(\'' + String(allSkills[i].id) + '\')">✕</button>';
+
+                            selectedChipBox.appendChild(chip);
+                        }
+                    }
+
+                    if (emptyState) {
+                        emptyState.style.display = selectedCount === 0 ? 'flex' : 'none';
+                    }
+
+                    if (countBadge) {
+                        countBadge.textContent = selectedCount + ' Selected';
+                    }
+
+                    if (summaryText) {
+                        summaryText.textContent = 'Total Skills Added: ' + selectedCount;
+                    }
+                }
+                
+                // ================= SKILL PAGINATION =================
+                var skillSuggestionLimit = 8;
+                var currentSkillOffset = 0;
+                var currentMatchedSkills = [];
+
+                function renderSkillSuggestions(filterText) {
+
+    var skills = getFilteredSkillsData();
+
+    if (!skills || skills.length === 0) {
+        skills = extractSkillsFromListbox();
+    }
+
+    var selectedIds = getSelectedSkillIds();
+
+    var suggestionBox = getSkillSuggestionsBox();
+    var suggestionList = getSkillSuggestionsList();
+
+    if (!suggestionBox || !suggestionList) {
+        return;
+    }
+
+    suggestionList.innerHTML = '';
+
+    var query = (filterText || '').toLowerCase().trim();
+
+    currentMatchedSkills = [];
+
+    // ================= FILTER MATCHING =================
+    for (var i = 0; i < skills.length; i++) {
+
+        var skillId = String(skills[i].id || '');
+        var skillName = String(skills[i].name || '');
+
+        var alreadySelected =
+                selectedIds.indexOf(skillId) !== -1;
+
+        var nameMatches =
+                query === '' ||
+                skillName.toLowerCase().indexOf(query) !== -1;
+
+        if (!alreadySelected && nameMatches) {
+
+            currentMatchedSkills.push({
+                id: skillId,
+                name: skillName
+            });
+        }
+    }
+
+    currentSkillOffset = 0;
+
+    renderMoreSkillSuggestions();
+}
+
+function renderMoreSkillSuggestions() {
+
+    var suggestionList = getSkillSuggestionsList();
+
+    if (!suggestionList) {
+        return;
+    }
+
+    // REMOVE OLD LOAD MORE BUTTON
+    var oldLoadMore = document.getElementById('loadMoreSkillsBtn');
+
+    if (oldLoadMore) {
+        oldLoadMore.remove();
+    }
+
+    // ================= NEXT BATCH =================
+    var nextSkills = currentMatchedSkills.slice(
+            currentSkillOffset,
+            currentSkillOffset + skillSuggestionLimit
+            );
+
+    // ================= NO SKILLS =================
+    if (currentMatchedSkills.length === 0
+            && currentSkillOffset === 0) {
+
+        suggestionList.innerHTML =
+                '<div class="postjob-no-suggestion">' +
+                'No matching skills found.' +
+                '</div>';
+
+        return;
+    }
+
+    // ================= RENDER SKILLS =================
+    for (var i = 0; i < nextSkills.length; i++) {
+
+        var item = document.createElement('button');
+
+        item.type = 'button';
+
+        item.className = 'postjob-suggestion-item';
+
+        item.innerHTML =
+                escapeHtml(nextSkills[i].name);
+
+        item.onclick = (function (skillId) {
+
+            return function () {
+                addSkillTag(skillId);
+            };
+
+        })(nextSkills[i].id);
+
+        suggestionList.appendChild(item);
+    }
+
+    currentSkillOffset += nextSkills.length;
+
+    // ================= LOAD MORE BUTTON =================
+    if (currentSkillOffset < currentMatchedSkills.length) {
+
+        var loadMoreBtn = document.createElement('button');
+
+        loadMoreBtn.type = 'button';
+
+        loadMoreBtn.id = 'loadMoreSkillsBtn';
+
+        loadMoreBtn.className =
+                'postjob-load-more-btn';
+
+        loadMoreBtn.innerHTML =
+                'Load More Skills';
+
+        loadMoreBtn.onclick = function () {
+            renderMoreSkillSuggestions();
+        };
+
+        suggestionList.appendChild(loadMoreBtn);
+    }
+}
+
+                function addSkillTag(skillId) {
+                    setSelectedInListbox(skillId, true);
+                    updateSelectedSkillUi();
+
+                    var input = getSkillSearchInput();
+                    renderSkillSuggestions(input ? input.value : '');
+
+                    if (input) {
+                        input.value = '';
+                        input.focus();
+                        renderSkillSuggestions('');
+                    }
+                }
+
+                function removeSkillTag(skillId) {
+                    setSelectedInListbox(skillId, false);
+                    updateSelectedSkillUi();
+
+                    var input = getSkillSearchInput();
+                    renderSkillSuggestions(input ? input.value : '');
+                }
+
+                function openSkillModal() {
+                    var modal = getModalOverlay();
+                    if (modal) {
+                        modal.style.display = 'flex';
+                    }
+                }
+
+                function closeSkillModal() {
+                    var modal = getModalOverlay();
+                    if (modal) {
+                        modal.style.display = 'none';
+                    }
+                }
+
+                function resetSkillModal() {
+                    var actionType = getSkillActionType();
+
+                    if (actionType) {
+                        actionType.value = '';
+                    }
+
+                    toggleSkillModalSections();
+                }
+
+                function toggleSkillModalSections() {
+                    var actionType = getSkillActionType();
+                    var categorySection = getCategorySection();
+                    var skillSection = getSkillSection();
+
+                    if (!categorySection || !skillSection) {
+                        return;
+                    }
+
+                    categorySection.style.display = 'none';
+                    skillSection.style.display = 'none';
+
+                    if (!actionType) {
+                        return;
+                    }
+
+                    if (actionType.value === 'category') {
+                        categorySection.style.display = 'block';
+                    } else if (actionType.value === 'skill') {
+                        skillSection.style.display = 'block';
+                    }
+                }
+
+                function bindSkillSearchEvents() {
+                    var input = getSkillSearchInput();
+
+                    if (!input) {
+                        return;
+                    }
+
+                    input.onfocus = function () {
+                        renderSkillSuggestions(input.value);
+                    };
+
+                    input.oninput = function () {
+                        renderSkillSuggestions(input.value);
+                    };
+
+                    input.onkeydown = function (e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+
+                            var firstSuggestion = document.querySelector('.postjob-suggestion-item');
+                            if (firstSuggestion) {
+                                firstSuggestion.click();
+                            }
+                        }
+                    };
+                }
+
+                function initSkillsAutocompleteUi() {
+                    if (!window.persistedSelectedSkills || !Array.isArray(window.persistedSelectedSkills)) {
+                        window.persistedSelectedSkills = [];
+                    }
+
+                    syncPersistedSkillsToListbox();
+                    updateSelectedSkillUi();
+                    renderSkillSuggestions('');
+                    bindSkillSearchEvents();
+                }
+            function handleSkillCategoryChange(data) {
+
+                if (data.status === 'success') {
+                    // Wait for DOM to update after AJAX re-render
+                    setTimeout(function () {
+                        var input = getSkillSearchInput();
+                       currentSkillOffset = 0;
+                        renderSkillSuggestions(input ? input.value : '');
+                        updateSelectedSkillUi();
+                    }, 150);
+                }
+            }
+
+                function handleCategoryCreatedAndSwitchToSkill(data) {
+                    if (data.status === 'success') {
+                        setTimeout(function () {
+                            openSkillModal();
+
+                            var actionType = getSkillActionType();
+                            if (actionType) {
+                                actionType.value = 'skill';
+                            }
+
+                            toggleSkillModalSections();
+                            initSkillsAutocompleteUi();
+                        }, 100);
+                    }
+                }
+
+                function handleSkillCreated(data) {
+                    if (data.status === 'success') {
+                        setTimeout(function () {
+                            closeSkillModal();
+                            resetSkillModal();
+                            initSkillsAutocompleteUi();
+                        }, 100);
+                    }
+                }
+
+                function escapeHtml(value) {
+                    if (value === null || value === undefined) {
+                        return '';
+                    }
+
+                    return String(value)
+                            .replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/"/g, '&quot;')
+                            .replace(/'/g, '&#39;');
+                }
+
+                function initializeSkillUiAfterAjax() {
+                    initSkillsAutocompleteUi();
+                    toggleSkillModalSections();
+                }
+
+                window.addEventListener('load', function () {
+                    initializeSkillUiAfterAjax();
                 });
 
+                if (window.jsf && jsf.ajax) {
+                    jsf.ajax.addOnEvent(function (data) {
+                        if (data.status === 'success') {
+                            setTimeout(function () {
+                                initializeSkillUiAfterAjax();
+                            }, 50);
+                        }
+                    });
+                }
+
+                //]]>
             </script>
         </h:body>
     </f:view>

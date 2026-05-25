@@ -7,6 +7,7 @@ package EJB;
 import Entity.*;
 import jakarta.ejb.Local;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  *
@@ -17,55 +18,63 @@ public interface RecruiterBeanLocal {
 
     // ================= AUTH =================
 //    void registerRecruiter(Tblusers user, Tblrecruiters recruiter);
-
     // ================= PROFILE =================
     Tblrecruiters getProfile(int userId);
+
     void updateProfile(Tblrecruiters recruiter);
 
     // ================= COMPANY =================
-    Tblcompany getCompanyDetails(int recruiterId);
-
+//    Tblcompany getCompanyDetails(int recruiterId);
     // ================= JOB MANAGEMENT =================
-    void createJob(Tbljob job);
-    void updateJob(Tbljob job);
-    void deleteJob(int jobId,int recruiterId);
-     //single,multiple,all job delete logic:
-    //public void deleteJob(Integer jobId, Collection<Integer> jobIds, int recruiterId);
-    void updateJobStatus(int jobId, String status);
+    void createJob(Tbljob job, Collection<Integer> skillIds);
+//    void updateJob(Tbljob job);
+//    void deleteJob(int jobId,int recruiterId);
+//     //single,multiple,all job delete logic:
+//    //public void deleteJob(Integer jobId, Collection<Integer> jobIds, int recruiterId);
+//    void updateJobStatus(int jobId, String status);
     Collection<Tbljob> getJobs(int recruiterId);
 
     // ================= JOB SKILLS =================
-    void addSkillToJob(int jobId, int skillId);
-    void removeSkillFromJob(int jobId, int skillId);
+//    void addSkillToJob(int jobId, int skillId);
+//    void removeSkillFromJob(int jobId, int skillId);
     Collection<Tblskills> getJobSkills(int jobId);
+//    public void saveJobSkillWeightage(int jobId,Map<Integer, Integer> skillWeightMap);
+//    public Collection<Tbljobskillweightage> getJobSkillWeightage(int jobId);
+//    public void updateJobSkillWeightage(int jobId,int skillId,int weightage);
+    public Collection<Tblskills> getAllSkills(Integer userId);
 
-    // ================= APPLICATION =================
-    Collection<Tblapplication> getApplications(int jobId);
-    void updateApplicationStatus(int applicationId, String newStatus);
+    public Collection<Tblskillcategory> getSkillCategories(Integer recruiterUserId);
 
-    // ================= APPLICATION HISTORY =================
-    void addApplicationStatusHistory(int applicationId, String oldStatus, String newStatus);
+    public Collection<Tblskills> getSkillsByCategory(Integer categoryId,Integer recruiterUserId);
 
-    // ================= SCREENING =================
-    void generateScreeningScore(int applicationId);
-    Tblscreeningscore getScore(int applicationId);
-
-    // ================= SHORTLIST =================
-    Collection<Tblapplication> getTopCandidates(int jobId);
-    Collection<Tblapplication> filterCandidatesByScore(int jobId, double minScore);
-
-    // ================= INTERVIEW =================
-    void scheduleInterview(Tblinterview interview);
-    void updateInterview(Tblinterview interview);
-    void updateInterviewFeedback(int interviewId, String feedback, String result);
-
-    // ================= NOTIFICATION =================
-    void sendNotification(Tblnotification notification);
-    Collection<Tblnotification> getRecruiterNotifications(int userId);
+    public void addSkillCategory(String categoryName,Integer recruiterUserId);
     
-    
+    public void addSkill(String skillName,Integer categoryId,Integer recruiterUserId);
+//    // ================= APPLICATION =================
+//    Collection<Tblapplication> getApplications(int jobId);
+//    void updateApplicationStatus(int applicationId, String newStatus);
+//
+//    // ================= APPLICATION HISTORY =================
+//    void addApplicationStatusHistory(int applicationId, String oldStatus, String newStatus);
+//
+//    // ================= SCREENING =================
+//    void generateScreeningScore(int applicationId);
+//    Tblscreeningscore getScore(int applicationId);
+//
+//    // ================= SHORTLIST =================
+//    Collection<Tblapplication> getTopCandidates(int jobId);
+//    Collection<Tblapplication> filterCandidatesByScore(int jobId, double minScore);
+//
+//    // ================= INTERVIEW =================
+//    void scheduleInterview(Tblinterview interview);
+//    void updateInterview(Tblinterview interview);
+//    void updateInterviewFeedback(int interviewId, String feedback, String result);
+//
+//    // ================= NOTIFICATION =================
+//    void sendNotification(Tblnotification notification);
+//    Collection<Tblnotification> getRecruiterNotifications(int userId);
+//    
     // ================= DASHBOARD =================
-
     public long getTodayInterviewsCount(int recruiterId);
 
     public long getNewApplicantsCount(int recruiterId);
@@ -81,14 +90,11 @@ public interface RecruiterBeanLocal {
     public long getUpcomingInterviewsCount(int recruiterId);
 
     public double getAvgTimeToHire(int recruiterId);
-     
+
     Collection<Tblscreeningscore> getDashboardTopCandidates(int recruiterId);
 
     Collection<Tblinterview> getDashboardUpcomingInterviews(int recruiterId);
-    
+
     Collection<Tblnotification> getRecentActivities(int userId);
-        
+
 }
-
-
-  

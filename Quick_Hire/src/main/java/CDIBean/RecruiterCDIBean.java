@@ -10,12 +10,15 @@ import Entity.Tbljob;
 import Entity.Tblnotification;
 import Entity.Tblrecruiters;
 import Entity.Tblscreeningscore;
+import Entity.Tblskillcategory;
+import Entity.Tblskills;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.Response;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -25,6 +28,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import util.LocationData;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.validator.ValidatorException;
+import java.math.BigDecimal;
 
 /**
  *
@@ -82,6 +88,29 @@ public class RecruiterCDIBean implements Serializable {
 
     private String selectedCity;
 
+    // ================= VIEW JOBS VARIABLES =================
+    private List<Tbljob> jobList = new ArrayList<>();
+
+    private List<Tblskills> allSkills = new ArrayList<>();
+    private List<Integer> selectedSkillIds = new ArrayList<>();
+    private int totalJobs;
+    private int openJobs;
+    private int closedJobs;
+    private int expiringJobs;
+
+    // ================= SKILL CATEGORY VARIABLES =================
+    private List<Tblskillcategory> skillCategories
+            = new ArrayList<>();
+
+    private Integer selectedSkillCategory;
+
+    private List<Tblskills> filteredSkills
+            = new ArrayList<>();
+
+    private String newCategoryName;
+
+    private String newSkillName;
+
     // ================= CONSTRUCTOR =================
     public RecruiterCDIBean() {
     }
@@ -91,6 +120,7 @@ public class RecruiterCDIBean implements Serializable {
     public void init() {
 
         availableStates = LocationData.getStates();
+      
     }
 
     // ================= INIT LOCATION DATA =================
@@ -109,6 +139,32 @@ public class RecruiterCDIBean implements Serializable {
             availableCities = new ArrayList<>();
         }
     }
+
+    public void initializeJobForm() {
+
+        loadSkills();
+
+        loadSkillCategories();
+            selectedSkillCategory = 0;
+
+//        if (filteredSkills == null || filteredSkills.isEmpty()) {
+            filteredSkills = new ArrayList<>(allSkills);
+//        }
+        
+   
+    }
+    
+    // ================= AJAX LISTENER FOR CATEGORY CHANGE =================
+public void onSkillCategoryChange(
+        jakarta.faces.event.AjaxBehaviorEvent event) {
+
+    System.out.println(
+        "onSkillCategoryChange fired, category = "
+        + selectedSkillCategory
+    );
+
+    loadSkillsByCategory();
+}
 
     // ================= WORK MODE CHANGE =================
     public void onWorkModeChange() {
@@ -219,6 +275,7 @@ public class RecruiterCDIBean implements Serializable {
             );
 
             recruiterId = recruiter.getRecruiterId();
+//            loadSkills();
 
         } catch (Exception e) {
 
@@ -239,120 +296,222 @@ public class RecruiterCDIBean implements Serializable {
                 loadProfile();
             }
 
-            int recruiterId = recruiter.getRecruiterId();
+            int recruiterId
+                    = recruiter.getRecruiterId();
 
-            // ACTIVE JOBS
-            Collection jobs
-                    = client.getJobs(
-                            Collection.class,
-                            String.valueOf(recruiterId)
-                    );
+            // ================= ACTIVE JOBS =================
+            try {
 
-            activeJobs
-                    = (jobs != null)
-                            ? jobs.size()
-                            : 0;
+                Collection jobs = client.getJobs(
+                        Collection.class,
+                        String.valueOf(recruiterId)
+                );
 
-            // TOTAL APPLICANTS
-            String totalApplicantsStr
-                    = client.getTotalApplicants(
-                            String.valueOf(recruiterId)
-                    );
+                activeJobs
+                        = (jobs != null)
+                                ? jobs.size()
+                                : 0;
 
-            totalApplicants
-                    = parseInteger(totalApplicantsStr);
+            } catch (Exception e) {
 
-            // NEW APPLICANTS
-            String newApplicantsStr
-                    = client.getNewApplicants(
-                            String.valueOf(recruiterId)
-                    );
+                e.printStackTrace();
 
-            newApplicants
-                    = parseInteger(newApplicantsStr);
+                activeJobs = 0;
+            }
 
-            // SHORTLISTED
-            String shortlistedStr
-                    = client.getShortlisted(
-                            String.valueOf(recruiterId)
-                    );
+            // ================= TOTAL APPLICANTS =================
+            try {
 
-            shortlistedCandidates
-                    = parseInteger(shortlistedStr);
+                String totalApplicantsStr
+                        = client.getTotalApplicants(
+                                String.valueOf(recruiterId)
+                        );
 
-            // TODAY INTERVIEWS
-            String todayInterviewStr
-                    = client.getTodayInterviews(
-                            String.valueOf(recruiterId)
-                    );
+                totalApplicants
+                        = parseInteger(totalApplicantsStr);
 
-            todayInterviews
-                    = parseInteger(todayInterviewStr);
+            } catch (Exception e) {
 
-            // UPCOMING INTERVIEWS
-            String upcomingStr
-                    = client.getUpcomingInterviews(
-                            String.valueOf(recruiterId)
-                    );
+                e.printStackTrace();
 
-            upcomingInterviews
-                    = parseInteger(upcomingStr);
+                totalApplicants = 0;
+            }
 
-            // HIRING RATE
-            String hiringRateStr
-                    = client.getHiringRate(
-                            String.valueOf(recruiterId)
-                    );
+            // ================= NEW APPLICANTS =================
+            try {
 
-            hiringRate
-                    = parseDouble(hiringRateStr);
+                String newApplicantsStr
+                        = client.getNewApplicants(
+                                String.valueOf(recruiterId)
+                        );
 
-            // AVG TIME TO HIRE
-            String avgTimeStr
-                    = client.getAvgTimeToHire(
-                            String.valueOf(recruiterId)
-                    );
+                newApplicants
+                        = parseInteger(newApplicantsStr);
 
-            avgTimeToHire
-                    = parseInteger(avgTimeStr);
+            } catch (Exception e) {
 
-            // TOP CANDIDATES
-            Collection<Tblscreeningscore> topList
-                    = client.getDashboardTopCandidates(
-                            Collection.class,
-                            String.valueOf(recruiterId)
-                    );
+                e.printStackTrace();
 
-            topCandidateslist
-                    = (topList != null)
-                            ? new ArrayList<>(topList)
-                            : new ArrayList<>();
+                newApplicants = 0;
+            }
 
-            // INTERVIEWS
-            Collection<Tblinterview> interviewData
-                    = client.getDashboardUpcomingInterviews(
-                            Collection.class,
-                            String.valueOf(recruiterId)
-                    );
+            // ================= SHORTLISTED =================
+            try {
 
-            interviewList
-                    = (interviewData != null)
-                            ? new ArrayList<>(interviewData)
-                            : new ArrayList<>();
+                String shortlistedStr
+                        = client.getShortlisted(
+                                String.valueOf(recruiterId)
+                        );
 
-            // ACTIVITIES
-            Collection<Tblnotification> activityData
-                    = client.getRecentActivities(
-                            Collection.class,
-                            String.valueOf(
-                                    loginBean.getUserId()
-                            )
-                    );
+                shortlistedCandidates
+                        = parseInteger(shortlistedStr);
 
-            recentActivities
-                    = (activityData != null)
-                            ? new ArrayList<>(activityData)
-                            : new ArrayList<>();
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                shortlistedCandidates = 0;
+            }
+
+            // ================= TODAY INTERVIEWS =================
+            try {
+
+                String todayInterviewStr
+                        = client.getTodayInterviews(
+                                String.valueOf(recruiterId)
+                        );
+
+                todayInterviews
+                        = parseInteger(todayInterviewStr);
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                todayInterviews = 0;
+            }
+
+            // ================= UPCOMING INTERVIEWS =================
+            try {
+
+                String upcomingStr
+                        = client.getUpcomingInterviews(
+                                String.valueOf(recruiterId)
+                        );
+
+                upcomingInterviews
+                        = parseInteger(upcomingStr);
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                upcomingInterviews = 0;
+            }
+
+            // ================= HIRING RATE =================
+            try {
+
+                String hiringRateStr
+                        = client.getHiringRate(
+                                String.valueOf(recruiterId)
+                        );
+
+                hiringRate
+                        = parseDouble(hiringRateStr);
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                hiringRate = 0;
+            }
+
+            // ================= AVG TIME TO HIRE =================
+            try {
+
+                String avgTimeStr
+                        = client.getAvgTimeToHire(
+                                String.valueOf(recruiterId)
+                        );
+
+                avgTimeToHire
+                        = parseInteger(avgTimeStr);
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                avgTimeToHire = 0;
+            }
+
+            // ================= TOP CANDIDATES =================
+            try {
+
+                Collection<Tblscreeningscore> topList
+                        = client.getDashboardTopCandidates(
+                                Collection.class,
+                                String.valueOf(recruiterId)
+                        );
+
+                topCandidateslist
+                        = (topList != null)
+                                ? new ArrayList<>(topList)
+                                : new ArrayList<>();
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                topCandidateslist
+                        = new ArrayList<>();
+            }
+
+            // ================= UPCOMING INTERVIEW LIST =================
+            try {
+
+                Collection<Tblinterview> interviewData
+                        = client.getDashboardUpcomingInterviews(
+                                Collection.class,
+                                String.valueOf(recruiterId)
+                        );
+
+                interviewList
+                        = (interviewData != null)
+                                ? new ArrayList<>(interviewData)
+                                : new ArrayList<>();
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                interviewList
+                        = new ArrayList<>();
+            }
+
+            // ================= RECENT ACTIVITIES =================
+            try {
+
+                Collection<Tblnotification> activityData
+                        = client.getRecentActivities(
+                                Collection.class,
+                                String.valueOf(
+                                        loginBean.getUserId()
+                                )
+                        );
+
+                recentActivities
+                        = (activityData != null)
+                                ? new ArrayList<>(activityData)
+                                : new ArrayList<>();
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                recentActivities
+                        = new ArrayList<>();
+            }
 
         } catch (Exception e) {
 
@@ -457,8 +616,9 @@ public class RecruiterCDIBean implements Serializable {
                     && today.get(Calendar.DAY_OF_YEAR)
                     == interviewCal.get(Calendar.DAY_OF_YEAR);
 
+            // CHANGED HERE
             SimpleDateFormat timeFormat
-                    = new SimpleDateFormat("h a");
+                    = new SimpleDateFormat("h:mm a");
 
             if (isToday) {
 
@@ -467,9 +627,10 @@ public class RecruiterCDIBean implements Serializable {
 
             } else {
 
+                // CHANGED HERE ALSO
                 SimpleDateFormat fullFormat
                         = new SimpleDateFormat(
-                                "d MMMM yyyy  h a"
+                                "d MMM yyyy  h:mm a"
                         );
 
                 return fullFormat.format(interviewDate);
@@ -578,7 +739,20 @@ public class RecruiterCDIBean implements Serializable {
     public String saveJob() {
 
         FacesContext fc = FacesContext.getCurrentInstance();
+        // ================= CHECK FORM VALIDATION =================
+        if (fc.isValidationFailed()) {
 
+            fc.addMessage(
+                    null,
+                    new FacesMessage(
+                            FacesMessage.SEVERITY_ERROR,
+                            "Error",
+                            "Error While Creating Job"
+                    )
+            );
+
+            return null;
+        }
         try {
 
             client.setToken(loginBean.getToken());
@@ -587,11 +761,19 @@ public class RecruiterCDIBean implements Serializable {
 
             job.setRecruiterId(recruiter);
 
-            Response res = client.createJob(job);
+            // ================= PASS SKILL IDS =================
+            Collection<Integer> skillIds = new ArrayList<>();
+
+            if (selectedSkillIds != null && !selectedSkillIds.isEmpty()) {
+                skillIds.addAll(selectedSkillIds);
+            }
+
+            // ================= API CALL =================
+            Response res = client.createJob(job, skillIds);
 
             String msg = res.readEntity(String.class);
 
-            // SUCCESS
+            // ================= SUCCESS =================
             if (res.getStatus() == 200) {
 
                 fc.addMessage(
@@ -603,45 +785,34 @@ public class RecruiterCDIBean implements Serializable {
                         )
                 );
 
-                // reset form
                 job = new Tbljob();
-
                 skillInput = "";
-
+                selectedSkillIds = new ArrayList<>();
                 selectedState = null;
-
                 selectedCity = null;
-
                 availableCities = new ArrayList<>();
 
                 return null;
             }
 
-            // API VALIDATION / OTHER ERRORS
+            // ================= ERROR HANDLING =================
             if (msg != null) {
 
-                // compensation validation
                 if (msg.startsWith("compensationMax:")) {
 
-                    String cleanMessage
-                            = msg.substring(msg.indexOf(":") + 1).trim();
+                    String cleanMessage = msg.substring(msg.indexOf(":") + 1).trim();
 
-                    fc.addMessage(
-                            "postJobForm:compensationMax",
-                            new FacesMessage(cleanMessage)
-                    );
-                } // expiry date validation
-                else if (msg.startsWith("jobExpiryDate:")) {
+                    fc.addMessage("postJobForm:compensationMax",
+                            new FacesMessage(cleanMessage));
 
-                    String cleanMessage
-                            = msg.substring(msg.indexOf(":") + 1).trim();
+                } else if (msg.startsWith("jobExpiryDate:")) {
 
-                    fc.addMessage(
-                            "postJobForm:jobExpiryDate",
-                            new FacesMessage(cleanMessage)
-                    );
-                } // global errors
-                else {
+                    String cleanMessage = msg.substring(msg.indexOf(":") + 1).trim();
+
+                    fc.addMessage("postJobForm:jobExpiryDate",
+                            new FacesMessage(cleanMessage));
+
+                } else {
 
                     fc.addMessage(
                             null,
@@ -664,28 +835,21 @@ public class RecruiterCDIBean implements Serializable {
 
             if (message != null) {
 
-                // compensation validation
                 if (message.startsWith("compensationMax:")) {
 
-                    String cleanMessage
-                            = message.substring(message.indexOf(":") + 1).trim();
+                    String cleanMessage = message.substring(message.indexOf(":") + 1).trim();
 
-                    fc.addMessage(
-                            "postJobForm:compensationMax",
-                            new FacesMessage(cleanMessage)
-                    );
-                } // expiry date validation
-                else if (message.startsWith("jobExpiryDate:")) {
+                    fc.addMessage("postJobForm:compensationMax",
+                            new FacesMessage(cleanMessage));
 
-                    String cleanMessage
-                            = message.substring(message.indexOf(":") + 1).trim();
+                } else if (message.startsWith("jobExpiryDate:")) {
 
-                    fc.addMessage(
-                            "postJobForm:jobExpiryDate",
-                            new FacesMessage(cleanMessage)
-                    );
-                } // global errors
-                else {
+                    String cleanMessage = message.substring(message.indexOf(":") + 1).trim();
+
+                    fc.addMessage("postJobForm:jobExpiryDate",
+                            new FacesMessage(cleanMessage));
+
+                } else {
 
                     fc.addMessage(
                             null,
@@ -743,13 +907,439 @@ public class RecruiterCDIBean implements Serializable {
 // ================= SYNC MAX COMPENSATION =================
     public void syncMaxCompensation() {
 
-        if (job.getJobCompensationMin() != null
-                && (job.getJobCompensationMax() == null
-                || job.getJobCompensationMax().compareTo(java.math.BigDecimal.ZERO) == 0)) {
+        if (job.getJobCompensationMin() != null) {
 
             job.setJobCompensationMax(
                     job.getJobCompensationMin()
             );
+        }
+    }
+
+    // ================= LOAD VIEW JOBS DATA =================
+    public void loadViewJobsData() {
+
+        try {
+
+            client.setToken(loginBean.getToken());
+
+            // Load recruiter if not loaded
+            if (recruiter == null
+                    || recruiter.getRecruiterId() == 0) {
+
+                loadProfile();
+            }
+
+            int rid = recruiter.getRecruiterId();
+
+            // ================= GET JOBS =================
+            Collection<Tbljob> jobs = client.getJobs(new GenericType<Collection<Tbljob>>() {
+            }, String.valueOf(rid));
+
+            // ================= SET JOB LIST =================
+            jobList = (jobs != null)
+                    ? new ArrayList<>(jobs)
+                    : new ArrayList<>();
+
+            // ================= RESET STATS =================
+            totalJobs = jobList.size();
+
+            openJobs = 0;
+
+            closedJobs = 0;
+
+            expiringJobs = 0;
+
+            Date now = new Date();
+
+            long sevenDays
+                    = 7L * 24 * 60 * 60 * 1000;
+
+            // ================= CALCULATE STATS =================
+            for (Tbljob j : jobList) {
+
+                if (j == null) {
+                    continue;
+                }
+
+                String status = j.getJobStatus();
+
+                // OPEN JOBS
+                if ("Open".equalsIgnoreCase(status)) {
+
+                    openJobs++;
+
+                } // CLOSED JOBS
+                else if ("Closed".equalsIgnoreCase(status)) {
+
+                    closedJobs++;
+                }
+
+                // EXPIRING JOBS
+                if (j.getJobExpiryDate() != null
+                        && "Open".equalsIgnoreCase(status)) {
+
+                    long diff = j.getJobExpiryDate().getTime()
+                            - now.getTime();
+
+                    if (diff > 0
+                            && diff <= sevenDays) {
+
+                        expiringJobs++;
+                    }
+                }
+            }
+
+            System.out.println("Loaded Jobs: " + jobList.size());
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            jobList = new ArrayList<>();
+        }
+    }
+
+    public void loadSkills() {
+
+        try {
+
+            Integer userId = loginBean != null
+                    ? loginBean.getUserId()
+                    : null;
+
+            if (userId == null) {
+
+                allSkills = new ArrayList<>();
+                filteredSkills = new ArrayList<>();
+
+                return;
+            }
+
+            client.setToken(loginBean.getToken());
+
+            Collection<Tblskills> skills
+                    = client.getAllSkills(userId);
+
+            allSkills = (skills != null)
+                    ? new ArrayList<>(skills)
+                    : new ArrayList<>();
+
+            filteredSkills = new ArrayList<>(allSkills);
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            allSkills = new ArrayList<>();
+            filteredSkills = new ArrayList<>();
+        }
+    }
+
+// ================= LOAD SKILL CATEGORIES =================
+    public void loadSkillCategories() {
+
+        try {
+
+            Integer userId = loginBean != null
+                    ? loginBean.getUserId()
+                    : null;
+
+            if (userId == null) {
+                return;
+            }
+
+            client.setToken(loginBean.getToken());
+
+            Collection<Tblskillcategory> categories
+                    = client.getSkillCategories(userId);
+
+            skillCategories = (categories != null)
+                    ? new ArrayList<>(categories)
+                    : new ArrayList<>();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            skillCategories = new ArrayList<>();
+        }
+    }
+// ================= LOAD SKILLS BY CATEGORY =================
+
+  public void loadSkillsByCategory() {
+
+    try {
+
+        System.out.println("Selected Category: "
+                + selectedSkillCategory);
+
+        // ALL CATEGORIES
+        if (selectedSkillCategory == null) {
+
+            filteredSkills = new ArrayList<>(allSkills);
+
+            System.out.println("ALL skills loaded: "
+                    + filteredSkills.size());
+
+            return;
+        }
+
+        client.setToken(loginBean.getToken());
+
+        Integer userId = loginBean.getUserId();
+
+        Collection<Tblskills> skills
+                = client.getSkillsByCategory(
+                        selectedSkillCategory,
+                        userId
+                );
+
+        filteredSkills = (skills != null)
+                ? new ArrayList<>(skills)
+                : new ArrayList<>();
+
+        System.out.println("Filtered skills size: "
+                + filteredSkills.size());
+
+    } catch (Exception e) {
+
+        e.printStackTrace();
+
+        filteredSkills = new ArrayList<>();
+    }
+}
+
+    public void createCategory() {
+
+        try {
+
+            if (newCategoryName == null
+                    || newCategoryName.trim().isEmpty()) {
+
+                FacesContext.getCurrentInstance()
+                        .addMessage(
+                                null,
+                                new FacesMessage(
+                                        FacesMessage.SEVERITY_ERROR,
+                                        "Error",
+                                        "Category name is required"
+                                )
+                        );
+
+                return;
+            }
+
+            client.setToken(loginBean.getToken());
+
+            Response res = client.addSkillCategory(
+                    newCategoryName,
+                    loginBean.getUserId()
+            );
+
+            String msg = res.readEntity(String.class);
+
+            if (res.getStatus() == 200) {
+
+                // reload categories
+                loadSkillCategories();
+
+                FacesContext.getCurrentInstance()
+                        .addMessage(
+                                null,
+                                new FacesMessage(
+                                        FacesMessage.SEVERITY_INFO,
+                                        "Success",
+                                        msg
+                                )
+                        );
+
+                newCategoryName = "";
+
+            } else {
+
+                FacesContext.getCurrentInstance()
+                        .addMessage(
+                                null,
+                                new FacesMessage(
+                                        FacesMessage.SEVERITY_ERROR,
+                                        "Error",
+                                        msg
+                                )
+                        );
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            FacesContext.getCurrentInstance()
+                    .addMessage(
+                            null,
+                            new FacesMessage(
+                                    FacesMessage.SEVERITY_ERROR,
+                                    "Error",
+                                    "Something went wrong"
+                            )
+                    );
+        }
+    }
+
+    public void createSkill() {
+
+        try {
+
+            if (selectedSkillCategory == null) {
+
+                FacesContext.getCurrentInstance()
+                        .addMessage(
+                                null,
+                                new FacesMessage(
+                                        FacesMessage.SEVERITY_ERROR,
+                                        "Error",
+                                        "Select category first"
+                                )
+                        );
+
+                return;
+            }
+
+            if (newSkillName == null
+                    || newSkillName.trim().isEmpty()) {
+
+                FacesContext.getCurrentInstance()
+                        .addMessage(
+                                null,
+                                new FacesMessage(
+                                        FacesMessage.SEVERITY_ERROR,
+                                        "Error",
+                                        "Skill name is required"
+                                )
+                        );
+
+                return;
+            }
+
+            client.setToken(loginBean.getToken());
+
+            Response res = client.addSkill(
+                    newSkillName,
+                    selectedSkillCategory,
+                    loginBean.getUserId()
+            );
+
+            String msg = res.readEntity(String.class);
+
+            if (res.getStatus() == 200) {
+
+                // reload skills
+                loadSkillsByCategory();
+
+                // reload all skills also
+                loadSkills();
+
+                FacesContext.getCurrentInstance()
+                        .addMessage(
+                                null,
+                                new FacesMessage(
+                                        FacesMessage.SEVERITY_INFO,
+                                        "Success",
+                                        msg
+                                )
+                        );
+
+                newSkillName = "";
+
+            } else {
+
+                FacesContext.getCurrentInstance()
+                        .addMessage(
+                                null,
+                                new FacesMessage(
+                                        FacesMessage.SEVERITY_ERROR,
+                                        "Error",
+                                        msg
+                                )
+                        );
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            FacesContext.getCurrentInstance()
+                    .addMessage(
+                            null,
+                            new FacesMessage(
+                                    FacesMessage.SEVERITY_ERROR,
+                                    "Error",
+                                    "Something went wrong"
+                            )
+                    );
+        }
+    }
+
+    public String getJobSkills(Entity.Tbljob job) {
+
+        try {
+
+            if (job == null || job.getJobId() == null) {
+                return "No skills added";
+            }
+
+            Collection<Entity.Tblskills> skills
+                    = client.getJobSkills(
+                            String.valueOf(job.getJobId())
+                    );
+
+            if (skills == null || skills.isEmpty()) {
+                return "No skills added";
+            }
+
+            StringBuilder sb = new StringBuilder();
+
+            for (Entity.Tblskills skill : skills) {
+
+                if (sb.length() > 0) {
+                    sb.append(", ");
+                }
+
+                sb.append(skill.getSkillName());
+            }
+
+            return sb.toString();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            return "No skills added";
+        }
+    }
+// ================= FORMAT JOB DATE =================
+
+    public String formatJobDate(Object dateObj) {
+        try {
+            if (dateObj == null) {
+                return "";
+            }
+
+            Date date;
+
+            if (dateObj instanceof Date) {
+                date = (Date) dateObj;
+            } else {
+                SimpleDateFormat parser
+                        = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                parser.setTimeZone(
+                        java.util.TimeZone.getTimeZone("UTC")
+                );
+                date = parser.parse(dateObj.toString());
+            }
+
+            return new SimpleDateFormat("dd MMM yyyy").format(date);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
         }
     }
 
@@ -905,4 +1495,129 @@ public class RecruiterCDIBean implements Serializable {
     public void setSelectedCity(String selectedCity) {
         this.selectedCity = selectedCity;
     }
+
+    public List<Tbljob> getJobList() {
+        return jobList;
+    }
+
+    public void setJobList(List<Tbljob> jobList) {
+        this.jobList = jobList;
+    }
+
+    public int getTotalJobs() {
+        return totalJobs;
+    }
+
+    public void setTotalJobs(int totalJobs) {
+        this.totalJobs = totalJobs;
+    }
+
+    public int getOpenJobs() {
+        return openJobs;
+    }
+
+    public void setOpenJobs(int openJobs) {
+        this.openJobs = openJobs;
+    }
+
+    public int getClosedJobs() {
+        return closedJobs;
+    }
+
+    public void setClosedJobs(int closedJobs) {
+        this.closedJobs = closedJobs;
+    }
+
+    public int getExpiringJobs() {
+        return expiringJobs;
+    }
+
+    public void setExpiringJobs(int expiringJobs) {
+        this.expiringJobs = expiringJobs;
+    }
+
+    public List<Tblskills> getAllSkills() {
+        return allSkills;
+    }
+
+    public void setAllSkills(List<Tblskills> allSkills) {
+        this.allSkills = allSkills;
+    }
+
+    public List<Integer> getSelectedSkillIds() {
+        return selectedSkillIds;
+    }
+
+    public void setSelectedSkillIds(List<Integer> selectedSkillIds) {
+        this.selectedSkillIds = selectedSkillIds;
+    }
+
+    public List<Tblskills> getFilteredSkills() {
+        return filteredSkills;
+    }
+
+    public void setFilteredSkills(List<Tblskills> filteredSkills) {
+        this.filteredSkills = filteredSkills;
+    }
+
+    public List<Tblskillcategory> getSkillCategories() {
+        return skillCategories;
+    }
+
+    public void setSkillCategories(List<Tblskillcategory> skillCategories) {
+        this.skillCategories = skillCategories;
+    }
+
+    public Integer getSelectedSkillCategory() {
+        return selectedSkillCategory;
+    }
+
+    public void setSelectedSkillCategory(Integer selectedSkillCategory) {
+        this.selectedSkillCategory = selectedSkillCategory;
+    }
+
+    public String getNewCategoryName() {
+        return newCategoryName;
+    }
+
+    public void setNewCategoryName(String newCategoryName) {
+        this.newCategoryName = newCategoryName;
+    }
+
+    public String getNewSkillName() {
+        return newSkillName;
+    }
+
+    public void setNewSkillName(String newSkillName) {
+        this.newSkillName = newSkillName;
+    }
+
+    public void validateCompensation(FacesContext context, UIComponent component, Object value) {
+
+        // value = MAX compensation field value
+        if (value == null) {
+            return;
+        }
+
+        // MIN compensation from job object
+        if (job == null || job.getJobCompensationMin() == null) {
+            return;
+        }
+
+        BigDecimal max = (BigDecimal) value;
+        BigDecimal min = job.getJobCompensationMin();
+
+        // VALIDATION
+        if (max.compareTo(min) < 0) {
+
+            throw new ValidatorException(
+                    new FacesMessage(
+                            FacesMessage.SEVERITY_ERROR,
+                            "Maximum compensation must be greater than minimum compensation",
+                            null
+                    )
+            );
+        }
+    }
+
 }
