@@ -39,7 +39,11 @@ import java.util.Date;
     @NamedQuery(name = "Tblskillcategory.findByCategoryStatus", query = "SELECT t FROM Tblskillcategory t WHERE t.categoryStatus = :categoryStatus"),
     @NamedQuery(name = "Tblskillcategory.findByCreatedByUserId", query = "SELECT t FROM Tblskillcategory t WHERE t.createdByUserId = :createdByUserId"),
     @NamedQuery(name = "Tblskillcategory.findByMergedIntoCategoryId", query = "SELECT t FROM Tblskillcategory t WHERE t.mergedIntoCategoryId = :mergedIntoCategoryId"),
-    @NamedQuery(name = "Tblskillcategory.findByCreatedDate", query = "SELECT t FROM Tblskillcategory t WHERE t.createdDate = :createdDate")})
+    @NamedQuery(name = "Tblskillcategory.findByCreatedDate", query = "SELECT t FROM Tblskillcategory t WHERE t.createdDate = :createdDate"),
+    
+    @NamedQuery(name = "Tblskillcategory.findApprovedCategory",
+    query = "SELECT c FROM Tblskillcategory c WHERE c.categoryStatus = 'APPROVED' ORDER BY c.categoryName")
+})
 public class Tblskillcategory implements Serializable {
 
     private static final long serialVersionUID = 1L;

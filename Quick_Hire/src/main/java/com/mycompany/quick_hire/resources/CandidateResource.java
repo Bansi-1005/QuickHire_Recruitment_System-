@@ -234,6 +234,46 @@ public class CandidateResource {
 //    }
 
     // ================= SKILLS =================
+    
+    @GET
+    @Path("getAllSkillCategories")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllSkillCategories() {
+
+        try {
+
+            return Response.ok(
+                    ejb.getAllSkillCategories()
+            ).build();
+
+        } catch (Exception e) {
+
+            return Response.status(500)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+    
+    @GET
+@Path("getSkillsByCategory")
+@Produces(MediaType.APPLICATION_JSON)
+    public Response getSkillsByCategory(
+            @QueryParam("categoryId") int categoryId) {
+
+        try {
+
+            return Response.ok(
+                    ejb.getSkillsByCategory(categoryId)
+            ).build();
+
+        } catch (Exception e) {
+
+            return Response.status(500)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
     @POST
     @Path("addSkillToCandidate")
     @Produces(MediaType.APPLICATION_JSON)
@@ -303,21 +343,6 @@ public class CandidateResource {
 
         } catch (Exception e) {
             return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
-    
-    @GET
-    @Path("getAllSkills")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllSkills() {
-
-        try {
-            return Response.ok(ejb.getAllSkills()).build();
-
-        } catch (Exception e) {
-            return Response.status(500)
-                    .entity(e.getMessage())
-                    .build();
         }
     }
 

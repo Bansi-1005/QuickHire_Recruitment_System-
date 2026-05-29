@@ -63,81 +63,113 @@
 
             <h:panelGroup id="applicationsPanel">
 
-                <div class="applications-grid">
+                <h:panelGroup rendered="#{not empty candidateCDIBean.applicationList}">
 
-                    <ui:repeat value="#{candidateCDIBean.applicationList}" var="app">
+                    <div class="table-responsive">
 
-                        <div class="app-card">
+                        <table class="application-table">
 
-                            <!-- TOP -->
-                            <div class="app-top">
+                            <thead>
+                                <tr>
+                                    <th>Job Title</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                    <th>Job Type</th>
+                                    <th>Salary</th>
+                                    <th>Applied Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
 
-                                <div>
-                                    <div class="job-title">
-                                        #{app.jobId.jobTitle}
-                                    </div>
+                            <tbody>
 
-                                    <div class="job-location">
-                                        <i class="fa-solid fa-location-dot"></i>
-                                        #{app.jobId.jobLocation}
-                                    </div>
-                                </div>
-                            </div>
+                                <ui:repeat value="#{candidateCDIBean.applicationList}" var="app">
 
-                            <!-- INFO -->
-                            <div class="app-info">
+                                    <tr>
 
-                                <div class="info-row">
-                                    <span>Application ID</span>
-                                    <strong>#{app.applicationId}</strong>
-                                </div>
+                                        <!-- JOB TITLE -->
+                                        <td>
+                                            <div class="job-title">
+                                                #{app.jobId.jobTitle}
+                                            </div>
+                                        </td>
 
-                                <div class="info-row">
-                                    <span>Status</span>
-                                    <span class="badge">
-                                        #{candidateCDIBean.applicationStatusMap[app.applicationId]}                                    
-                                    </span>
-                                </div>
+                                        <!-- LOCATION -->
+                                        <td>
+                                            <div class="job-location">
+                                                <i class="fa-solid fa-location-dot"></i>
+                                                #{app.jobId.jobLocation}
+                                            </div>
+                                        </td>
 
-                                <div class="info-row">
-                                    <span>Job Type</span>
-                                    <span class="badge">
-                                        #{app.jobId.jobType}
-                                    </span>
-                                </div>
+                                        <!-- STATUS -->
+                                        <td>
 
-                                <div class="info-row">
-                                    <span>Salary</span>
-                                    <strong>
-                                        ₹ #{app.jobId.jobCompensationMin}
-                                        - ₹ #{app.jobId.jobCompensationMax}
-                                    </strong>
-                                </div>
+                                            <span class="status-badge
+                                                  #{app.applicationStatus eq 'Applied' ? 'status-applied' : ''}
+                                                  #{app.applicationStatus eq 'Shortlisted' ? 'status-shortlisted' : ''}
+                                                  #{app.applicationStatus eq 'Rejected' ? 'status-rejected' : ''}
+                                                  #{app.applicationStatus eq 'Selected' ? 'status-selected' : ''}">
 
-                            </div>
+                                                #{candidateCDIBean.applicationStatusMap[app.applicationId]}
 
-                            <!-- ACTIONS -->
-                            <div class="app-footer">
+                                            </span>
 
-                                <!-- WITHDRAW -->
-                                <h:form>
-                                    <h:commandButton
-                                        value="Withdraw"
-                                        styleClass="btn-delete"
-                                        action="#{candidateCDIBean.deleteApplication(app.applicationId)}">
+                                        </td>
 
-                                        <f:ajax render="applicationsPanel"/>
-                                    </h:commandButton>
-                                </h:form>
+                                        <!-- JOB TYPE -->
+                                        <td>
+                                            <span class="job-type-badge">
+                                                #{app.jobId.jobType}
+                                            </span>
+                                        </td>
 
-                            </div>
+                                        <!-- SALARY -->
+                                        <td>
+                                            ₹ #{app.jobId.jobCompensationMin}
+                                            -
+                                            ₹ #{app.jobId.jobCompensationMax}
+                                        </td>
 
-                        </div>
+                                        <!-- DATE -->
+                                        <td>
+                                            <h:outputText value="#{app.applicationAppliedDate}">
+                                                <f:convertDateTime pattern="dd-MM-yyyy"/>
+                                            </h:outputText>
+                                        </td>
 
-                    </ui:repeat>
+                                        <!-- ACTION -->
+                                        <td>
 
-                </div>
+                                            <h:form>
 
+                                                <h:commandButton
+                                                    value="Withdraw"
+                                                    styleClass="btn-delete"
+                                                    action="#{candidateCDIBean.deleteApplication(app.applicationId)}"
+                                                    onclick="return confirm('Withdraw this application?')">
+
+                                                    <f:ajax execute="@this"
+                                                            render="applicationsPanel"/>
+
+                                                </h:commandButton>
+
+                                            </h:form>
+
+                                        </td>
+
+                                    </tr>
+
+                                </ui:repeat>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </h:panelGroup>
+                
                 <!-- EMPTY -->
                 <h:panelGroup rendered="#{empty candidateCDIBean.applicationList}">
                     <div class="empty-state">
@@ -162,8 +194,7 @@
         <h2>Access Denied ❌</h2>
     </div>
 </h:panelGroup>
-
-<ui:include src="/common/footer.xhtml"/>
-
+    <!-- ================= PROFILE MODAL ================= -->
+    <ui:include src="/candidate/updateProfile.xhtml"/>
 </h:body>
 </html>

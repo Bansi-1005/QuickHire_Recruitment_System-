@@ -1,49 +1,163 @@
-/* =========================================================
-   PAGE: MANAGE SKILLS (ONLY UNIQUE STYLES)
-   NOTE: HERO, BUTTON BASE, LAYOUT = FROM recruiter.css
-========================================================= */
-
-/* =========================
-   SKILL PANEL
-========================= */
-
-.skillpanel,
-.skills-section{
-    background:#ffffff;
-    border-radius:18px;
-    padding:24px;
-    border:1px solid #dfe7f1; /* align with recruiter.css border */
-    box-shadow:0 8px 24px rgba(15, 35, 65, 0.08); /* match recruiter shadow */
-    margin-top:20px;
+:root{
+    --primary-dark:#1e3a8a;
+    --primary-mid:#1f6fb2;
+    --primary-teal:#0f9b8e;
+    --primary-soft:#eefaf8;
+    --bg:#f4f7fb;
+    --white:#ffffff;
+    --text:#132238;
+    --text-muted:#64748b;
+    --border:#dbe4ee;
+    --shadow-sm:0 10px 24px rgba(15, 35, 65, 0.08);
+    --shadow-md:0 14px 34px rgba(15, 35, 65, 0.12);
+    --radius-lg:18px;
+    --radius-xl:24px;
 }
 
-/* =========================
-   SECTION HEADERS
-========================= */
-.skills-top{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
+*{
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    margin:0;
+    font-family:'Segoe UI', sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    overflow-x:hidden;
+}
+
+.dashboard-layout{
+    display:flex;
+    min-height:100vh;
+}
+
+.main{
+    margin-left:250px;
+    width:calc(100% - 250px);
+    padding:100px 28px 90px;
+}
+
+/* HERO */
+.skills-hero{
+    background:linear-gradient(110deg, #1e3f8a 0%, #0f9b8e 100%);
+    color:var(--white);
+    border-radius:28px;
+    padding:20px 24px;
+    box-shadow:0 14px 34px rgba(15, 35, 65, 0.12);
+    margin-bottom:22px;
+    min-height:150px;
+}
+
+.hero-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:20px;
+    align-items:center;
+}
+
+.welcome-tag{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:rgba(255,255,255,0.14);
+    border:1px solid rgba(255,255,255,0.16);
+    padding:6px 14px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:600;
+    margin-bottom:12px;
+}
+
+.skills-hero h1{
+    margin:0 0 8px;
+    font-size:28px;
+    font-weight:800;
+    letter-spacing:-0.4px;
+    line-height:1.15;
+}
+
+.skills-hero p{
+    margin:0;
+    color:rgba(255,255,255,0.92);
+    font-size:14px;
+    max-width:720px;
+}
+
+/* MESSAGES */
+.success-msg{
+    background:#dcfce7;
+    color:#166534;
+    padding:12px 14px;
+    border-radius:10px;
+    margin-bottom:15px;
+    border:1px solid #bbf7d0;
+}
+
+.error-msg{
+    background:#fee2e2;
+    color:#991b1b;
+    padding:12px 14px;
+    border-radius:10px;
+    margin-bottom:15px;
+    border:1px solid #fecaca;
+}
+
+/* PANELS */
+.skillpanel,
+.skills-section{
+    background:var(--white);
+    border-radius:22px;
+    padding:24px;
+    border:1px solid var(--border);
+    box-shadow:var(--shadow-sm);
+    margin-top:20px;
 }
 
 .skill-header h2,
 .skills-top h2{
     font-size:20px;
     font-weight:700;
-    color:#1c2b3a;
-    margin-bottom:6px;
+    color:var(--text);
+    margin:0 0 6px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.skill-header h2 i,
+.skills-top h2 i{
+    color:var(--primary-teal);
 }
 
 .skill-header p{
-    color:#6d7b8a;
+    color:var(--text-muted);
     font-size:14px;
+    margin:0;
 }
 
-/* =========================
-   FORM SECTION
-========================= */
+.skills-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:16px;
+    gap:12px;
+}
 
+.skill-count{
+    background:var(--primary-soft);
+    color:var(--primary-teal);
+    padding:7px 12px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    white-space:nowrap;
+}
+
+/* FORM */
 .skill-form-wrapper{
     display:flex;
     gap:14px;
@@ -62,85 +176,59 @@
     margin-bottom:8px;
     font-size:13px;
     font-weight:600;
-    color:#1c2b3a;
+    color:var(--text);
 }
 
-/* reuse recruiter feel */
 .skill-dropdown{
     width:100%;
     height:48px;
     padding:0 14px;
     border-radius:14px;
-    border:1px solid #dfe7f1;
+    border:1px solid var(--border);
     font-size:14px;
     background:#fff;
     transition:0.25s ease;
+    color:var(--text);
 }
 
 .skill-dropdown:focus{
     outline:none;
-    border-color:#0f9b8e;
-    box-shadow:0 0 0 3px rgba(15,155,142,0.20);
+    border-color:var(--primary-teal);
+    box-shadow:0 0 0 3px rgba(15,155,142,0.18);
 }
 
-/* =========================
-   SKILL BUTTON (ONLY ADD EXTRA)
-   NOTE: base btn styles come from recruiter.css
-========================= */
-
 .btn-main{
-    background:linear-gradient(135deg,#2962ff,#5b8cff);
-    color:white;
+    background:linear-gradient(135deg, var(--primary-mid), var(--primary-dark));
+    color:#fff;
     border:none;
     padding:14px 22px;
     border-radius:12px;
-    font-weight:600;
+    font-weight:700;
     cursor:pointer;
-    transition:0.3s ease;
-    box-shadow:0 6px 14px rgba(41,98,255,0.20);
+    transition:0.25s ease;
+    box-shadow:0 8px 18px rgba(31,111,178,0.22);
+    min-height:48px;
 }
 
 .btn-main:hover{
     transform:translateY(-2px);
-    box-shadow:0 8px 20px rgba(41,98,255,0.30);
+    box-shadow:0 10px 22px rgba(31,111,178,0.30);
 }
 
-/* remove overrides ONLY */
-.btn-remove-skill{
-    background:#dc3545;
-    color:#fff;
-    border:none;
-    padding:9px 14px;
-    border-radius:10px;
-    font-weight:600;
-    cursor:pointer;
-    transition:0.25s ease;
-}
-
-.btn-remove-skill:hover{
-    background:#b71c2b;
-}
-
-/* =========================
-   SKILLS GRID
-========================= */
-
+/* SKILLS GRID */
 .skills-grid{
     display:grid;
     grid-template-columns:repeat(3, minmax(0,1fr));
     gap:18px;
+    margin-top:6px;
 }
 
-/* =========================
-   SKILL CARD
-========================= */
-
 .skill-card{
-    background:#fff;
-    border-radius:16px;
+    background:linear-gradient(180deg, #ffffff, #fbfdff);
+    border-radius:18px;
     padding:18px;
-    border:1px solid #dfe7f1;
-    box-shadow:0 8px 24px rgba(15, 35, 65, 0.08);
+    border:1px solid #e6edf6;
+    box-shadow:0 8px 24px rgba(15, 35, 65, 0.06);
     display:flex;
     justify-content:space-between;
     align-items:center;
@@ -151,103 +239,94 @@
 .skill-card:hover{
     transform:translateY(-4px);
     box-shadow:0 14px 34px rgba(15, 35, 65, 0.12);
+    border-color:rgba(15,155,142,0.22);
 }
 
 .skill-left{
     display:flex;
     align-items:center;
     gap:12px;
+    min-width:0;
 }
 
 .skill-icon{
     width:48px;
     height:48px;
     border-radius:14px;
-    background:linear-gradient(135deg,#1e3c72,#0f9b8e);
+    background:linear-gradient(135deg, var(--primary-dark), var(--primary-teal));
     display:flex;
     align-items:center;
     justify-content:center;
     color:#fff;
+    flex-shrink:0;
 }
 
 .skill-icon i{
     font-size:18px;
 }
 
+.skill-details{
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+}
+
 .skill-name{
     font-size:16px;
     font-weight:700;
-    color:#1c2b3a;
+    color:var(--text);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
 }
 
 .skill-category{
     font-size:13px;
-    color:#6d7b8a;
+    color:var(--text-muted);
 }
 
-/* =========================
-   COUNT BADGE
-========================= */
-
-.skill-count{
-    background:#eaf6f5;
-    color:#0f9b8e;
-    padding:6px 12px;
-    border-radius:999px;
-    font-size:12px;
+.btn-remove-skill{
+    background:#dc3545;
+    color:#fff;
+    border:none;
+    padding:10px 14px;
+    border-radius:10px;
     font-weight:700;
+    cursor:pointer;
+    transition:0.25s ease;
 }
 
-/* =========================
-   EMPTY STATE
-========================= */
+.btn-remove-skill:hover{
+    background:#b71c2b;
+    transform:translateY(-1px);
+}
 
+/* EMPTY STATE */
 .empty-state{
     text-align:center;
-    padding:60px 20px;
+    padding:54px 20px 34px;
 }
 
 .empty-state i{
-    font-size:60px;
+    font-size:58px;
     color:#cbd5e1;
-    margin-bottom:16px;
+    margin-bottom:14px;
 }
 
 .empty-state h3{
     font-size:22px;
-    color:#1c2b3a;
-    margin-bottom:8px;
+    color:var(--text);
+    margin:0 0 8px;
 }
 
 .empty-state p{
     font-size:14px;
-    color:#6d7b8a;
+    color:var(--text-muted);
+    margin:0;
 }
 
-/* =========================
-   MESSAGES
-========================= */
-
-.success-msg{
-    background:#dcfce7;
-    color:#166534;
-    padding:12px 14px;
-    border-radius:10px;
-    margin-bottom:15px;
-}
-
-.error-msg{
-    background:#fee2e2;
-    color:#991b1b;
-    padding:12px 14px;
-    border-radius:10px;
-    margin-bottom:15px;
-}
-
-/* =========================
-   ACCESS DENIED
-========================= */
-
+/* ACCESS DENIED */
 .access-denied{
     text-align:center;
     padding-top:100px;
@@ -258,10 +337,7 @@
     font-size:28px;
 }
 
-/* =========================
-   RESPONSIVE
-========================= */
-
+/* RESPONSIVE */
 @media(max-width:1400px){
     .skills-grid{
         grid-template-columns:repeat(2,1fr);
@@ -275,6 +351,11 @@
 }
 
 @media(max-width:768px){
+    .main{
+        margin-left:0;
+        width:100%;
+        padding:20px 16px 40px;
+    }
 
     .skill-form-wrapper{
         flex-direction:column;
@@ -301,9 +382,17 @@
     .btn-remove-skill{
         width:100%;
     }
+
+    .skills-top{
+        flex-direction:column;
+        align-items:flex-start;
+    }
 }
 
 @media(max-width:480px){
+    .skills-hero h1{
+        font-size:24px;
+    }
 
     .skill-name{
         font-size:15px;

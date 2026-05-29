@@ -8,335 +8,282 @@
 
 <f:metadata>
     <f:viewAction action="#{loginBean.checkLogin}" />
-    
     <f:viewAction action="#{candidateCDIBean.loadUserData}" />
 </f:metadata>
-    
+
 <h:head>
     <title>Candidate Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <h:outputStylesheet library="css" name="/candidate/candidate.css" />
     <h:outputStylesheet library="css" name="/candidate/dashboard.css" />
     <h:outputStylesheet library="css" name="/candidate/profile.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 </h:head>
 
 <h:body>
 
-<!-- COMMON HEADER -->
 <ui:include src="/common/header.xhtml"/>
 
-<!-- ROLE CHECK -->
 <h:panelGroup rendered="#{loginBean.role eq 'Candidate'}">
 
-<div class="dashboard-layout">
+    <div class="dashboard-layout">
 
-    <!-- ================= SIDEBAR ================= -->
-    <ui:include src="/candidate/sidebar.xhtml">
-        <ui:param name="activePage" value="dashboard"/>
-    </ui:include>
+        <ui:include src="/candidate/sidebar.xhtml">
+            <ui:param name="activePage" value="dashboard"/>
+        </ui:include>
 
-    <!-- ================= MAIN ================= -->
-    <main class="main" id="main">
+        <main class="main" id="main">
 
-        <section class="hero">
+            <section class="hero">
+                <div class="hero-grid">
 
-            <div class="hero-grid">
+                    <div class="hero-left">
+                        <div class="welcome-tag">Candidate Dashboard</div>
 
-                <!-- LEFT -->
-                <div class="hero-left">
+                        <h1>
+                            Welcome, #{candidateCDIBean.candidateObj.userId.userName} 👋
+                        </h1>
 
-                    <div class="hero-profile-section">
-
-                        <!-- PROFILE PHOTO -->
-                        <ui:fragment rendered="#{not empty candidateCDIBean.candidateObj.userId.profilePhoto}">
-
-                            <img
-                                src="/D/QuickHireUploads/profilephotos/#{candidateCDIBean.candidateObj.userId.profilePhoto}"
-                                class="hero-profile-img"/>
-
-                        </ui:fragment>
-
-                        <ui:fragment rendered="#{empty candidateCDIBean.candidateObj.userId.profilePhoto}">
-
-                            <div class="hero-avatar">
-                                #{candidateCDIBean.candidateObj.userId.userName.substring(0,1)}
-                            </div>
-
-                        </ui:fragment>
-
-                        <div>
-
-                            <div class="welcome-tag">
-                                Candidate Dashboard
-                            </div>
-
-                            <h1>
-                                Welcome,
-                                #{candidateCDIBean.candidateObj.userId.userName}
-                                👋
-                            </h1>
-
-                            <p>
-
-                                #{candidateCDIBean.candidateObj.candidateCity},
-
-                                #{candidateCDIBean.candidateObj.candidateState}
-
-                                •
-
-                                #{candidateCDIBean.candidateObj.candidateExperience}
-                                Years Experience
-
-                            </p>
-
-                        </div>
-
+                        <p class="hero-info">
+                            #{candidateCDIBean.candidateObj.candidateCity}, #{candidateCDIBean.candidateObj.candidateState}
+                            <span class="separator">•</span>
+                            #{candidateCDIBean.candidateObj.candidateExperience} Years Experience
+                        </p>
                     </div>
 
-                </div>
-
-                <!-- RIGHT -->
-                <div class="hero-stats">
-
-                    <div class="hero-mini-card">
-                        <span>Applications</span>
-                        <strong>
-                            #{candidateCDIBean.applicationList.size()}
-                        </strong>
-                    </div>
-
-                    <div class="hero-mini-card">
-                        <span>Shortlisted</span>
-                        <strong>
-                            #{candidateCDIBean.getApplicationsByStatus('Shortlisted')}
-                        </strong>
-                    </div>
-
-                    <div class="hero-mini-card">
-                        <span>Interviews</span>
-                        <strong>
-                            #{candidateCDIBean.interviewList.size()}
-                        </strong>
-                    </div>
-
-                    <div class="hero-mini-card">
-                        <span>Skills</span>
-                        <strong>
-                            #{candidateCDIBean.candidateSkills.size()}
-                        </strong>
-                    </div>
-
-                </div>
-
-            </div>
-
-        </section>
-
-        <!-- CARDS -->
-        <section class="cards">
-
-            <div class="card">
-                <div class="card-top">
-                    <h3>Available Jobs</h3>
-                    <div class="card-icon">💼</div>
-                </div>
-                <div class="card-value">
-                    #{candidateCDIBean.jobList.size()}
-                </div>
-                <div class="card-note">Based on your profile</div>
-            </div>
-
-            <div class="card">
-                <div class="card-top">
-                    <h3>Applications</h3>
-                    <div class="card-icon">📄</div>
-                </div>
-                <div class="card-value">
-                    #{candidateCDIBean.applicationList.size()}
-                </div>
-                <div class="card-note">Track your progress</div>
-            </div>
-
-            <div class="card">
-                <div class="card-top">
-                    <h3>Upcoming Interviews</h3>
-                    <div class="card-icon">📅</div>
-                </div>
-                <div class="card-value">
-                    #{candidateCDIBean.interviewList.size()}
-                </div>
-                <div class="card-note">Prepare well</div>
-            </div>
-
-            <div class="card">
-                <div class="card-top">
-                    <h3>Notifications</h3>
-                    <div class="card-icon">🔔</div>
-                </div>
-                <div class="card-value">
-                    #{candidateCDIBean.notificationList.size()}
-                </div>
-                <div class="card-note">Stay updated</div>
-            </div>
-
-        </section>
-
-        <!-- JOBS + INTERVIEWS -->
-        <section class="section">
-
-            <!-- JOBS -->
-            <div class="panel">
-                <div class="panel-header">
-                    <h3>Recommended Jobs</h3>
-                </div>
-
-                <ui:repeat value="#{candidateCDIBean.jobList}" var="job">
-
-                    <div class="candidate-item">
-                        <div class="person">
-                            <div class="avatar">💼</div>
-                            <div class="person-info">
-                                <h4>#{job.jobTitle}</h4>
-                                <p>#{job.jobLocation} • 7 yrs</p>
+                    <div class="hero-stats">
+                        <div class="hero-mini-card profile-completion">
+                            <span>Profile Completion</span>
+                            <strong>
+                                <h:outputText value="#{candidateCDIBean.profileCompletion}">
+                                    <f:convertNumber integerOnly="true"/>
+                                </h:outputText>%
+                            </strong>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: #{candidateCDIBean.profileCompletion}%;"></div>
                             </div>
                         </div>
-                        <div>
-                            <span class="score-badge">80%</span>
-                            <h:form>
-                               <h:commandButton
-                                value="#{candidateCDIBean.isApplied(job.jobId) ? 'Applied' : 'Apply'}"
-                                action="#{candidateCDIBean.applyJob(job.jobId, candidateCDIBean.candidateId)}"
-                                styleClass="#{candidateCDIBean.isApplied(job.jobId) ? 'btn-disabled' : 'btn-main'}"
-                                disabled="#{candidateCDIBean.isApplied(job.jobId)}">
 
-                                <f:ajax execute="@this" render="@all"/>
+                        <div class="hero-mini-card">
+                            <span>Shortlisted</span>
+                            <strong>#{candidateCDIBean.getApplicationsByStatus('Shortlisted')}</strong>
+                        </div>
 
-                            </h:commandButton>
+                        <div class="hero-mini-card">
+                            <span>Interviews</span>
+                            <strong>#{candidateCDIBean.interviewList.size()}</strong>
+                        </div>
+
+                        <div class="hero-mini-card">
+                            <span>Skills</span>
+                            <strong>#{candidateCDIBean.candidateSkills.size()}</strong>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="cards">
+
+                <div class="card">
+                    <div class="card-top">
+                        <h3>Available Jobs</h3>
+                        <div class="card-icon">
+                            <i class="fa-solid fa-briefcase"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">#{candidateCDIBean.jobList.size()}</div>
+                    <div class="card-note">Based on your profile</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-top">
+                        <h3>Applications</h3>
+                        <div class="card-icon">
+                            <i class="fa-solid fa-file-lines"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">#{candidateCDIBean.applicationList.size()}</div>
+                    <div class="card-note">Track your progress</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-top">
+                        <h3>Upcoming Interviews</h3>
+                        <div class="card-icon">
+                            <i class="fa-solid fa-calendar-check"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">#{candidateCDIBean.interviewList.size()}</div>
+                    <div class="card-note">Prepare well</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-top">
+                        <h3>Notifications</h3>
+                        <div class="card-icon">
+                            <i class="fa-solid fa-bell"></i>
+                        </div>
+                    </div>
+                    <div class="card-value">#{candidateCDIBean.notificationList.size()}</div>
+                    <div class="card-note">Stay updated</div>
+                </div>
+
+            </section>
+
+            <div class="dashboard-grid">
+
+                <section class="dashboard-panel">
+                    <div class="panel-header">
+                        <h2>Recent Applications</h2>
+                    </div>
+
+                    <h:panelGroup rendered="#{empty candidateCDIBean.recentApplications}">
+                        <div class="empty-state">No applications yet</div>
+                    </h:panelGroup>
+
+                    <ui:repeat value="#{candidateCDIBean.recentApplications}" var="app">
+                        <div class="dashboard-item">
+                            <div class="item-info">
+                                <h3>#{app.jobId.jobTitle}</h3>
+                                <p>#{app.jobId.jobLocation}</p>
+                            </div>
+                            <span class="status-badge #{app.applicationStatus.toLowerCase()}">
+                                #{app.applicationStatus}
+                            </span>
+                        </div>
+                    </ui:repeat>
+                </section>
+
+                <section class="dashboard-panel">
+                    <div class="panel-header">
+                        <h2>Recommended Jobs</h2>
+                        <div class="panel-actions">
+                            <a href="#" class="panel-link">View All</a>
+                            <h:form styleClass="refresh-form">
+                                <h:commandButton value="Refresh"
+                                                 action="#{candidateCDIBean.loadDashboardData}"
+                                                 styleClass="refresh-btn">
+                                    <f:ajax render="@form"/>
+                                </h:commandButton>
                             </h:form>
                         </div>
                     </div>
 
-                </ui:repeat>
+                    <h:panelGroup rendered="#{empty candidateCDIBean.recommendedJobs}">
+                        <div class="empty-state">No recommended jobs</div>
+                    </h:panelGroup>
 
-            </div>
-            
-            <!-- MY APPLICATIONS -->
-            <div class="panel">
-                <div class="panel-header">
-                    <h3>My Applications</h3>
-                </div>
-
-                <ui:repeat value="#{candidateCDIBean.applicationList}" var="app">
-
-                    <div class="candidate-item">
-                        <div class="person">
-                            <div class="avatar">📄</div>
-                            <div class="person-info">
-                                <h4>#{app.jobId.jobTitle}</h4>
-                                <p>
-                                    Status:
-                                    #{candidateCDIBean.applicationStatusMap[app.applicationId]}
-                                </p>
+                    <ui:repeat value="#{candidateCDIBean.recommendedJobs}" var="job">
+                        <div class="dashboard-item">
+                            <div class="item-info">
+                                <h3>#{job.jobTitle}</h3>
+                                <p>#{job.jobLocation}</p>
+                                <small>
+                                    #{job.jobType} • #{job.experienceRequired} Years Exp
+                                </small>
                             </div>
+                            <h:button value="View" outcome="searchJobs" styleClass="btn-view"/>
                         </div>
-                    </div>
+                    </ui:repeat>
+                </section>
 
-                </ui:repeat>
             </div>
 
-            <!-- LOWER SECTION -->
-            <section class="dashboard-lower">
+            <div class="dashboard-grid bottom-grid">
 
-                <!-- INTERVIEWS -->
-                <div class="panel">
-
+                <section class="dashboard-panel">
                     <div class="panel-header">
-                        <h3>Upcoming Interviews</h3>
+                        <h2>Upcoming Interviews</h2>
                     </div>
 
-                    <ui:fragment rendered="#{empty candidateCDIBean.interviewList}">
-
-                        <div class="empty-box">
-                            No interviews scheduled yet
-                        </div>
-
-                    </ui:fragment>
+                    <h:panelGroup rendered="#{empty candidateCDIBean.interviewList}">
+                        <div class="empty-state">No interviews scheduled</div>
+                    </h:panelGroup>
 
                     <ui:repeat value="#{candidateCDIBean.interviewList}" var="interview">
-
-                        <div class="interview-item">
-
-                            <div class="person">
-
-                                <div class="avatar">🎤</div>
-
-                                <div class="person-info">
-
-                                    <h4>
-                                        #{interview.applicationId.jobId.jobTitle}
-                                    </h4>
-
-                                    <p>
-                                        #{interview.interviewerMode}
-                                    </p>
-
-                                </div>
-
+                        <div class="dashboard-item">
+                            <div class="item-info">
+                                <h3>#{interview.applicationId.jobId.jobTitle}</h3>
+                                <p>#{interview.interviewDate}</p>
+                                <small>#{interview.interviewerMode}</small>
                             </div>
-
-                            <div class="time-badge">
-                                #{interview.interviewDate}
-                            </div>
-
+                            <span class="status-badge shortlisted">Scheduled</span>
                         </div>
-
                     </ui:repeat>
+                </section>
 
-                </div>
-
-                <!-- NOTIFICATIONS -->
-                <div class="panel">
-
+                <section class="dashboard-panel">
                     <div class="panel-header">
-                        <h3>Recent Notifications</h3>
+                        <h2>Profile Completion</h2>
                     </div>
 
-                    <ui:repeat value="#{candidateCDIBean.notificationList}" var="n">
-
-                        <div class="activity-item">
-
-                            <div class="activity-dot"></div>
-
-                            <div>
-                                <h4>#{n.message}</h4>
-                                <p>#{n.message}</p>
-                            </div>
-
+                    <div class="profile-box">
+                        <div class="profile-box-head">
+                            <h4>Complete your profile</h4>
+                            <span class="profile-percent">
+                                <h:outputText value="#{candidateCDIBean.profileCompletion}">
+                                    <f:convertNumber integerOnly="true"/>
+                                </h:outputText>%
+                            </span>
                         </div>
 
-                    </ui:repeat>
+                        <div class="progress-bar dark">
+                            <div class="progress-fill" style="width: #{candidateCDIBean.profileCompletion}%;"></div>
+                        </div>
 
+                        <ui:fragment rendered="#{candidateCDIBean.profileCompletion lt 100}">
+                            <ul class="profile-tips">
+                                <ui:repeat value="#{candidateCDIBean.profileMissingItems}" var="tip">
+                                    <li>#{tip}</li>
+                                </ui:repeat>
+                            </ul>
+                        </ui:fragment>
+
+                        <ui:fragment rendered="#{candidateCDIBean.profileCompletion ge 100}">
+                            <div class="profile-complete-box">
+                                Your profile is fully completed.
+                            </div>
+                        </ui:fragment>
+                    </div>
+                </section>
+
+            </div>
+
+            <section class="dashboard-panel notification-panel">
+                <div class="panel-header">
+                    <h2>Recent Notifications</h2>
                 </div>
 
-            </section>
-        </section>
-    </main>
+                <h:panelGroup rendered="#{empty candidateCDIBean.notificationList}">
+                    <div class="empty-state">No notifications</div>
+                </h:panelGroup>
 
-</div>
+                <ui:repeat value="#{candidateCDIBean.notificationList}" var="noti">
+                    <div class="notification-item">
+                        <div class="notification-icon">
+                            <i class="fa-solid fa-bell"></i>
+                        </div>
+                        <div class="notification-content">
+                            <h4>#{noti.notificationType}</h4>
+                            <p>#{noti.message}</p>
+                        </div>
+                    </div>
+                </ui:repeat>
+            </section>
+
+        </main>
+    </div>
 
 </h:panelGroup>
 
-<!-- ACCESS DENIED -->
 <h:panelGroup rendered="#{loginBean.role ne 'Candidate'}">
-    <div style="padding-top:120px; text-align:center;">
-        <h2 style="color:red;">Access Denied ❌</h2>
+    <div class="access-denied">
+        <h2>Access Denied</h2>
+        <p>You don't have permission to view this page.</p>
     </div>
 </h:panelGroup>
 
-    <!-- FOOTER -->
-    <ui:include src="/common/footer.xhtml"/>
-
-    <!-- PROFILE MODAL -->
-    <ui:include src="/candidate/updateProfile.xhtml"/>
+<ui:include src="/candidate/updateProfile.xhtml"/>
 
 </h:body>
 </html>

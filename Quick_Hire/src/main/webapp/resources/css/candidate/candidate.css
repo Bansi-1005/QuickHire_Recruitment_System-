@@ -3,17 +3,47 @@
 ========================= */
 
 :root{
-    --primary-dark:#1e3c72;
-    --primary-mid:#185a9d;
+
+    /* =========================
+       PRIMARY COLORS
+    ========================= */
+
+    --primary-dark:#1e3f8a;
+    --primary-mid:#2962ff;
     --primary-teal:#0f9b8e;
-    --primary-soft:#eaf6f5;
+    --primary-soft:#eef7ff;
+
+    /* =========================
+       BACKGROUND COLORS
+    ========================= */
+
     --bg:#f4f7fb;
     --white:#ffffff;
-    --text:#1c2b3a;
-    --text-muted:#6d7b8a;
-    --border:#dfe7f1;
-    --shadow-sm:0 8px 24px rgba(15, 35, 65, 0.08);
-    --shadow-md:0 14px 34px rgba(15, 35, 65, 0.12);
+
+    /* =========================
+       TEXT COLORS
+    ========================= */
+
+    --text:#132238;
+    --text-muted:#64748b;
+
+    /* =========================
+       BORDER
+    ========================= */
+
+    --border:#dbe4ee;
+
+    /* =========================
+       SHADOWS
+    ========================= */
+
+    --shadow-sm:0 10px 24px rgba(15,35,65,0.08);
+    --shadow-md:0 14px 34px rgba(15,35,65,0.12);
+
+    /* =========================
+       BORDER RADIUS
+    ========================= */
+
     --radius-lg:18px;
     --radius-xl:24px;
 }
@@ -409,6 +439,16 @@ body{
     font-weight: 600;
 }
 
+
+.menu-link i{
+    width:22px;
+    margin-right:10px;
+}
+
+.menu-link{
+    display:flex;
+    align-items:center;
+}
 
 /* =========================
    RESPONSIVE

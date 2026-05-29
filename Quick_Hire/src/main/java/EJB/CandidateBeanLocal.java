@@ -32,11 +32,13 @@ public interface CandidateBeanLocal {
 //    String getCandidateResume(int candidateId);
 
     // ---------- Candidate Skills ----------
+    Collection<Tblskillcategory> getAllSkillCategories();
+Collection<Tblskills> getSkillsByCategory(int categoryId);
+    
     void addSkillToCandidate(int candidateId, int skillId);
 //    void updateSkillToCandidate(int candidateId, Collection<Integer> skillIds);
     void removeSkillFromCandidate(int candidateId, int skillId);
     Collection<Tblskills> getCandidateSkills(int candidateId);
-    Collection<Tblskills> getAllSkills();
 
     // JOBS
     Collection<Tbljob> getAllJobs();

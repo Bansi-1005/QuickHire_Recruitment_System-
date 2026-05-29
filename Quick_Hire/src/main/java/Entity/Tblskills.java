@@ -56,7 +56,10 @@ import java.util.Date;
             query = "SELECT t FROM Tblskills t WHERE t.skillName = :skillName"),
 
     @NamedQuery(name = "Tblskills.findByCategoryId",
-            query = "SELECT t FROM Tblskills t WHERE t.categoryId.categoryId = :categoryId")
+            query = "SELECT t FROM Tblskills t WHERE t.categoryId.categoryId = :categoryId"),
+
+    @NamedQuery(name = "Tblskills.findApprovedSkillsByCategory",
+    query = "SELECT s FROM Tblskills s WHERE s.categoryId.categoryId = :categoryId AND s.skillStatus = 'APPROVED' ORDER BY s.skillName")
 })
 public class Tblskills implements Serializable {
 

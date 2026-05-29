@@ -229,6 +229,43 @@ public class CandidateBean implements CandidateBeanLocal {
 //    }
 
     // ================= SKILLS =================
+    
+    @Override
+    public Collection<Tblskillcategory> getAllSkillCategories() {
+
+        try {
+
+            return em.createNamedQuery(
+                    "Tblskillcategory.findApprovedCategory",
+                    Tblskillcategory.class
+            ).getResultList();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+    
+    @Override
+    public Collection<Tblskills> getSkillsByCategory(int categoryId) {
+
+        try {
+
+            return em.createNamedQuery(
+                    "Tblskills.findApprovedSkillsByCategory",
+                    Tblskills.class
+            )
+            .setParameter("categoryId", categoryId)
+            .getResultList();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+    
     @Override
     public void addSkillToCandidate(int candidateId, int skillId) {
         try {
@@ -308,16 +345,6 @@ public class CandidateBean implements CandidateBeanLocal {
         }
     }
     
-    @Override
-    public Collection<Tblskills> getAllSkills() {
-        try {
-            return em.createNamedQuery("Tblskills.findAll", Tblskills.class)       
-                    .getResultList();
-        } catch (Exception e) {
-            return new ArrayList<>();
-        }
-    }
-
     // ================= JOBS =================
     @Override
     public Collection<Tbljob> getAllJobs() {
