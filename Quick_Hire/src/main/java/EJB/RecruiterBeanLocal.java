@@ -34,22 +34,28 @@ public interface RecruiterBeanLocal {
 //    void updateJobStatus(int jobId, String status);
     Collection<Tbljob> getJobs(int recruiterId);
 
-    // ================= JOB SKILLS =================
+    
+    
+    // ================= JOB SKILLS =========================================================
 //    void addSkillToJob(int jobId, int skillId);
 //    void removeSkillFromJob(int jobId, int skillId);
-    Collection<Tblskills> getJobSkills(int jobId);
-//    public void saveJobSkillWeightage(int jobId,Map<Integer, Integer> skillWeightMap);
+    //    public void saveJobSkillWeightage(int jobId,Map<Integer, Integer> skillWeightMap);
 //    public Collection<Tbljobskillweightage> getJobSkillWeightage(int jobId);
 //    public void updateJobSkillWeightage(int jobId,int skillId,int weightage);
+    Collection<Tblskills> getJobSkills(int jobId);
+
     public Collection<Tblskills> getAllSkills(Integer userId);
 
     public Collection<Tblskillcategory> getSkillCategories(Integer recruiterUserId);
 
     public Collection<Tblskills> getSkillsByCategory(Integer categoryId,Integer recruiterUserId);
-
-    public void addSkillCategory(String categoryName,Integer recruiterUserId);
     
-    public void addSkill(String skillName,Integer categoryId,Integer recruiterUserId);
+    public void addSkillAndOrCategory(String categoryName,Collection<String> skillNames,Integer existingCategoryId,Integer recruiterUserId);
+    
+    
+    // ================= JOB Education =======================================================
+    Collection<Tbleducation> getAllEducation();
+
 //    // ================= APPLICATION =================
 //    Collection<Tblapplication> getApplications(int jobId);
 //    void updateApplicationStatus(int applicationId, String newStatus);

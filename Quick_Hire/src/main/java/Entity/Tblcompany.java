@@ -65,10 +65,7 @@ public class Tblcompany implements Serializable {
     @Size(max = 50)
     @Column(name = "companyStatus")
     private String companyStatus;
-    @Column(name = "createdDate")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdDate;
-    @Lob()
+    @Lob
     @Size(max = 65535)
     @Column(name = "companyDescription")
     private String companyDescription;
@@ -76,7 +73,11 @@ public class Tblcompany implements Serializable {
     @Column(name = "companySize")
     private String companySize;
     @Column(name = "foundedYear")
-    private Integer foundedYear;
+    @Temporal(TemporalType.DATE)
+    private Date foundedYear;
+    @Column(name = "createdDate")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdDate;
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -141,6 +142,12 @@ public class Tblcompany implements Serializable {
     public String toString() {
         return "Entity.Tblcompany[ companyId=" + companyId + " ]";
     }
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
 
     public String getCompanyName() {
         return companyName;
@@ -182,14 +189,6 @@ public class Tblcompany implements Serializable {
         this.companyStatus = companyStatus;
     }
 
-    public Date getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
-    }
-
     public String getCompanyDescription() {
         return companyDescription;
     }
@@ -206,11 +205,11 @@ public class Tblcompany implements Serializable {
         this.companySize = companySize;
     }
 
-    public Integer getFoundedYear() {
+    public Date getFoundedYear() {
         return foundedYear;
     }
 
-    public void setFoundedYear(Integer foundedYear) {
+    public void setFoundedYear(Date foundedYear) {
         this.foundedYear = foundedYear;
     }
     

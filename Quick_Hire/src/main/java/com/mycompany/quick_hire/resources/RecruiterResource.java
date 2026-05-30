@@ -150,7 +150,7 @@ public class RecruiterResource {
     @Path("createJob")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response createJob(Tbljob job,@QueryParam("skillIds") String skillIdsStr) {
+    public Response createJob(Tbljob job, @QueryParam("skillIds") String skillIdsStr) {
 
         try {
 
@@ -359,6 +359,32 @@ public class RecruiterResource {
     }
 
     @GET
+    @Path("getJobSkills")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getJobSkills(@QueryParam("jobId") int jobId) {
+        try {
+            if (jobId <= 0) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid Job ID")
+                        .build();
+            }
+
+            Collection<Tblskills> skills = ejb.getJobSkills(jobId);
+
+            if (skills == null || skills.isEmpty()) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity("No skills found for this job")
+                        .build();
+            }
+
+            return Response.ok(skills).build();
+
+        } catch (Exception e) {
+            return Response.status(500).entity(e.getMessage()).build();
+        }
+    }
+
+    @GET
     @Path("getSkillCategories")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSkillCategories(
@@ -414,61 +440,199 @@ public class RecruiterResource {
     }
 
     @POST
-    @Path("addSkillCategory")
+    @Path("addSkillAndOrCategory")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response addSkillCategory(@QueryParam("categoryName") String categoryName, @QueryParam("userId") Integer userId) {
+    public Response addSkillAndOrCategory(
+            @QueryParam("categoryName") String categoryName,
+            @QueryParam("skillNames") String skillNamesStr,
+            @QueryParam("existingCategoryId") Integer existingCategoryId,
+            @QueryParam("userId") Integer recruiterUserId
+    ) {
 
         try {
 
-            ejb.addSkillCategory(
+            // =====================================================
+            // USER VALIDATION
+            // =====================================================
+            if (recruiterUserId == null
+                    || recruiterUserId <= 0) {
+
+                return Response.status(
+                        Response.Status.BAD_REQUEST
+                )
+                        .entity("Invalid recruiter user")
+                        .build();
+            }
+
+            // =====================================================
+            // CONVERT SKILL STRING TO LIST
+            // =====================================================
+            Collection<String> skillNames
+                    = new ArrayList<>();
+
+            if (skillNamesStr != null
+                    && !skillNamesStr.trim().isEmpty()) {
+
+                String[] arr = skillNamesStr.split(",");
+
+                for (String s : arr) {
+
+                    if (s != null
+                            && !s.trim().isEmpty()) {
+
+                        skillNames.add(s.trim());
+                    }
+                }
+            }
+
+            // =====================================================
+            // CALL EJB
+            // =====================================================
+            ejb.addSkillAndOrCategory(
                     categoryName,
-                    userId
+                    skillNames,
+                    existingCategoryId,
+                    recruiterUserId
             );
 
-            return Response
-                    .ok("Category Added")
+            // =====================================================
+            // SUCCESS MESSAGE
+            // =====================================================
+            String message;
+
+            boolean hasCategory
+                    = categoryName != null
+                    && !categoryName.trim().isEmpty();
+
+            boolean hasSkills
+                    = !skillNames.isEmpty();
+
+            if (hasCategory && !hasSkills) {
+
+                message
+                        = "Category submitted for approval";
+            } else if (hasSkills) {
+
+                message
+                        = "Skill submitted for approval";
+            } else {
+
+                message
+                        = "Submitted successfully";
+            }
+
+            return Response.ok(message).build();
+
+        } catch (RuntimeException e) {
+
+            e.printStackTrace();
+
+            return Response.status(
+                    Response.Status.BAD_REQUEST
+            )
+                    .entity(e.getMessage())
                     .build();
 
         } catch (Exception e) {
 
             e.printStackTrace();
 
-            return Response
-                    .status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Error adding category")
+            return Response.status(
+                    Response.Status.INTERNAL_SERVER_ERROR
+            )
+                    .entity("Error while adding skill/category")
                     .build();
         }
     }
 
-    @POST
-    @Path("addSkill")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response addSkill(@QueryParam("skillName") String skillName,@QueryParam("categoryId") Integer categoryId,@QueryParam("userId") Integer userId) {
+    //===========================================Job Education ==========================================
+    // ===========================================
+// EDUCATION
+// ===========================================
+    @GET
+    @Path("getAllEducation")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllEducation() {
 
         try {
 
-            ejb.addSkill(
-                    skillName,
-                    categoryId,
-                    userId
-            );
+            Collection<Tbleducation> educationList
+                    = ejb.getAllEducation();
 
-            return Response
-                    .ok("Skill Added")
-                    .build();
+            if (educationList == null) {
+                educationList = new ArrayList<>();
+            }
+
+            return Response.ok(educationList).build();
 
         } catch (Exception e) {
 
             e.printStackTrace();
 
-            return Response
-                    .status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Error adding skill")
+            return Response.status(
+                    Response.Status.INTERNAL_SERVER_ERROR
+            )
+                    .entity("Error fetching education list")
                     .build();
         }
     }
+
+//    @POST
+//    @Path("addSkillCategory")
+//    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+//    @Produces(MediaType.TEXT_PLAIN)
+//    public Response addSkillCategory(@QueryParam("categoryName") String categoryName, @QueryParam("userId") Integer userId) {
+//
+//        try {
+//
+//            ejb.addSkillCategory(
+//                    categoryName,
+//                    userId
+//            );
+//
+//            return Response
+//                    .ok("Category Added")
+//                    .build();
+//
+//        } catch (Exception e) {
+//
+//            e.printStackTrace();
+//
+//            return Response
+//                    .status(Response.Status.INTERNAL_SERVER_ERROR)
+//                    .entity("Error adding category")
+//                    .build();
+//        }
+//    }
+//    @POST
+//    @Path("addSkill")
+//    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+//    @Produces(MediaType.TEXT_PLAIN)
+//    public Response addSkill(@QueryParam("skillName") String skillName,@QueryParam("categoryId") Integer categoryId,@QueryParam("userId") Integer userId) {
+//
+//        try {
+//
+//            ejb.addSkill(
+//                    skillName,
+//                    categoryId,
+//                    userId
+//            );
+//
+//            return Response
+//                    .ok("Skill Added")
+//                    .build();
+//
+//        } catch (Exception e) {
+//
+//            e.printStackTrace();
+//
+//            return Response
+//                    .status(Response.Status.INTERNAL_SERVER_ERROR)
+//                    .entity("Error adding skill")
+//                    .build();
+//        }
+//    }
 //    @POST
 //    @Path("addSkillToJob")
 //    @Produces(MediaType.TEXT_PLAIN)
@@ -511,33 +675,6 @@ public class RecruiterResource {
 //        }
 //    }
 //
-
-    @GET
-    @Path("getJobSkills")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getJobSkills(@QueryParam("jobId") int jobId) {
-        try {
-            if (jobId <= 0) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Invalid Job ID")
-                        .build();
-            }
-
-            Collection<Tblskills> skills = ejb.getJobSkills(jobId);
-
-            if (skills == null || skills.isEmpty()) {
-                return Response.status(Response.Status.NOT_FOUND)
-                        .entity("No skills found for this job")
-                        .build();
-            }
-
-            return Response.ok(skills).build();
-
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
-
 //    @GET
 //    @Path("getJobSkillWeights")
 //    @Produces(MediaType.APPLICATION_JSON)

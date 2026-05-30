@@ -10,8 +10,8 @@
         <h:head>
             <title>View Job Postings</title>
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            <h:outputStylesheet library="css" name="/recruiter/recruiter.css" />
-            <h:outputStylesheet library="css" name="/recruiter/recruiterViewJobs.css" />
+            <h:outputStylesheet library="css" name="recruiter/recruiter.css" />
+            <h:outputStylesheet library="css" name="recruiter/recruiterViewJobs.css" />
         </h:head>
 
         <h:body>
@@ -25,7 +25,7 @@
             <h:panelGroup rendered="#{loginBean.role eq 'Recruiter'}">
                 <div class="dashboard-layout viewjobs-page">
 
-                    <aside class="sidebar viewjobs-sidebar">
+                    <aside class="sidebar postjob-sidebar">
                         <div class="sidebar-title">Navigation</div>
 
                         <h:form styleClass="menu-form">
@@ -35,10 +35,6 @@
 
                             <h:commandLink value="📋 Job Postings"
                                            action="recruiterPostJob?faces-redirect=true"
-                                           styleClass="menu-link" />
-
-                            <h:commandLink value="👁 View Jobs"
-                                           action="recruiterViewJobs?faces-redirect=true"
                                            styleClass="menu-link active" />
 
                             <h:commandLink value="👥 Applicants" styleClass="menu-link" />
@@ -50,10 +46,10 @@
                         <div class="sidebar-card">
                             <h4>Quick Tips</h4>
                             <p>
-                                Use filters to quickly locate active jobs, review expiring openings,
-                                and manage postings by location or work mode.
+                                Write a clear title, keep requirements realistic,
+                                and add key skills so the right candidates can find your job faster.
                             </p>
-                            <a href="#" class="sidebar-btn">Filtering Guide</a>
+                            <a href="#" class="sidebar-btn">Hiring Guide</a>
                         </div>
                     </aside>
 
@@ -81,16 +77,19 @@
                                 <strong>#{recruiterCDIBean.totalJobs}</strong>
                                 <small>All recruiter postings</small>
                             </div>
+
                             <div class="viewjobs-stat-card">
                                 <span class="viewjobs-stat-label">Open Jobs</span>
                                 <strong>#{recruiterCDIBean.openJobs}</strong>
                                 <small>Currently accepting applications</small>
                             </div>
+
                             <div class="viewjobs-stat-card">
                                 <span class="viewjobs-stat-label">Closed Jobs</span>
                                 <strong>#{recruiterCDIBean.closedJobs}</strong>
                                 <small>Expired or closed listings</small>
                             </div>
+
                             <div class="viewjobs-stat-card">
                                 <span class="viewjobs-stat-label">Expiring Soon</span>
                                 <strong>#{recruiterCDIBean.expiringJobs}</strong>
@@ -101,13 +100,14 @@
                         <section class="panel viewjobs-filter-panel">
                             <div class="viewjobs-section-header">
                                 <div class="viewjobs-section-title">
-                                    <span class="viewjobs-section-icon">🎛</span>
+                                    <span class="viewjobs-section-icon">&#9783;</span>
                                     <div>
                                         <h2>Search and Filters</h2>
                                         <p>Refine jobs by location, work mode, date, and status.</p>
                                     </div>
                                 </div>
-                                <div class="viewjobs-section-badge">
+
+                                <div class="viewjobs-section-badge" id="jobResultsCountTop">
                                     #{recruiterCDIBean.totalJobs} results
                                 </div>
                             </div>
@@ -120,9 +120,9 @@
                                         <div class="viewjobs-select-wrap">
                                             <select id="workModeFilter" class="viewjobs-form-control viewjobs-select-control">
                                                 <option value="">All Work Modes</option>
-                                                <option>Remote</option>
-                                                <option>Hybrid</option>
-                                                <option>On-site</option>
+                                                <option value="Remote">Remote</option>
+                                                <option value="Hybrid">Hybrid</option>
+                                                <option value="On-site">On-site</option>
                                             </select>
                                         </div>
                                     </div>
@@ -132,9 +132,9 @@
                                         <div class="viewjobs-select-wrap">
                                             <select id="statusFilter" class="viewjobs-form-control viewjobs-select-control">
                                                 <option value="">All Status</option>
-                                                <option>Open</option>
-                                                <option>Closed</option>
-                                                <option>Onhold</option>
+                                                <option value="Open">Open</option>
+                                                <option value="Closed">Closed</option>
+                                                <option value="Onhold">Onhold</option>
                                             </select>
                                         </div>
                                     </div>
@@ -144,10 +144,10 @@
                                         <div class="viewjobs-select-wrap">
                                             <select id="stateFilter" class="viewjobs-form-control viewjobs-select-control">
                                                 <option value="">All States</option>
-                                                <option>Gujarat</option>
-                                                <option>Maharashtra</option>
-                                                <option>Rajasthan</option>
-                                                <option>Karnataka</option>
+                                                <option value="Gujarat">Gujarat</option>
+                                                <option value="Maharashtra">Maharashtra</option>
+                                                <option value="Rajasthan">Rajasthan</option>
+                                                <option value="Karnataka">Karnataka</option>
                                             </select>
                                         </div>
                                     </div>
@@ -157,10 +157,10 @@
                                         <div class="viewjobs-select-wrap">
                                             <select id="cityFilter" class="viewjobs-form-control viewjobs-select-control">
                                                 <option value="">All Cities</option>
-                                                <option>Surat</option>
-                                                <option>Ahmedabad</option>
-                                                <option>Vadodara</option>
-                                                <option>Mumbai</option>
+                                                <option value="Surat">Surat</option>
+                                                <option value="Ahmedabad">Ahmedabad</option>
+                                                <option value="Vadodara">Vadodara</option>
+                                                <option value="Mumbai">Mumbai</option>
                                             </select>
                                         </div>
                                     </div>
@@ -170,10 +170,10 @@
                                         <div class="viewjobs-select-wrap">
                                             <select id="jobTypeFilter" class="viewjobs-form-control viewjobs-select-control">
                                                 <option value="">All Types</option>
-                                                <option>Full-time</option>
-                                                <option>Part-time</option>
-                                                <option>Internship</option>
-                                                <option>Contract</option>
+                                                <option value="Full-time">Full-time</option>
+                                                <option value="Part-time">Part-time</option>
+                                                <option value="Internship">Internship</option>
+                                                <option value="Contract">Contract</option>
                                             </select>
                                         </div>
                                     </div>
@@ -183,26 +183,30 @@
                                         <div class="viewjobs-select-wrap">
                                             <select id="dateFilter" class="viewjobs-form-control viewjobs-select-control">
                                                 <option value="">All Dates</option>
-                                                <option>Today</option>
-                                                <option>Last 7 Days</option>
-                                                <option>Last 30 Days</option>
-                                                <option>This Month</option>
+                                                <option value="Today">Today</option>
+                                                <option value="Last 7 Days">Last 7 Days</option>
+                                                <option value="Last 30 Days">Last 30 Days</option>
+                                                <option value="This Month">This Month</option>
                                             </select>
                                         </div>
                                     </div>
 
-                                    <div class="viewjobs-filter-group viewjobs-search-group full">
-                                        <label for="jobSearch">Search Job Title / Skills</label>
+                                    <div class="viewjobs-filter-group full">
+                                        <label for="jobSearch">Search Job Title / Location</label>
                                         <input id="jobSearch"
                                                type="text"
                                                class="viewjobs-form-control"
-                                               placeholder="Search by title, skill, or location..." />
+                                               placeholder="Search by title, city, or state..." />
                                     </div>
                                 </div>
 
                                 <div class="viewjobs-filter-actions">
-                                    <button type="button" class="viewjobs-btn viewjobs-btn-primary">Apply Filters</button>
-                                    <button type="button" class="viewjobs-btn viewjobs-btn-secondary">Clear All</button>
+                                    <button type="button" id="applyFiltersBtn" class="viewjobs-btn viewjobs-btn-primary-alt">
+                                        Apply Filters
+                                    </button>
+                                    <button type="button" id="clearFiltersBtn" class="viewjobs-btn viewjobs-btn-secondary">
+                                        Clear All
+                                    </button>
                                 </div>
                             </h:form>
                         </section>
@@ -210,13 +214,14 @@
                         <section class="panel viewjobs-results-panel">
                             <div class="viewjobs-section-header">
                                 <div class="viewjobs-section-title">
-                                    <span class="viewjobs-section-icon">📂</span>
+                                    <span class="viewjobs-section-icon">&#9776;</span>
                                     <div>
                                         <h2>Published Jobs</h2>
                                         <p>All recruiter postings in one filtered view.</p>
                                     </div>
                                 </div>
-                                <div class="viewjobs-section-badge">
+
+                                <div class="viewjobs-section-badge" id="jobResultsCount">
                                     #{recruiterCDIBean.totalJobs} results
                                 </div>
                             </div>
@@ -225,194 +230,264 @@
                                 <table class="viewjobs-table">
                                     <thead>
                                         <tr>
-                                            <th>Job Title</th>
-                                            <th>Location</th>
-                                            <th>Work Mode</th>
-                                            <th>Type</th>
-                                            <th>Status</th>
-                                            <th>Vacancies</th>
-                                            <th>Posted</th>
-                                            <th>Expiry</th>
-                                            <th>Actions</th>
+                                            <th class="viewjobs-col-title">Job Details</th>
+                                            <th class="viewjobs-col-workmode">Work Mode</th>
+                                            <th class="viewjobs-col-type">Type</th>
+                                            <th class="viewjobs-col-status">Status</th>
+                                            <th class="viewjobs-col-vacancies">Vacancies</th>
+                                            <th class="viewjobs-col-posted">Posted</th>
+                                            <th class="viewjobs-col-expiry">Expiry</th>
+                                            <th class="viewjobs-col-actions">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+
+                                    <tbody id="viewjobsTableBody">
                                         <ui:repeat value="#{recruiterCDIBean.jobList}" var="j">
+                                            <tr class="viewjobs-table-row"
+                                                data-title="#{j.jobTitle}"
+                                                data-workmode="#{j.workMode}"
+                                                data-status="#{j.jobStatus}"
+                                                data-state="#{j.jobState}"
+                                                data-city="#{j.jobCity}"
+                                                data-jobtype="#{j.jobType}"
+                                                data-posted="#{recruiterCDIBean.formatJobDate(j.jobPostedDate)}"
+                                                data-expiry="#{recruiterCDIBean.formatJobDate(j.jobExpiryDate)}"
+                                                data-vacancies="#{j.jobVacancies}"
+                                                data-skills="#{recruiterCDIBean.getJobSkills(j)}"
+                                                data-description="#{j.jobDescription}">
 
-                                            <tr>
-                                                <td>
-                                                    <div class="viewjobs-job-cell">
-                                                        <strong>#{j.jobTitle}</strong>
-
-                                                        <span class="viewjobs-job-skills">
-                                                            #{recruiterCDIBean.getJobSkills(j)}
+                                                <td class="viewjobs-title-cell">
+                                                    <div class="viewjobs-job-main">
+                                                        <span class="viewjobs-job-title-text" title="#{j.jobTitle}">
+                                                            #{j.jobTitle}
                                                         </span>
+
+                                                        <div class="viewjobs-job-location">
+                                                            <svg class="viewjobs-location-pin" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                                <path d="M12 2C8.686 2 6 4.686 6 8c0 5.25 6 14 6 14s6-8.75 6-14c0-3.314-2.686-6-6-6zm0 8.5A2.5 2.5 0 1 1 12 5.5a2.5 2.5 0 0 1 0 5z"/>
+                                                            </svg>
+                                                            <span class="viewjobs-location-text">
+                                                                <h:outputText value="#{j.jobCity}" />
+                                                                <h:outputText value=", " rendered="#{not empty j.jobCity and not empty j.jobState}" />
+                                                                <h:outputText value="#{j.jobState}" />
+                                                                <h:outputText value="Location not specified"
+                                                                              rendered="#{empty j.jobCity and empty j.jobState}" />
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                 </td>
 
                                                 <td>
-                                                    <h:outputText value="#{j.jobCity}" />
-                                                    <h:outputText value=", " rendered="#{not empty j.jobCity and not empty j.jobState}" />
-                                                    <h:outputText value="#{j.jobState}" />
+                                                    <span class="viewjobs-pill
+                                                        #{j.workMode eq 'Remote' ? 'viewjobs-pill-remote' :
+                                                          j.workMode eq 'Hybrid' ? 'viewjobs-pill-hybrid' :
+                                                          'viewjobs-pill-onsite'}">
+                                                        #{j.workMode}
+                                                    </span>
+                                                </td>
+
+                                                <td>
+                                                    <span class="viewjobs-data-text">#{j.jobType}</span>
                                                 </td>
 
                                                 <td>
                                                     <span class="viewjobs-pill
-                                                          #{j.workMode eq 'Remote' ? 'viewjobs-pill-remote' :
-                                                            j.workMode eq 'Hybrid' ? 'viewjobs-pill-hybrid' :
-                                                            'viewjobs-pill-onsite'}">
-                                                          #{j.workMode}
+                                                        #{j.jobStatus eq 'Open' ? 'viewjobs-pill-open' :
+                                                          j.jobStatus eq 'Closed' ? 'viewjobs-pill-closed' :
+                                                          'viewjobs-pill-hold'}">
+                                                        #{j.jobStatus}
                                                     </span>
                                                 </td>
 
-                                                <td>#{j.jobType}</td>
+                                                <td class="viewjobs-center-cell">
+                                                    <span class="viewjobs-vacancy-badge">#{j.jobVacancies}</span>
+                                                </td>
 
                                                 <td>
-                                                    <span class="viewjobs-pill
-                                                          #{j.jobStatus eq 'Open' ? 'viewjobs-pill-open' :
-                                                            j.jobStatus eq 'Closed' ? 'viewjobs-pill-hold' :
-                                                            'viewjobs-pill-hold'}">
-                                                          #{j.jobStatus}
+                                                    <span class="viewjobs-date-text">
+                                                        #{recruiterCDIBean.formatJobDate(j.jobPostedDate)}
                                                     </span>
                                                 </td>
 
-                                                <td>#{j.jobVacancies}</td>
-
-                                                <td>#{recruiterCDIBean.formatJobDate(j.jobPostedDate)}</td>
-
-                                                <td>#{recruiterCDIBean.formatJobDate(j.jobExpiryDate)}</td>
+                                                <td>
+                                                    <span class="viewjobs-date-text">
+                                                        #{recruiterCDIBean.formatJobDate(j.jobExpiryDate)}
+                                                    </span>
+                                                </td>
 
                                                 <td>
                                                     <div class="viewjobs-actions">
-                                                        <a href="#" class="viewjobs-action-link">View</a>
-                                                        <a href="#" class="viewjobs-action-link">Edit</a>
-                                                        <a href="#" class="viewjobs-action-link danger">
+                                                        <a href="#" class="viewjobs-action-link viewjobs-action-view view-job-btn">View</a>
+                                                        <a href="#" class="viewjobs-action-link viewjobs-action-edit">Edit</a>
+                                                        <a href="#" class="viewjobs-action-link viewjobs-action-danger">
                                                             #{j.jobStatus eq 'Onhold' ? 'Delete' : 'Close'}
                                                         </a>
                                                     </div>
                                                 </td>
                                             </tr>
-
                                         </ui:repeat>
-
-                                        <h:panelGroup rendered="#{empty recruiterCDIBean.jobList}">
-                                            <tr>
-                                                <td colspan="9" style="text-align:center; padding:2rem; color:#888;">
-                                                    No job postings found.
-                                                </td>
-                                            </tr>
-                                        </h:panelGroup>
                                     </tbody>
                                 </table>
                             </div>
 
-                            <div class="viewjobs-mobile-list">
+                            <div class="viewjobs-mobile-list" id="viewjobsMobileList">
                                 <ui:repeat value="#{recruiterCDIBean.jobList}" var="j">
-                                    <article class="viewjobs-job-card">
+                                    <div class="viewjobs-job-card viewjobs-mobile-card"
+                                         data-title="#{j.jobTitle}"
+                                         data-workmode="#{j.workMode}"
+                                         data-status="#{j.jobStatus}"
+                                         data-state="#{j.jobState}"
+                                         data-city="#{j.jobCity}"
+                                         data-jobtype="#{j.jobType}"
+                                         data-posted="#{recruiterCDIBean.formatJobDate(j.jobPostedDate)}"
+                                         data-expiry="#{recruiterCDIBean.formatJobDate(j.jobExpiryDate)}"
+                                         data-vacancies="#{j.jobVacancies}"
+                                         data-skills="#{recruiterCDIBean.getJobSkills(j)}"
+                                         data-description="#{j.jobDescription}">
+
                                         <div class="viewjobs-job-card-top">
                                             <div>
                                                 <h3>#{j.jobTitle}</h3>
-
-                                                <p class="viewjobs-job-skills">
-                                                    #{recruiterCDIBean.getJobSkills(j)}
-                                                </p>
+                                                <div class="viewjobs-card-location">
+                                                    <svg class="viewjobs-location-pin" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M12 2C8.686 2 6 4.686 6 8c0 5.25 6 14 6 14s6-8.75 6-14c0-3.314-2.686-6-6-6zm0 8.5A2.5 2.5 0 1 1 12 5.5a2.5 2.5 0 0 1 0 5z"/>
+                                                    </svg>
+                                                    <span>
+                                                        <h:outputText value="#{j.jobCity}" />
+                                                        <h:outputText value=", " rendered="#{not empty j.jobCity and not empty j.jobState}" />
+                                                        <h:outputText value="#{j.jobState}" />
+                                                        <h:outputText value="Location not specified"
+                                                                      rendered="#{empty j.jobCity and empty j.jobState}" />
+                                                    </span>
+                                                </div>
                                             </div>
 
                                             <span class="viewjobs-pill
-                                                  #{j.jobStatus eq 'Open' ? 'viewjobs-pill-open' :
-                                                    j.jobStatus eq 'Closed' ? 'viewjobs-pill-hold' :
-                                                    'viewjobs-pill-hold'}">
-                                                  #{j.jobStatus}
+                                                #{j.jobStatus eq 'Open' ? 'viewjobs-pill-open' :
+                                                  j.jobStatus eq 'Closed' ? 'viewjobs-pill-closed' :
+                                                  'viewjobs-pill-hold'}">
+                                                #{j.jobStatus}
                                             </span>
-                                        </div>
-
-                                        <div class="viewjobs-job-meta">
-                                            <span>
-                                                #{j.jobCity}
-                                                <h:outputText value=", " rendered="#{not empty j.jobCity and not empty j.jobState}" />
-                                                #{j.jobState}
-                                            </span>
-                                            <span class="viewjobs-pill
-                                                  #{j.workMode eq 'Remote' ? 'viewjobs-pill-remote' :
-                                                    j.workMode eq 'Hybrid' ? 'viewjobs-pill-hybrid' :
-                                                    'viewjobs-pill-onsite'}">
-                                                  #{j.workMode}
-                                            </span>
-                                            <span>#{j.jobType}</span>
-                                        </div>
-
-                                        <div class="viewjobs-job-grid">
-                                            <div>
-                                                <small>Vacancies</small>
-                                                <strong>#{j.jobVacancies}</strong>
-                                            </div>
-                                            <div>
-                                                <small>Posted</small>
-                                                <strong>#{recruiterCDIBean.formatJobDate(j.jobPostedDate)}</strong>
-                                            </div>
-                                            <div>
-                                                <small>Expiry</small>
-                                                <strong>#{recruiterCDIBean.formatJobDate(j.jobExpiryDate)}</strong>
-                                            </div>
                                         </div>
 
                                         <div class="viewjobs-job-extra">
                                             <div class="viewjobs-job-chip-row">
-                                                <span class="viewjobs-info-chip">#{j.jobCompensationType}</span>
-                                                <span class="viewjobs-info-chip">
-                                                    #{j.jobCompensationMin} - #{j.jobCompensationMax}
+                                                <span class="viewjobs-pill
+                                                    #{j.workMode eq 'Remote' ? 'viewjobs-pill-remote' :
+                                                      j.workMode eq 'Hybrid' ? 'viewjobs-pill-hybrid' :
+                                                      'viewjobs-pill-onsite'}">
+                                                    #{j.workMode}
                                                 </span>
-                                                <span class="viewjobs-info-chip">#{j.jobCompensationPeriod}</span>
-                                                <span class="viewjobs-info-chip">#{j.experienceRequired} Years Exp</span>
+
+                                                <span class="viewjobs-info-chip">#{j.jobType}</span>
+                                                <span class="viewjobs-info-chip">#{j.jobVacancies} vacancies</span>
+                                                <span class="viewjobs-info-chip">Posted: #{recruiterCDIBean.formatJobDate(j.jobPostedDate)}</span>
+                                                <span class="viewjobs-info-chip">Expires: #{recruiterCDIBean.formatJobDate(j.jobExpiryDate)}</span>
                                             </div>
                                         </div>
 
-                                        <div class="viewjobs-actions mobile">
-                                            <a href="#" class="viewjobs-action-link">View</a>
-                                            <a href="#" class="viewjobs-action-link">Edit</a>
-                                            <a href="#" class="viewjobs-action-link danger">
+                                        <div class="viewjobs-actions viewjobs-mobile-actions">
+                                            <a href="#" class="viewjobs-action-link viewjobs-action-view view-job-btn">View</a>
+                                            <a href="#" class="viewjobs-action-link viewjobs-action-edit">Edit</a>
+                                            <a href="#" class="viewjobs-action-link viewjobs-action-danger">
                                                 #{j.jobStatus eq 'Onhold' ? 'Delete' : 'Close'}
                                             </a>
                                         </div>
-                                    </article>
+                                    </div>
                                 </ui:repeat>
-
-                                <h:panelGroup rendered="#{empty recruiterCDIBean.jobList}">
-                                    <p style="text-align:center; color:#888; padding:1rem;">
-                                        No job postings found.
-                                    </p>
-                                </h:panelGroup>
                             </div>
+
+                            <div id="viewJobsEmptyState" class="viewjobs-empty-state" style="display:none;">
+                                <div class="viewjobs-empty-icon">&#128269;</div>
+                                <p>No jobs found for the selected filters.</p>
+                            </div>
+
+                            
                         </section>
+                        
+                        <div class="viewjobs-loadmore-wrap" id="loadMoreWrap">
+                                <button type="button"
+                                        class="viewjobs-loadmore-btn"
+                                        id="loadMoreBtn"
+                                        onclick="loadMoreJobs(); return false;">
+                                    <span class="viewjobs-loadmore-text">Load More Jobs</span>
+                                    <span class="viewjobs-loadmore-icon">&#8595;</span>
+                                </button>
+                        </div>
                     </main>
+                </div>
+
+                <div class="viewjobs-modal-overlay" id="jobDetailsModal">
+                    <div class="viewjobs-modal-card">
+                        <button type="button" class="viewjobs-modal-close" id="jobModalCloseBtn">&#215;</button>
+
+                        <div class="viewjobs-modal-header">
+                            <div>
+                                <div class="viewjobs-modal-tag">Job Details</div>
+                                <h2 id="modalJobTitle">Job Title</h2>
+                                <p id="modalJobLocation">Location</p>
+                            </div>
+
+                            <div class="viewjobs-modal-status-wrap" id="modalJobStatusWrap"></div>
+                        </div>
+
+                        <div class="viewjobs-modal-body">
+                            <div class="viewjobs-modal-grid">
+                                <div class="viewjobs-modal-info-box">
+                                    <span class="viewjobs-modal-label">Work Mode</span>
+                                    <div class="viewjobs-modal-value" id="modalWorkMode">-</div>
+                                </div>
+
+                                <div class="viewjobs-modal-info-box">
+                                    <span class="viewjobs-modal-label">Job Type</span>
+                                    <div class="viewjobs-modal-value" id="modalJobType">-</div>
+                                </div>
+
+                                <div class="viewjobs-modal-info-box">
+                                    <span class="viewjobs-modal-label">Vacancies</span>
+                                    <div class="viewjobs-modal-value" id="modalVacancies">-</div>
+                                </div>
+
+                                <div class="viewjobs-modal-info-box">
+                                    <span class="viewjobs-modal-label">Posted Date</span>
+                                    <div class="viewjobs-modal-value" id="modalPostedDate">-</div>
+                                </div>
+
+                                <div class="viewjobs-modal-info-box">
+                                    <span class="viewjobs-modal-label">Expiry Date</span>
+                                    <div class="viewjobs-modal-value" id="modalExpiryDate">-</div>
+                                </div>
+
+                                <div class="viewjobs-modal-info-box">
+                                    <span class="viewjobs-modal-label">Status</span>
+                                    <div class="viewjobs-modal-value" id="modalStatusText">-</div>
+                                </div>
+                            </div>
+
+                            <div class="viewjobs-modal-section">
+                                <span class="viewjobs-modal-label">Skills</span>
+                                <div class="viewjobs-modal-skills" id="modalSkills"></div>
+                            </div>
+
+                            <div class="viewjobs-modal-section">
+                                <span class="viewjobs-modal-label">Job Description</span>
+                                <div class="viewjobs-modal-description" id="modalDescription">
+                                    No description available.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </h:panelGroup>
 
             <h:panelGroup rendered="#{loginBean.role ne 'Recruiter'}">
                 <div style="padding-top:120px; text-align:center;">
-                    <h2 style="color:red;">Access Denied ❌</h2>
+                    <h2 style="color:red;">Access Denied</h2>
                 </div>
             </h:panelGroup>
 
             <ui:include src="/common/footer.xhtml"/>
-
-            <script type="text/javascript">
-                (function () {
-                    const selects = document.querySelectorAll('.viewjobs-select-control');
-                    const search = document.getElementById('jobSearch');
-
-                    function setActiveState() {
-                        selects.forEach(s => s.classList.toggle('has-value', !!s.value));
-                        if (search)
-                            search.classList.toggle('has-value', !!search.value.trim());
-                    }
-
-                    selects.forEach(s => s.addEventListener('change', setActiveState));
-                    if (search)
-                        search.addEventListener('input', setActiveState);
-                    setActiveState();
-                })();
-            </script>
+            <h:outputScript library="js" name="recruiter/recruiterViewJob.js" target="body" />
         </h:body>
     </f:view>
 </html>

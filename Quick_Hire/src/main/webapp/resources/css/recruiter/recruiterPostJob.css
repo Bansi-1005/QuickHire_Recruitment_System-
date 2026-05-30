@@ -1,8 +1,4 @@
 /*
-Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
-Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to edit this template
-*/
-/*
 Created on : May 19, 2026
 Author : RINKAL
 */
@@ -14,6 +10,46 @@ PAGE LAYOUT
 .postjob-main{
     width:calc(100% - 250px);
     padding:100px 28px 110px;
+    position:relative;
+    overflow-x:hidden;
+}
+
+/* =========================
+COMMON
+========================= */
+
+.postjob-section-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+}
+
+.postjob-section-pill,
+.postjob-location-chip{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:34px;
+    padding:8px 14px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:0.2px;
+    white-space:nowrap;
+}
+
+.postjob-section-pill{
+    color:var(--primary-dark);
+    background:rgba(15,155,142,0.08);
+    border:1px solid rgba(15,155,142,0.14);
+}
+
+.postjob-location-chip{
+    color:#1c4f63;
+    background:rgba(255,255,255,0.86);
+    border:1px solid #d3e7ee;
 }
 
 /* =========================
@@ -22,12 +58,24 @@ HERO
 
 .postjob-hero{
     width:100%;
-    background:linear-gradient(120deg, rgba(30,60,114,0.97), rgba(15,155,142,0.95));
+    background:
+        radial-gradient(circle at top right, rgba(255,255,255,0.20), transparent 28%),
+        linear-gradient(120deg, rgba(30,60,114,0.98), rgba(15,155,142,0.95));
     color:var(--white);
-    border-radius:var(--radius-xl);
-    padding:26px 28px;
-    box-shadow:var(--shadow-md);
+    border-radius:24px;
+    padding:28px;
+    box-shadow:0 18px 40px rgba(16,34,67,0.16);
     animation:panelFadeUp 0.75s ease both;
+    display:flex;
+    align-items:stretch;
+    justify-content:space-between;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.postjob-hero-content{
+    flex:1 1 520px;
+    min-width:0;
 }
 
 .postjob-page-tag{
@@ -43,14 +91,71 @@ HERO
 
 .postjob-hero h1{
     margin:0 0 10px;
-    font-size:30px;
+    font-size:clamp(22px, 4vw, 32px);
+    line-height:1.2;
+    word-break:break-word;
 }
 
 .postjob-hero p{
     margin:0;
-    max-width:none;
+    max-width:720px;
     color:rgba(255,255,255,0.90);
     line-height:1.7;
+}
+
+.postjob-hero-stats{
+    display:flex;
+    align-items:stretch;
+    gap:12px;
+    flex-wrap:wrap;
+    min-width:260px;
+}
+
+.postjob-hero-stat-card{
+    min-width:140px;
+    padding:16px 18px;
+    border-radius:18px;
+    background:rgba(255,255,255,0.12);
+    border:1px solid rgba(255,255,255,0.14);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.12);
+}
+
+.postjob-hero-stat-label{
+    display:block;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:rgba(255,255,255,0.75);
+    margin-bottom:8px;
+    font-weight:700;
+}
+
+.postjob-hero-stat-card strong{
+    font-size:15px;
+    color:#fff;
+}
+
+.postjob-exp-row{
+    display:flex;
+    gap:10px;
+    width:100%;
+}
+
+.postjob-exp-box{
+    flex:1;
+    min-width:0;
+}
+
+.postjob-exp-input{
+    height:52px;
+    width:100%;
+}
+
+.postjob-exp-input::placeholder{
+    color:#8ea0b5;
+    font-weight:500;
 }
 
 /* =========================
@@ -62,13 +167,13 @@ BEFORE PUBLISH
     margin-top:22px;
     background:var(--white);
     border:1px solid var(--border);
-    border-radius:var(--radius-lg);
+    border-radius:22px;
     box-shadow:var(--shadow-sm);
-    padding:20px 22px;
+    padding:22px 22px;
 }
 
 .postjob-before-card h3{
-    margin:0 0 14px;
+    margin:0;
     font-size:18px;
     color:var(--primary-dark);
 }
@@ -77,17 +182,19 @@ BEFORE PUBLISH
     display:flex;
     flex-wrap:wrap;
     gap:10px;
+    margin-top:16px;
 }
 
 .postjob-before-list span{
     display:inline-flex;
     align-items:center;
-    padding:9px 14px;
+    padding:10px 14px;
     border-radius:999px;
     background:var(--primary-soft);
     color:var(--primary-dark);
     font-size:13px;
     font-weight:600;
+    border:1px solid rgba(15,155,142,0.10);
 }
 
 /* =========================
@@ -101,25 +208,76 @@ FORM PANEL
 
 .postjob-form-panel{
     width:100%;
-    background:var(--white);
-    border-radius:var(--radius-lg);
+    background:linear-gradient(180deg, #ffffff 0%, #fcfeff 100%);
+    border-radius:24px;
     border:1px solid var(--border);
-    box-shadow:var(--shadow-sm);
+    box-shadow:
+        0 12px 34px rgba(15,35,65,0.06),
+        inset 0 1px 0 rgba(255,255,255,0.88);
     padding:24px;
 }
 
 .postjob-panel-header{
     margin-bottom:18px;
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:14px;
+    flex-wrap:wrap;
 }
 
 .postjob-panel-header h2{
-    margin:0;
-    font-size:22px;
+    margin:0 0 6px;
+    font-size:clamp(20px, 3vw, 24px);
     color:var(--text);
+}
+
+.postjob-panel-header p{
+    margin:0;
+    color:var(--text-muted);
+    font-size:14px;
+    line-height:1.7;
 }
 
 .postjob-job-form{
     width:100%;
+}
+
+.postjob-form-section{
+    width:100%;
+    border:1px solid #e2ebf2;
+    border-radius:22px;
+    background:linear-gradient(180deg, #ffffff 0%, #f9fcff 100%);
+    padding:20px;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.88),
+        0 8px 20px rgba(15,35,65,0.04);
+}
+
+.postjob-form-section + .postjob-form-section{
+    margin-top:18px;
+}
+
+.postjob-form-section-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+}
+
+.postjob-form-section-head h3{
+    margin:0 0 6px;
+    font-size:18px;
+    color:var(--primary-dark);
+}
+
+.postjob-form-section-head p{
+    margin:0;
+    font-size:13px;
+    color:var(--text-muted);
+    line-height:1.6;
 }
 
 .postjob-form-grid{
@@ -147,6 +305,7 @@ FORM PANEL
     display:flex;
     align-items:center;
     gap:2px;
+    flex-wrap:wrap;
 }
 
 .postjob-empty-slot{
@@ -155,8 +314,56 @@ FORM PANEL
 }
 
 /* =========================
+INLINE PAIR CARD
+========================= */
+
+.postjob-inline-pair-card{
+    width:100%;
+    padding:18px;
+    border-radius:20px;
+    border:1px solid #dbe7ef;
+    background:linear-gradient(180deg, #fbfdff 0%, #f5fbff 100%);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.90),
+        0 10px 24px rgba(15,35,65,0.05);
+}
+
+.postjob-inline-pair-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:16px;
+}
+
+.postjob-inline-pair-head h4{
+    margin:0;
+    font-size:16px;
+    color:var(--primary-dark);
+}
+
+.postjob-inline-pair-head span{
+    font-size:12px;
+    font-weight:700;
+    color:var(--text-muted);
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+}
+
+.postjob-inline-pair-grid{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:18px;
+}
+
+/* =========================
 AUTOCOMPLETE SKILLS UI
 ========================= */
+
+.postjob-skills-section{
+    overflow:hidden;
+}
 
 .postjob-skills-layout{
     display:block;
@@ -172,8 +379,8 @@ AUTOCOMPLETE SKILLS UI
     position:relative;
     background:linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
     border:1px solid #d8e6f2;
-    border-radius:20px;
-    padding:18px;
+    border-radius:22px;
+    padding:20px;
     box-shadow:
         0 10px 25px rgba(15,35,65,0.06),
         inset 0 1px 0 rgba(255,255,255,0.85);
@@ -188,18 +395,15 @@ AUTOCOMPLETE SKILLS UI
     flex-wrap:wrap;
 }
 
+.postjob-skills-card-copy{
+    min-width:0;
+}
+
 .postjob-skills-card-title{
-    font-size:17px;
+    font-size:18px;
     font-weight:700;
     color:var(--primary-dark);
     line-height:1.2;
-}
-
-.postjob-skills-card-subtitle{
-    font-size:12px;
-    font-weight:600;
-    color:var(--text-muted);
-    line-height:1.5;
 }
 
 .postjob-skill-count-badge-wrap{
@@ -212,7 +416,7 @@ AUTOCOMPLETE SKILLS UI
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    padding:8px 14px;
+    padding:9px 15px;
     border-radius:999px;
     font-size:12px;
     font-weight:700;
@@ -220,6 +424,56 @@ AUTOCOMPLETE SKILLS UI
     background:linear-gradient(135deg, var(--primary-teal), var(--primary-dark));
     box-shadow:0 8px 20px rgba(15,155,142,0.18);
     white-space:nowrap;
+}
+
+.postjob-skill-actions{
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+    gap:10px;
+}
+
+.postjob-add-skill-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:8px 14px;
+    min-height:36px;
+    border:1px solid rgba(15,155,142,0.18);
+    border-radius:10px;
+    background:#eaf8f6;
+    color:#0b6f67;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow:none;
+    transition:all 0.25s ease;
+    margin-top:0;
+    max-width:100%;
+}
+
+.postjob-add-skill-btn:hover{
+    background:#dff4f0;
+    color:#085b55;
+    transform:translateY(-1px);
+    box-shadow:0 8px 16px rgba(15,155,142,0.10);
+}
+
+.postjob-btn-icon{
+    width:18px;
+    height:18px;
+    border-radius:50%;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(15,155,142,0.10);
+    color:#0b6f67;
+    font-size:12px;
+    line-height:1;
+    flex-shrink:0;
 }
 
 .postjob-hidden-skills-listbox{
@@ -261,10 +515,11 @@ AUTOCOMPLETE SKILLS UI
     display:block;
     margin-top:0;
     border:1px solid #dbe3f0;
-    border-radius:16px;
+    border-radius:18px;
     background:#ffffff;
     box-shadow:0 12px 30px rgba(15,23,42,0.08);
     overflow:hidden;
+    min-width:0;
 }
 
 .postjob-suggestion-header{
@@ -283,7 +538,7 @@ AUTOCOMPLETE SKILLS UI
     flex-direction:column;
     padding:8px;
     gap:8px;
-    max-height:180px;
+    max-height:190px;
     overflow-y:auto;
     overflow-x:hidden;
 }
@@ -300,6 +555,7 @@ AUTOCOMPLETE SKILLS UI
     color:#1f2937;
     cursor:pointer;
     transition:all 0.2s ease;
+    word-break:break-word;
 }
 
 .postjob-suggestion-item:hover{
@@ -326,7 +582,7 @@ AUTOCOMPLETE SKILLS UI
 .postjob-selected-skills-live-card{
     width:100%;
     border:1px solid #dbe3f0;
-    border-radius:18px;
+    border-radius:20px;
     background:linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
     box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.82),
@@ -342,11 +598,22 @@ AUTOCOMPLETE SKILLS UI
     justify-content:space-between;
     gap:12px;
     flex-wrap:wrap;
+    padding:16px 18px;
+    background:linear-gradient(135deg, rgba(15,155,142,0.06), rgba(30,60,114,0.04));
+    border-bottom:1px solid #dbe3f0;
 }
 
 .postjob-selected-skills-head .postjob-suggestion-header{
     flex:1 1 auto;
     margin:0;
+    font-size:15px;
+    font-weight:700;
+    color:var(--primary-dark);
+    text-transform:none;
+    letter-spacing:normal;
+    padding:0;
+    background:transparent;
+    border-bottom:none;
 }
 
 .postjob-selected-skill-summary{
@@ -367,14 +634,15 @@ AUTOCOMPLETE SKILLS UI
     box-shadow:
         inset 0 1px 4px rgba(26,69,107,0.05),
         0 4px 12px rgba(15,35,65,0.04);
+    word-break:break-word;
 }
 
 .postjob-selected-skills-scroll{
-    min-height:120px;
-    max-height:220px;
+    min-height:140px;
+    max-height:280px;
+    padding:16px;
     overflow-y:auto;
     overflow-x:hidden;
-    padding:14px;
     background:linear-gradient(180deg, #fbfdff 0%, #f3f9ff 100%);
 }
 
@@ -410,6 +678,8 @@ AUTOCOMPLETE SKILLS UI
     line-height:1.2;
     letter-spacing:0.2px;
     box-shadow:0 6px 16px rgba(15,155,142,0.16);
+    max-width:100%;
+    word-break:break-word;
 }
 
 .postjob-skill-tag-selected{
@@ -425,6 +695,13 @@ AUTOCOMPLETE SKILLS UI
     font-weight:700;
     box-shadow:0 10px 18px rgba(37,99,235,0.18);
     max-width:100%;
+    transition:all 0.25s ease;
+    cursor:default;
+}
+
+.postjob-skill-tag-selected:hover{
+    transform:translateY(-2px);
+    box-shadow:0 12px 22px rgba(37,99,235,0.22) !important;
 }
 
 .postjob-skill-tag-selected > span:first-child{
@@ -432,43 +709,31 @@ AUTOCOMPLETE SKILLS UI
     text-overflow:ellipsis;
     white-space:nowrap;
     max-width:100%;
+    min-width:0;
 }
 
 .postjob-skill-tag-remove{
-    width:22px;
-    height:22px;
+    width:24px;
+    height:24px;
     border:none;
     border-radius:50%;
-    background:rgba(255,255,255,0.18);
+    background:rgba(255,255,255,0.20);
     color:#ffffff;
-    font-size:12px;
+    font-size:14px;
     font-weight:700;
     line-height:1;
     cursor:pointer;
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    transition:background 0.2s ease, transform 0.2s ease;
+    transition:all 0.2s ease;
     padding:0;
     flex-shrink:0;
 }
 
 .postjob-skill-tag-remove:hover{
-    background:rgba(255,255,255,0.28);
-    transform:scale(1.05);
-}
-
-.postjob-selected-empty{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    min-height:92px;
-    text-align:center;
-    font-size:14px;
-    font-weight:600;
-    color:var(--text-muted);
-    line-height:1.6;
-    padding:16px;
+    background:rgba(255,255,255,0.30);
+    transform:scale(1.10);
 }
 
 .postjob-suggestion-list::-webkit-scrollbar,
@@ -488,6 +753,21 @@ AUTOCOMPLETE SKILLS UI
 .postjob-selected-skills-scroll::-webkit-scrollbar-track,
 .postjob-selected-skills-box::-webkit-scrollbar-track{
     background:#eef4f9;
+    border-radius:999px;
+}
+
+/* Better scrollbar */
+.postjob-selected-skills-scroll::-webkit-scrollbar{
+    width:8px;
+}
+
+.postjob-selected-skills-scroll::-webkit-scrollbar-thumb{
+    background:linear-gradient(180deg, #94a3b8, #64748b);
+    border-radius:999px;
+}
+
+.postjob-selected-skills-scroll::-webkit-scrollbar-track{
+    background:#e2e8f0;
     border-radius:999px;
 }
 
@@ -530,7 +810,7 @@ WORK MODE
     display:flex;
     align-items:center;
     justify-content:center;
-    min-height:52px;
+    min-height:54px;
     padding:14px 16px;
     border-radius:16px;
     border:1px solid #d5deea;
@@ -564,7 +844,7 @@ WORK MODE
 }
 
 .postjob-workmode-help{
-    padding:10px 14px;
+    padding:12px 14px;
     border-radius:14px;
     background:#f7fbff;
     border:1px solid #d9e7f1;
@@ -579,7 +859,7 @@ LOCATION BLOCK
 
 .postjob-location-box{
     padding:20px;
-    border-radius:20px;
+    border-radius:22px;
     background:linear-gradient(180deg, #f8fcff 0%, #f2fbf9 100%);
     border:1px solid #d5e6eb;
     box-shadow:
@@ -589,6 +869,11 @@ LOCATION BLOCK
 
 .postjob-location-header{
     margin-bottom:16px;
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
 }
 
 .postjob-location-header h3{
@@ -605,7 +890,9 @@ LOCATION BLOCK
 }
 
 .postjob-location-grid{
+    display:grid;
     grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:18px;
 }
 
 .postjob-location-preview{
@@ -667,6 +954,7 @@ FORM CONTROLS
 
 .postjob-form-control{
     width:100%;
+    min-width:0;
     height:52px;
     padding:0 16px;
     border:1px solid #d6dee8;
@@ -713,7 +1001,7 @@ TEXTAREA
 ========================= */
 
 .postjob-textarea{
-    min-height:150px;
+    min-height:170px;
     height:auto;
     padding:14px 16px;
     resize:vertical;
@@ -728,6 +1016,7 @@ RICH SELECT
 .postjob-select-wrap{
     position:relative;
     width:100%;
+    min-width:0;
 }
 
 .postjob-select-wrap::after{
@@ -823,12 +1112,13 @@ BUTTONS
 
 .postjob-btn{
     border:none;
-    padding:12px 20px;
+    padding:13px 22px;
     border-radius:999px;
     font-size:14px;
     font-weight:700;
     cursor:pointer;
     transition:all 0.25s ease;
+    max-width:100%;
 }
 
 .postjob-btn-primary{
@@ -849,6 +1139,11 @@ BUTTONS
 
 .postjob-btn:hover{
     transform:translateY(-2px);
+}
+
+.postjob-modal-action-btn{
+    align-self:flex-start;
+    margin-top:14px;
 }
 
 /* =========================
@@ -965,6 +1260,7 @@ GLOBAL MESSAGE CARD
     animation:postjobMsgSlideIn .35s ease;
     cursor:pointer;
     overflow:hidden;
+    word-break:break-word;
 }
 
 /* =========================
@@ -1051,10 +1347,196 @@ SHOW ANIMATION
 }
 
 /* =========================
+MODAL
+========================= */
+
+.postjob-modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(7, 18, 36, 0.52);
+    z-index:9999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
+}
+
+.postjob-modal-box{
+    width:min(560px, 100%);
+    max-width:100%;
+    background:linear-gradient(180deg, #ffffff 0%, #f9fcff 100%);
+    border-radius:24px;
+    padding:24px;
+    box-shadow:
+        0 28px 60px rgba(0,0,0,0.24),
+        inset 0 1px 0 rgba(255,255,255,0.88);
+    border:1px solid #dce7f1;
+    max-height:calc(100vh - 40px);
+    overflow-y:auto;
+}
+
+.postjob-modal-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:18px;
+    margin-bottom:20px;
+}
+
+#selectedSkillsEmptyState{
+    text-align:center;
+    align-items:center;
+    justify-content:center;
+}
+
+.postjob-modal-title-wrap{
+    min-width:0;
+}
+
+.postjob-modal-header h3{
+    margin:0 0 6px;
+    font-size:22px;
+    color:var(--primary-dark);
+}
+
+.postjob-modal-header p{
+    margin:0;
+    font-size:13px;
+    color:var(--text-muted);
+    line-height:1.7;
+}
+
+.postjob-modal-close{
+    width:42px;
+    height:42px;
+    border:none;
+    background:#f3f7fb;
+    border-radius:14px;
+    font-size:20px;
+    cursor:pointer;
+    color:#334155;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:all 0.25s ease;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.88);
+    flex-shrink:0;
+}
+
+.postjob-modal-close:hover{
+    background:#e7eef7;
+    transform:rotate(90deg);
+}
+
+.postjob-modal-body{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+}
+
+.postjob-modal-section{
+    border:1px solid #e1e9f2;
+    border-radius:18px;
+    padding:18px;
+    background:linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
+
+.postjob-modal-section-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:14px;
+}
+
+.postjob-modal-section-head h4{
+    margin:0;
+    font-size:16px;
+    color:var(--primary-dark);
+}
+
+.postjob-modal-section-head span{
+    font-size:12px;
+    color:var(--text-muted);
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+}
+
+.postjob-modal-section .postjob-form-group{
+    margin-bottom:14px;
+}
+
+.postjob-load-more-btn{
+    width:100%;
+    padding:10px;
+    margin-top:8px;
+    border:none;
+    border-radius:8px;
+    background:#f3f4f6;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.postjob-load-more-btn:hover{
+    background:#e5e7eb;
+}
+
+/* =========================
+SELECTED SKILLS - FULL WIDTH & RICH UI (ENHANCED)
+========================= */
+
+.postjob-selected-inline-row{
+    width:100% !important;
+    max-width:100% !important;
+    padding:0 !important;
+    margin:0 !important;
+}
+
+.postjob-selected-inline-box{
+    width:100% !important;
+    max-width:100% !important;
+    padding:0 !important;
+}
+
+.postjob-selected-inline-title{
+    display:none;
+}
+
+/* =========================
 RESPONSIVE
 ========================= */
 
+@media (max-width:1180px){
+    .postjob-main{
+        width:calc(100% - 220px);
+        padding:90px 22px 100px;
+    }
+
+    .postjob-hero{
+        padding:24px;
+    }
+
+    .postjob-hero-stats{
+        width:100%;
+        min-width:0;
+    }
+
+    .postjob-form-panel{
+        padding:22px;
+    }
+}
+
 @media (max-width:991px){
+    .postjob-main{
+        width:100%;
+        margin-left:0;
+        padding:84px 18px 96px;
+    }
+
     .postjob-skills-main-grid{
         grid-template-columns:1fr;
     }
@@ -1066,6 +1548,32 @@ RESPONSIVE
     .postjob-selected-skills-box{
         max-height:none;
         min-height:120px;
+    }
+
+    .postjob-inline-pair-grid{
+        grid-template-columns:1fr;
+    }
+
+    .postjob-exp-row{
+        flex-direction:column;
+    }
+
+    .postjob-workmode-radio{
+        grid-template-columns:1fr;
+    }
+
+    .postjob-hero{
+        gap:16px;
+    }
+
+    .postjob-hero-content,
+    .postjob-hero-stats{
+        flex:1 1 100%;
+    }
+
+    .postjob-hero-stat-card{
+        flex:1 1 calc(50% - 6px);
+        min-width:0;
     }
 }
 
@@ -1079,6 +1587,7 @@ RESPONSIVE
     .postjob-hero{
         padding:20px 16px;
         margin-top:14px;
+        border-radius:20px;
     }
 
     .postjob-hero h1{
@@ -1087,7 +1596,8 @@ RESPONSIVE
 
     .postjob-form-grid,
     .postjob-location-grid,
-    .postjob-workmode-radio{
+    .postjob-workmode-radio,
+    .postjob-inline-pair-grid{
         grid-template-columns:1fr;
     }
 
@@ -1102,7 +1612,9 @@ RESPONSIVE
 
     .postjob-form-panel,
     .postjob-before-card,
-    .postjob-location-box{
+    .postjob-location-box,
+    .postjob-form-section,
+    .postjob-inline-pair-card{
         padding:18px 16px;
     }
 
@@ -1153,11 +1665,67 @@ RESPONSIVE
         font-size:13px;
         margin:10px 12px 0;
     }
+
+    .postjob-modal-box{
+        padding:18px 16px;
+        border-radius:20px;
+    }
+
+    .postjob-modal-header{
+        margin-bottom:16px;
+    }
+
+    .postjob-modal-header h3{
+        font-size:20px;
+    }
+
+    .postjob-modal-section{
+        padding:16px;
+    }
+
+    .postjob-panel-header,
+    .postjob-section-head,
+    .postjob-form-section-head,
+    .postjob-inline-pair-head,
+    .postjob-location-header,
+    .postjob-modal-header,
+    .postjob-modal-section-head{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .postjob-skill-actions{
+        width:100%;
+    }
+
+    .postjob-add-skill-btn{
+        max-width:100%;
+        white-space:normal;
+        text-align:center;
+    }
+
+    .postjob-hero-stat-card{
+        width:100%;
+    }
 }
 
 @media (max-width:480px){
+    .postjob-main{
+        padding:14px 10px 80px;
+    }
+
+    .postjob-hero{
+        padding:16px 14px;
+        border-radius:18px;
+    }
+
     .postjob-hero h1{
         font-size:22px;
+    }
+
+    .postjob-page-tag{
+        font-size:12px;
+        padding:6px 12px;
     }
 
     .postjob-before-list span{
@@ -1173,72 +1741,53 @@ RESPONSIVE
     .postjob-skill-count-badge{
         align-self:flex-start;
     }
-}
 
-.postjob-add-skill-btn{
-    border:none;
-    background:#111827;
-    color:#fff;
-    padding:10px 16px;
-    border-radius:10px;
-    cursor:pointer;
-    font-weight:600;
-}
+    .postjob-modal-close{
+        align-self:flex-end;
+    }
 
-.postjob-modal-overlay{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.45);
-    z-index:9999;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-}
+    .postjob-hero-stats{
+        min-width:0;
+        width:100%;
+        flex-direction:column;
+    }
 
-.postjob-modal-box{
-    width:500px;
-    background:#fff;
-    border-radius:18px;
-    padding:24px;
-    box-shadow:0 20px 50px rgba(0,0,0,0.2);
-}
+    .postjob-hero-stat-card{
+        min-width:0;
+        width:100%;
+        padding:14px 14px;
+    }
 
-.postjob-modal-header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom:20px;
-}
+    .postjob-selected-skills-scroll{
+        min-height:110px;
+        max-height:180px;
+        padding:12px;
+    }
 
-.postjob-modal-close{
-    border:none;
-    background:none;
-    font-size:20px;
-    cursor:pointer;
-}
+    .postjob-selected-skills-box{
+        min-height:110px;
+        padding:12px;
+    }
 
-.postjob-modal-body{
-    display:flex;
-    flex-direction:column;
-    gap:18px;
-}
+    .postjob-form-control{
+        font-size:16px;
+    }
 
-.postjob-load-more-btn {
+    .postjob-textarea{
+        min-height:140px;
+    }
 
-    width: 100%;
-    padding: 10px;
-    margin-top: 8px;
+    .postjob-location-preview{
+        gap:10px;
+    }
 
-    border: none;
-    border-radius: 8px;
+    .postjob-location-preview-icon{
+        width:38px;
+        height:38px;
+        font-size:16px;
+    }
 
-    background: #f3f4f6;
-    cursor: pointer;
-
-    font-weight: 600;
-}
-
-.postjob-load-more-btn:hover {
-
-    background: #e5e7eb;
+    .postjob-add-skill-btn{
+        width:100%;
+    }
 }

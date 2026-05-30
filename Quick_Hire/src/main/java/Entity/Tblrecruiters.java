@@ -55,12 +55,6 @@ import java.util.Date;
 })
 public class Tblrecruiters implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Basic(optional = false)
-    @Column(name = "recruiterId")
-    private Integer recruiterId;
     @Size(max = 100)
     @Column(name = "designation")
     private String designation;
@@ -75,6 +69,13 @@ public class Tblrecruiters implements Serializable {
     @Column(name = "createdDate")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
+
+    private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Basic(optional = false)
+    @Column(name = "recruiterId")
+    private Integer recruiterId;
     @ManyToMany(mappedBy = "tblrecruitersCollection")
     private Collection<Tblcandidates> tblcandidatesCollection;
     @OneToMany(mappedBy = "recruiterId")
@@ -106,37 +107,6 @@ public class Tblrecruiters implements Serializable {
         this.recruiterId = recruiterId;
     }
 
-    public String getDesignation() {
-        return designation;
-    }
-
-    public void setDesignation(String designation) {
-        this.designation = designation;
-    }
-
-    public String getRecruiterPhone() {
-        return recruiterPhone;
-    }
-
-    public void setRecruiterPhone(String recruiterPhone) {
-        this.recruiterPhone = recruiterPhone;
-    }
-
-    public String getRecruiterStatus() {
-        return recruiterStatus;
-    }
-
-    public void setRecruiterStatus(String recruiterStatus) {
-        this.recruiterStatus = recruiterStatus;
-    }
-
-    public Date getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
-    }
 
     @XmlTransient
     @JsonbTransient
@@ -197,6 +167,38 @@ public class Tblrecruiters implements Serializable {
     @Override
     public String toString() {
         return "Entity.Tblrecruiters[ recruiterId=" + recruiterId + " ]";
+    }
+
+    public String getDesignation() {
+        return designation;
+    }
+
+    public void setDesignation(String designation) {
+        this.designation = designation;
+    }
+
+    public String getRecruiterPhone() {
+        return recruiterPhone;
+    }
+
+    public void setRecruiterPhone(String recruiterPhone) {
+        this.recruiterPhone = recruiterPhone;
+    }
+
+    public String getRecruiterStatus() {
+        return recruiterStatus;
+    }
+
+    public void setRecruiterStatus(String recruiterStatus) {
+        this.recruiterStatus = recruiterStatus;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
     }
     
 }

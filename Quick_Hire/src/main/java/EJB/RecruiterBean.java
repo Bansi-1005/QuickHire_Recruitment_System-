@@ -523,8 +523,8 @@ public class RecruiterBean implements RecruiterBeanLocal {
         }
     }
 //
-    // ================= JOB SKILLS =================
-   @Override
+    // ================= JOB SKILLS ===========================================================================
+@Override
 public Collection<Tblskills> getAllSkills(Integer userId) {
 
     try {
@@ -553,9 +553,7 @@ public Collection<Tblskills> getAllSkills(Integer userId) {
 
    // ================= SKILL CATEGORIES =================
 @Override
-public Collection<Tblskillcategory> getSkillCategories(
-        Integer recruiterUserId
-) {
+public Collection<Tblskillcategory> getSkillCategories(Integer recruiterUserId) {
 
     try {
 
@@ -582,10 +580,8 @@ public Collection<Tblskillcategory> getSkillCategories(
 }
 
 // ================= SKILLS BY CATEGORY =================
-   @Override
-public Collection<Tblskills> getSkillsByCategory(
-        Integer categoryId,
-        Integer userId) {
+@Override
+public Collection<Tblskills> getSkillsByCategory(Integer categoryId,Integer userId) {
 
     try {
 
@@ -615,86 +611,165 @@ public Collection<Tblskills> getSkillsByCategory(
 
 
 @Override
-public void addSkillCategory(String categoryName,Integer recruiterUserId) {
+public void addSkillAndOrCategory(String categoryName,Collection<String> skillNames,Integer existingCategoryId,Integer recruiterUserId){
+    try{
+        Tblskillcategory category = null;
+        
+        Tblusers recruiterUser = em.find(Tblusers.class, recruiterUserId);
+        
+         if (recruiterUser == null) {
 
-    try {
-
-        Tblskillcategory category
-                = new Tblskillcategory();
-
-        category.setCategoryName(
-                categoryName.trim()
-        );
-
-        category.setCategoryStatus("PENDING");
-
-        category.setCreatedByUserId(
-                recruiterUserId
-        );
-
-        category.setCreatedDate(
-                new Date()
-        );
-
-        em.persist(category);
-
-        em.flush();
-
-    } catch (Exception e) {
-
-        e.printStackTrace();
-    }
-}
-
-@Override
-
-public void addSkill(String skillName,Integer categoryId,Integer recruiterUserId) {
-
-    try {
-
-        Tblskillcategory category
-                = em.find(
-                        Tblskillcategory.class,
-                        categoryId
-                );
-
-        if (category == null) {
-            return;
+            throw new RuntimeException(
+                    "Recruiter user not found"
+            );
         }
+        // =====================================================
+        // CREATE NEW CATEGORY
+        // =====================================================
+        
+        if(categoryName != null && !categoryName.trim().isEmpty()) 
+        {
+         
+            String trimmedCategory = categoryName.trim();
+            
+            // CHECK CATEGORY DUPLICATE
+            Long catagoryCount = em.createQuery("SELECT COUNT(c) FROM Tblskillcategory c  WHERE LOWER(TRIM(c.categoryName)) = :name",Long.class)
+                                                .setParameter("name", trimmedCategory.toLowerCase())
+                                                .getSingleResult();
+            
+            
+            if(catagoryCount > 0)
+            {
+                throw new RuntimeException(
+                        "This Category alredy exists."
+                );
+            }
+            
+            // CREATE CATEGORY
+            category = new Tblskillcategory();
+            
+            category.setCategoryName(trimmedCategory);
+            category.setCategoryStatus("PENDING");
+            category.setCreatedByUserId(recruiterUserId);
+            category.setCreatedDate(new Date());
+            
+            em.persist(category);
+            em.flush();
+            
+             //NOTIFICATION FOR CATEGORY
+            Tblnotification categoryNotification = new Tblnotification();
+            
+            categoryNotification.setUserId(recruiterUser);
+            categoryNotification.setMessage("New Category pending for approval:"+ trimmedCategory);
+            categoryNotification.setCreatedDate(new Date());
+            categoryNotification.setNotificationStatus("Unread");
+            categoryNotification.setNotificationType("Important");
+            
+            em.persist(categoryNotification);
+        }
+        // =====================================================
+        // USE EXISTING CATEGORY
+        // =====================================================
+        if(category == null && existingCategoryId != null && existingCategoryId > 0)
+        {
+            category = em.find(Tblskillcategory.class, existingCategoryId);
+            
+            if(category == null)
+            {
+                throw new RuntimeException("Selected category not found");
+            }
+        }
+        
+        
+         // =====================================================
+        // CATEGORY REQUIRED FOR SKILLS
+        // =====================================================
+        if ((skillNames != null
+                && !skillNames.isEmpty())
+                && category == null) {
 
-        Tblskills skill
-                = new Tblskills();
-
-        skill.setSkillName(
-                skillName.trim()
-        );
-
-        skill.setCategoryId(category);
-
-        skill.setSkillStatus("PENDING");
-
-        skill.setCreatedByUserId(
-                recruiterUserId
-        );
-
-        skill.setCreatedDate(
-                new Date()
-        );
-
-        em.persist(skill);
-
+            throw new RuntimeException(
+                    "Please select category"
+            );
+        }
+        
+        // =====================================================
+        // ADD SKILLS
+        // =====================================================
+        if(skillNames != null && !skillNames.isEmpty())
+        {
+            for(String skillName :skillNames)
+            {
+                if(skillName == null || skillName.trim().isEmpty())
+                {
+                    continue;
+                }
+                
+                String trimmedSkill = skillName.trim();
+              
+                // GLOBAL SKILL DUPLICATE CHECK
+                
+                Long skillCount = em.createQuery("SELECT COUNT(S) FROM Tblskills s WHERE LOWER(TRIM(s.skillName)) = :name",Long.class)
+                                  .setParameter("name", trimmedSkill.toLowerCase())
+                                  .getSingleResult();
+                
+                if(skillCount > 0)
+                {
+                    throw new RuntimeException("This skill alredy exists:"+ trimmedSkill);
+                }
+                
+                // =============================================
+                // CREATE SKILL
+                // =============================================
+                
+                Tblskills skill = new Tblskills();
+                
+                skill.setSkillName(trimmedSkill);
+                skill.setCategoryId(category);
+                skill.setSkillStatus("PENDING");
+                skill.setCreatedByUserId(recruiterUserId);
+                skill.setCreatedDate(new Date());
+                
+                em.persist(skill);
+                
+                //NOTIFICATION FOR SKILL
+                
+                Tblnotification skillNotification = new Tblnotification();
+                
+                skillNotification.setUserId(recruiterUser);
+                skillNotification.setMessage("New skill pending for approval: "+ trimmedSkill);
+                skillNotification.setCreatedDate(new Date());
+                skillNotification.setNotificationStatus("Unread");
+                skillNotification.setNotificationType("Important");
+                
+                em.persist(skillNotification);
+            }
+        }
         em.flush();
-
-    } catch (Exception e) {
-
+        
+    }catch(Exception e)
+    {
         e.printStackTrace();
+        throw e;
     }
 }
 
 
+// ================= JOB Education =============================================================================
+@Override
+public Collection<Tbleducation> getAllEducation()
+{
+    try{
 
+        return em.createNamedQuery("Tbleducation.findAll", Tbleducation.class).getResultList();
 
+    }catch(Exception e)
+    {
+        e.printStackTrace();
 
+        return new ArrayList<>();
+    }
+}
 
 
 

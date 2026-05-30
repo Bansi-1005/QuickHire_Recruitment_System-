@@ -76,6 +76,15 @@ public class RecruiterCDIBean implements Serializable {
     private Tbljob job = new Tbljob();
 
     private String skillInput;
+    
+    private Integer expYears;
+    private Integer expMonths;
+
+    private List<Integer> yearList;
+    private List<Integer> monthList;
+    
+    private String modalActionType;
+
 
     // ================= LOCATION VARIABLES =================
     private List<String> availableStates
@@ -98,6 +107,7 @@ public class RecruiterCDIBean implements Serializable {
     private int closedJobs;
     private int expiringJobs;
 
+    
     // ================= SKILL CATEGORY VARIABLES =================
     private List<Tblskillcategory> skillCategories
             = new ArrayList<>();
@@ -111,6 +121,12 @@ public class RecruiterCDIBean implements Serializable {
 
     private String newSkillName;
 
+    private String skillActionType;
+    
+    
+
+
+
     // ================= CONSTRUCTOR =================
     public RecruiterCDIBean() {
     }
@@ -120,7 +136,20 @@ public class RecruiterCDIBean implements Serializable {
     public void init() {
 
         availableStates = LocationData.getStates();
-      
+        
+         yearList = new ArrayList<>();
+        monthList = new ArrayList<>();
+
+        // YEARS
+        for (int i = 0; i <= 50; i++) {
+            yearList.add(i);
+        }
+
+        // MONTHS
+        for (int i = 0; i <= 11; i++) {
+            monthList.add(i);
+        }
+
     }
 
     // ================= INIT LOCATION DATA =================
@@ -145,26 +174,25 @@ public class RecruiterCDIBean implements Serializable {
         loadSkills();
 
         loadSkillCategories();
-            selectedSkillCategory = 0;
+        selectedSkillCategory = 0;
 
 //        if (filteredSkills == null || filteredSkills.isEmpty()) {
-            filteredSkills = new ArrayList<>(allSkills);
+        filteredSkills = new ArrayList<>(allSkills);
 //        }
-        
-   
+
     }
-    
+
     // ================= AJAX LISTENER FOR CATEGORY CHANGE =================
-public void onSkillCategoryChange(
-        jakarta.faces.event.AjaxBehaviorEvent event) {
+    public void onSkillCategoryChange(
+            jakarta.faces.event.AjaxBehaviorEvent event) {
 
-    System.out.println(
-        "onSkillCategoryChange fired, category = "
-        + selectedSkillCategory
-    );
+        System.out.println(
+                "onSkillCategoryChange fired, category = "
+                + selectedSkillCategory
+        );
 
-    loadSkillsByCategory();
-}
+        loadSkillsByCategory();
+    }
 
     // ================= WORK MODE CHANGE =================
     public void onWorkModeChange() {
@@ -739,27 +767,23 @@ public void onSkillCategoryChange(
     public String saveJob() {
 
         FacesContext fc = FacesContext.getCurrentInstance();
-        // ================= CHECK FORM VALIDATION =================
-        if (fc.isValidationFailed()) {
-
-            fc.addMessage(
-                    null,
-                    new FacesMessage(
-                            FacesMessage.SEVERITY_ERROR,
-                            "Error",
-                            "Error While Creating Job"
-                    )
-            );
-
-            return null;
-        }
+  
         try {
 
             client.setToken(loginBean.getToken());
 
             generateJobLocation();
-
+            
             job.setRecruiterId(recruiter);
+
+            // CONVERT EXPERIENCE TO TOTAL MONTHS
+            int years = (expYears != null) ? expYears : 0;
+            int months = (expMonths != null) ? expMonths : 0;
+
+            int totalMonths = (years * 12) + months;
+
+            job.setExperienceRequired(totalMonths);
+            
 
             // ================= PASS SKILL IDS =================
             Collection<Integer> skillIds = new ArrayList<>();
@@ -786,6 +810,9 @@ public void onSkillCategoryChange(
                 );
 
                 job = new Tbljob();
+                
+                expYears = null;
+                expMonths = null;
                 skillInput = "";
                 selectedSkillIds = new ArrayList<>();
                 selectedState = null;
@@ -1066,200 +1093,262 @@ public void onSkillCategoryChange(
     }
 // ================= LOAD SKILLS BY CATEGORY =================
 
-  public void loadSkillsByCategory() {
-
-    try {
-
-        System.out.println("Selected Category: "
-                + selectedSkillCategory);
-
-        // ALL CATEGORIES
-        if (selectedSkillCategory == null) {
-
-            filteredSkills = new ArrayList<>(allSkills);
-
-            System.out.println("ALL skills loaded: "
-                    + filteredSkills.size());
-
-            return;
-        }
-
-        client.setToken(loginBean.getToken());
-
-        Integer userId = loginBean.getUserId();
-
-        Collection<Tblskills> skills
-                = client.getSkillsByCategory(
-                        selectedSkillCategory,
-                        userId
-                );
-
-        filteredSkills = (skills != null)
-                ? new ArrayList<>(skills)
-                : new ArrayList<>();
-
-        System.out.println("Filtered skills size: "
-                + filteredSkills.size());
-
-    } catch (Exception e) {
-
-        e.printStackTrace();
-
-        filteredSkills = new ArrayList<>();
-    }
-}
-
-    public void createCategory() {
+    public void loadSkillsByCategory() {
 
         try {
 
-            if (newCategoryName == null
-                    || newCategoryName.trim().isEmpty()) {
+            System.out.println("Selected Category: "
+                    + selectedSkillCategory);
 
-                FacesContext.getCurrentInstance()
-                        .addMessage(
-                                null,
-                                new FacesMessage(
-                                        FacesMessage.SEVERITY_ERROR,
-                                        "Error",
-                                        "Category name is required"
-                                )
-                        );
+            // ALL CATEGORIES
+            if (selectedSkillCategory == null) {
+
+                filteredSkills = new ArrayList<>(allSkills);
+
+                System.out.println("ALL skills loaded: "
+                        + filteredSkills.size());
 
                 return;
             }
 
             client.setToken(loginBean.getToken());
 
-            Response res = client.addSkillCategory(
-                    newCategoryName,
-                    loginBean.getUserId()
-            );
+            Integer userId = loginBean.getUserId();
 
-            String msg = res.readEntity(String.class);
+            Collection<Tblskills> skills
+                    = client.getSkillsByCategory(
+                            selectedSkillCategory,
+                            userId
+                    );
 
-            if (res.getStatus() == 200) {
+            filteredSkills = (skills != null)
+                    ? new ArrayList<>(skills)
+                    : new ArrayList<>();
 
-                // reload categories
-                loadSkillCategories();
-
-                FacesContext.getCurrentInstance()
-                        .addMessage(
-                                null,
-                                new FacesMessage(
-                                        FacesMessage.SEVERITY_INFO,
-                                        "Success",
-                                        msg
-                                )
-                        );
-
-                newCategoryName = "";
-
-            } else {
-
-                FacesContext.getCurrentInstance()
-                        .addMessage(
-                                null,
-                                new FacesMessage(
-                                        FacesMessage.SEVERITY_ERROR,
-                                        "Error",
-                                        msg
-                                )
-                        );
-            }
+            System.out.println("Filtered skills size: "
+                    + filteredSkills.size());
 
         } catch (Exception e) {
 
             e.printStackTrace();
 
-            FacesContext.getCurrentInstance()
-                    .addMessage(
-                            null,
+            filteredSkills = new ArrayList<>();
+        }
+    }
+
+
+
+    public String getModalActionType() {
+        return modalActionType;
+    }
+
+    public void setModalActionType(String modalActionType) {
+        this.modalActionType = modalActionType;
+    }
+
+    public void addSkillAndOrCategory() {
+
+        try {
+
+            FacesContext fc = FacesContext.getCurrentInstance();
+
+            // =================================================
+            // USER VALIDATION
+            // =================================================
+            Integer userId = loginBean.getUserId();
+
+            if (userId == null || userId <= 0) {
+
+                fc.addMessage(
+                        "postJobForm:skillMessages",
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_ERROR,
+                                "Error",
+                                "Invalid user session"
+                        )
+                );
+
+                return;
+            }
+
+            // =================================================
+            // CATEGORY VALUE
+            // =================================================
+            String categoryName = null;
+            if ("category".equals(modalActionType)
+                    && newCategoryName != null
+                    && !newCategoryName.trim().isEmpty()) {
+                categoryName = newCategoryName.trim();
+            }
+
+            // =================================================
+            // SKILL VALUE
+            // =================================================
+            String skillNames = null;
+
+            if (newSkillName != null
+                    && !newSkillName.trim().isEmpty()) {
+
+                skillNames = newSkillName.trim();
+            }
+
+            // =================================================
+            // VALIDATION FLAGS
+            // =================================================
+            boolean hasCategory
+                    = categoryName != null
+                    && !categoryName.isEmpty();
+
+            boolean hasExistingCategory
+                    = selectedSkillCategory != null
+                    && selectedSkillCategory > 0;
+
+            boolean hasSkills
+                    = skillNames != null
+                    && !skillNames.isEmpty();
+
+// =================================================
+// CATEGORY MODE VALIDATION
+// =================================================
+            if ("category".equals(modalActionType)) {
+
+                if (!hasCategory) {
+
+                    fc.addMessage(
+                            "postJobForm:categoryMessages",
+                            new FacesMessage(
+                                    FacesMessage.SEVERITY_ERROR,
+                                    null,
+                                    "Please enter category name"
+                            )
+                    );
+
+                    return;
+                }
+            }
+
+// =================================================
+// SKILL MODE VALIDATION
+// =================================================
+            if ("skill".equals(modalActionType)) {
+
+                // 1. CATEGORY REQUIRED
+                if (!hasExistingCategory) {
+
+                    fc.addMessage(
+                            "postJobForm:skillMessages",
+                            new FacesMessage(
+                                    FacesMessage.SEVERITY_ERROR,
+                                    null,
+                                    "Please select category"
+                            )
+                    );
+
+                    return;
+                }
+
+                // 2. SKILL NAME REQUIRED  ⭐ THIS WAS MISSING LOGIC
+                if (!hasSkills) {
+
+                    fc.addMessage(
+                            "postJobForm:skillMessages",
+                            new FacesMessage(
+                                    FacesMessage.SEVERITY_ERROR,
+                                    null,
+                                    "Please enter skill name"
+                            )
+                    );
+
+                    return;
+                }
+            }
+
+            // =================================================
+            // API CALL
+            // =================================================
+            client.setToken(loginBean.getToken());
+
+            Response res
+                    = client.addSkillAndOrCategory(
+                            categoryName,
+                            skillNames,
+                            selectedSkillCategory,
+                            userId
+                    );
+
+            String msg = res.readEntity(String.class);
+
+            // =================================================
+            // SUCCESS
+            // =================================================
+            if (res.getStatus() == 200) {
+
+                loadSkillCategories();
+
+                loadSkills();
+
+                loadSkillsByCategory();
+
+                // =============================================
+                // CATEGORY SUCCESS
+                // =============================================
+                if (hasCategory && !hasSkills) {
+
+                    fc.addMessage(
+                            "postJobForm:categoryMessages",
+                            new FacesMessage(
+                                    FacesMessage.SEVERITY_INFO,
+                                    "Success",
+                                    msg
+                            )
+                    );
+
+                    newCategoryName = "";
+                } // =============================================
+                // SKILL SUCCESS
+                // =============================================
+                else if (hasSkills) {
+
+                    fc.addMessage(
+                            "postJobForm:skillMessages",
+                            new FacesMessage(
+                                    FacesMessage.SEVERITY_INFO,
+                                    "Success",
+                                    msg
+                            )
+                    );
+
+                    newSkillName = "";
+                }
+
+            } // =================================================
+            // API ERROR
+            // =================================================
+            else {
+
+                // CATEGORY ERROR
+                if (hasCategory && !hasSkills) {
+
+                    fc.addMessage(
+                            "postJobForm:categoryMessages",
                             new FacesMessage(
                                     FacesMessage.SEVERITY_ERROR,
                                     "Error",
-                                    "Something went wrong"
+                                    msg
                             )
                     );
-        }
-    }
+                } // SKILL ERROR
+                else {
 
-    public void createSkill() {
-
-        try {
-
-            if (selectedSkillCategory == null) {
-
-                FacesContext.getCurrentInstance()
-                        .addMessage(
-                                null,
-                                new FacesMessage(
-                                        FacesMessage.SEVERITY_ERROR,
-                                        "Error",
-                                        "Select category first"
-                                )
-                        );
-
-                return;
-            }
-
-            if (newSkillName == null
-                    || newSkillName.trim().isEmpty()) {
-
-                FacesContext.getCurrentInstance()
-                        .addMessage(
-                                null,
-                                new FacesMessage(
-                                        FacesMessage.SEVERITY_ERROR,
-                                        "Error",
-                                        "Skill name is required"
-                                )
-                        );
-
-                return;
-            }
-
-            client.setToken(loginBean.getToken());
-
-            Response res = client.addSkill(
-                    newSkillName,
-                    selectedSkillCategory,
-                    loginBean.getUserId()
-            );
-
-            String msg = res.readEntity(String.class);
-
-            if (res.getStatus() == 200) {
-
-                // reload skills
-                loadSkillsByCategory();
-
-                // reload all skills also
-                loadSkills();
-
-                FacesContext.getCurrentInstance()
-                        .addMessage(
-                                null,
-                                new FacesMessage(
-                                        FacesMessage.SEVERITY_INFO,
-                                        "Success",
-                                        msg
-                                )
-                        );
-
-                newSkillName = "";
-
-            } else {
-
-                FacesContext.getCurrentInstance()
-                        .addMessage(
-                                null,
-                                new FacesMessage(
-                                        FacesMessage.SEVERITY_ERROR,
-                                        "Error",
-                                        msg
-                                )
-                        );
+                    fc.addMessage(
+                            "postJobForm:skillMessages",
+                            new FacesMessage(
+                                    FacesMessage.SEVERITY_ERROR,
+                                    "Error",
+                                    msg
+                            )
+                    );
+                }
             }
 
         } catch (Exception e) {
@@ -1268,7 +1357,7 @@ public void onSkillCategoryChange(
 
             FacesContext.getCurrentInstance()
                     .addMessage(
-                            null,
+                            "postJobForm:skillMessages",
                             new FacesMessage(
                                     FacesMessage.SEVERITY_ERROR,
                                     "Error",
@@ -1592,6 +1681,46 @@ public void onSkillCategoryChange(
         this.newSkillName = newSkillName;
     }
 
+    public Integer getExpYears() {
+        return expYears;
+    }
+
+    public void setExpYears(Integer expYears) {
+        this.expYears = expYears;
+    }
+
+    public Integer getExpMonths() {
+        return expMonths;
+    }
+
+    public void setExpMonths(Integer expMonths) {
+        this.expMonths = expMonths;
+    }
+
+    public List<Integer> getYearList() {
+        return yearList;
+    }
+
+    public void setYearList(List<Integer> yearList) {
+        this.yearList = yearList;
+    }
+
+    public List<Integer> getMonthList() {
+        return monthList;
+    }
+
+    public void setMonthList(List<Integer> monthList) {
+        this.monthList = monthList;
+    }
+
+        public String getSkillActionType() {
+        return skillActionType;
+    }
+
+    public void setSkillActionType(String skillActionType) {
+        this.skillActionType = skillActionType;
+    }
+    
     public void validateCompensation(FacesContext context, UIComponent component, Object value) {
 
         // value = MAX compensation field value

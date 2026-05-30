@@ -75,12 +75,6 @@ import java.util.Date;
 })
 public class Tbljob implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Basic(optional = false)
-    @Column(name = "jobId")
-    private Integer jobId;
     @Size(max = 150)
     @Column(name = "jobTitle")
     private String jobTitle;
@@ -88,36 +82,18 @@ public class Tbljob implements Serializable {
     @Size(max = 65535)
     @Column(name = "jobDescription")
     private String jobDescription;
-    @Size(max = 100)
-    @Column(name = "jobCity")
-    private String jobCity;
-    @Size(max = 100)
-    @Column(name = "jobState")
-    private String jobState;
     @Size(max = 255)
     @Column(name = "jobLocation")
     private String jobLocation;
-    @Size(max = 50)
-    @Column(name = "workMode")
-    private String workMode;
-    @Column(name = "experienceRequired")
-    private Integer experienceRequired;
     @Size(max = 50)
     @Column(name = "jobType")
     private String jobType;
     @Size(max = 50)
     @Column(name = "jobCompensationType")
     private String jobCompensationType;
-    // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
-    @Column(name = "jobCompensationMin")
-    private BigDecimal jobCompensationMin;
-    @Column(name = "jobCompensationMax")
-    private BigDecimal jobCompensationMax;
     @Size(max = 50)
     @Column(name = "jobCompensationPeriod")
     private String jobCompensationPeriod;
-    @Column(name = "jobVacancies")
-    private Integer jobVacancies;
     @Size(max = 50)
     @Column(name = "jobStatus")
     private String jobStatus;
@@ -126,6 +102,35 @@ public class Tbljob implements Serializable {
     @Column(name = "jobPostedDate")
     @Temporal(TemporalType.TIMESTAMP)
     private Date jobPostedDate;
+    @Size(max = 50)
+    @Column(name = "workMode")
+    private String workMode;
+    @Size(max = 100)
+    @Column(name = "jobCity")
+    private String jobCity;
+    @Size(max = 100)
+    @Column(name = "jobState")
+    private String jobState;
+    @JoinTable(name = "tbljob_education", joinColumns = {
+        @JoinColumn(name = "jobId", referencedColumnName = "jobId")}, inverseJoinColumns = {
+        @JoinColumn(name = "educationId", referencedColumnName = "educationId")})
+    @ManyToMany
+    private Collection<Tbleducation> tbleducationCollection;
+    private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Basic(optional = false)
+    @Column(name = "jobId")
+    private Integer jobId;
+    @Column(name = "experienceRequired")
+    private Integer experienceRequired;
+    // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
+    @Column(name = "jobCompensationMin")
+    private BigDecimal jobCompensationMin;
+    @Column(name = "jobCompensationMax")
+    private BigDecimal jobCompensationMax;
+    @Column(name = "jobVacancies")
+    private Integer jobVacancies;
     @Column(name = "jobExpiryDate")
     @Temporal(TemporalType.DATE)
     private Date jobExpiryDate;
@@ -162,53 +167,6 @@ public class Tbljob implements Serializable {
         this.jobId = jobId;
     }
 
-    public String getJobTitle() {
-        return jobTitle;
-    }
-
-    public void setJobTitle(String jobTitle) {
-        this.jobTitle = jobTitle;
-    }
-
-    public String getJobDescription() {
-        return jobDescription;
-    }
-
-    public void setJobDescription(String jobDescription) {
-        this.jobDescription = jobDescription;
-    }
-
-    public String getJobCity() {
-        return jobCity;
-    }
-
-    public void setJobCity(String jobCity) {
-        this.jobCity = jobCity;
-    }
-
-    public String getJobState() {
-        return jobState;
-    }
-
-    public void setJobState(String jobState) {
-        this.jobState = jobState;
-    }
-
-    public String getJobLocation() {
-        return jobLocation;
-    }
-
-    public void setJobLocation(String jobLocation) {
-        this.jobLocation = jobLocation;
-    }
-
-    public String getWorkMode() {
-        return workMode;
-    }
-
-    public void setWorkMode(String workMode) {
-        this.workMode = workMode;
-    }
 
     public Integer getExperienceRequired() {
         return experienceRequired;
@@ -218,21 +176,6 @@ public class Tbljob implements Serializable {
         this.experienceRequired = experienceRequired;
     }
 
-    public String getJobType() {
-        return jobType;
-    }
-
-    public void setJobType(String jobType) {
-        this.jobType = jobType;
-    }
-
-    public String getJobCompensationType() {
-        return jobCompensationType;
-    }
-
-    public void setJobCompensationType(String jobCompensationType) {
-        this.jobCompensationType = jobCompensationType;
-    }
 
     public BigDecimal getJobCompensationMin() {
         return jobCompensationMin;
@@ -250,13 +193,6 @@ public class Tbljob implements Serializable {
         this.jobCompensationMax = jobCompensationMax;
     }
 
-    public String getJobCompensationPeriod() {
-        return jobCompensationPeriod;
-    }
-
-    public void setJobCompensationPeriod(String jobCompensationPeriod) {
-        this.jobCompensationPeriod = jobCompensationPeriod;
-    }
 
     public Integer getJobVacancies() {
         return jobVacancies;
@@ -266,21 +202,6 @@ public class Tbljob implements Serializable {
         this.jobVacancies = jobVacancies;
     }
 
-    public String getJobStatus() {
-        return jobStatus;
-    }
-
-    public void setJobStatus(String jobStatus) {
-        this.jobStatus = jobStatus;
-    }
-
-    public Date getJobPostedDate() {
-        return jobPostedDate;
-    }
-
-    public void setJobPostedDate(Date jobPostedDate) {
-        this.jobPostedDate = jobPostedDate;
-    }
 
     public Date getJobExpiryDate() {
         return jobExpiryDate;
@@ -351,6 +272,103 @@ public class Tbljob implements Serializable {
     @Override
     public String toString() {
         return "Entity.Tbljob[ jobId=" + jobId + " ]";
+    }
+
+    public String getJobTitle() {
+        return jobTitle;
+    }
+
+    public void setJobTitle(String jobTitle) {
+        this.jobTitle = jobTitle;
+    }
+
+    public String getJobDescription() {
+        return jobDescription;
+    }
+
+    public void setJobDescription(String jobDescription) {
+        this.jobDescription = jobDescription;
+    }
+
+    public String getJobLocation() {
+        return jobLocation;
+    }
+
+    public void setJobLocation(String jobLocation) {
+        this.jobLocation = jobLocation;
+    }
+
+    public String getJobType() {
+        return jobType;
+    }
+
+    public void setJobType(String jobType) {
+        this.jobType = jobType;
+    }
+
+    public String getJobCompensationType() {
+        return jobCompensationType;
+    }
+
+    public void setJobCompensationType(String jobCompensationType) {
+        this.jobCompensationType = jobCompensationType;
+    }
+
+    public String getJobCompensationPeriod() {
+        return jobCompensationPeriod;
+    }
+
+    public void setJobCompensationPeriod(String jobCompensationPeriod) {
+        this.jobCompensationPeriod = jobCompensationPeriod;
+    }
+
+    public String getJobStatus() {
+        return jobStatus;
+    }
+
+    public void setJobStatus(String jobStatus) {
+        this.jobStatus = jobStatus;
+    }
+
+    public Date getJobPostedDate() {
+        return jobPostedDate;
+    }
+
+    public void setJobPostedDate(Date jobPostedDate) {
+        this.jobPostedDate = jobPostedDate;
+    }
+
+    public String getWorkMode() {
+        return workMode;
+    }
+
+    public void setWorkMode(String workMode) {
+        this.workMode = workMode;
+    }
+
+    public String getJobCity() {
+        return jobCity;
+    }
+
+    public void setJobCity(String jobCity) {
+        this.jobCity = jobCity;
+    }
+
+    public String getJobState() {
+        return jobState;
+    }
+
+    public void setJobState(String jobState) {
+        this.jobState = jobState;
+    }
+
+    @XmlTransient
+    public Collection<Tbleducation> getTbleducationCollection() {
+        return tbleducationCollection;
+    }
+
+    public void setTbleducationCollection(Collection<Tbleducation> tbleducationCollection) {
+        this.tbleducationCollection = tbleducationCollection;
     }
 
 }
