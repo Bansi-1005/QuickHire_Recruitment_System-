@@ -14,12 +14,15 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.Size;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
 
 /**
@@ -40,6 +43,8 @@ public class Tblresume implements Serializable {
     @Size(max = 255)
     @Column(name = "resumeFile")
     private String resumeFile;
+    @OneToMany(mappedBy = "resumeId")
+    private Collection<Tblapplication> tblapplicationCollection;
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -127,6 +132,15 @@ public class Tblresume implements Serializable {
 
     public void setResumeFile(String resumeFile) {
         this.resumeFile = resumeFile;
+    }
+
+    @XmlTransient
+    public Collection<Tblapplication> getTblapplicationCollection() {
+        return tblapplicationCollection;
+    }
+
+    public void setTblapplicationCollection(Collection<Tblapplication> tblapplicationCollection) {
+        this.tblapplicationCollection = tblapplicationCollection;
     }
     
 }

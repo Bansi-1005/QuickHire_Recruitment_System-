@@ -6,6 +6,7 @@ package Entity;
 
 import jakarta.json.bind.annotation.JsonbTransient;
 import jakarta.persistence.Basic;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -63,6 +64,10 @@ public class Tblcandidates implements Serializable {
     @Size(max = 100)
     @Column(name = "candidateState")
     private String candidateState;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "candidateId")
+    private Collection<Tblcandidateeducation> tblcandidateeducationCollection;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "candidateId")
+    private Collection<Tblsavedjobs> tblsavedjobsCollection;
     @OneToMany(mappedBy = "candidateId")
     private Collection<Tblresume> tblresumeCollection;
 
@@ -210,6 +215,13 @@ public class Tblcandidates implements Serializable {
     public void setTblresumeCollection(Collection<Tblresume> tblresumeCollection) {
         this.tblresumeCollection = tblresumeCollection;
     }
+    @XmlTransient
+    public Collection<Tblsavedjobs> getTblsavedjobsCollection() {
+        return tblsavedjobsCollection;
+    }
+    public void setTblsavedjobsCollection(Collection<Tblsavedjobs> tblsavedjobsCollection) {
+        this.tblsavedjobsCollection = tblsavedjobsCollection;
+    }
 
     public String getCandidatePhone() {
         return candidatePhone;
@@ -249,6 +261,15 @@ public class Tblcandidates implements Serializable {
 
     public void setCandidateState(String candidateState) {
         this.candidateState = candidateState;
+    }
+
+    @XmlTransient
+    public Collection<Tblcandidateeducation> getTblcandidateeducationCollection() {
+        return tblcandidateeducationCollection;
+    }
+
+    public void setTblcandidateeducationCollection(Collection<Tblcandidateeducation> tblcandidateeducationCollection) {
+        this.tblcandidateeducationCollection = tblcandidateeducationCollection;
     }
     
 }

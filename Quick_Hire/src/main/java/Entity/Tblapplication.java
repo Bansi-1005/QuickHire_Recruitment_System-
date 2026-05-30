@@ -70,28 +70,28 @@ import java.util.Date;
 })
 public class Tblapplication implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Basic(optional = false)
-    @Column(name = "applicationId")
-    private Integer applicationId;
-    @Basic(optional = false)
-    @NotNull
     @Column(name = "applicationAppliedDate")
     @Temporal(TemporalType.TIMESTAMP)
     private Date applicationAppliedDate;
     @Size(max = 50)
     @Column(name = "applicationStatus")
     private String applicationStatus;
-    @Size(max = 50)
-    @Column(name = "resumeSnapshot")
-    private String resumeSnapshot;
-    @Basic(optional = false)
-    @NotNull
     @Column(name = "lastUpdatedDate")
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastUpdatedDate;
+    @JoinColumn(name = "resumeId", referencedColumnName = "resumeId")
+    @ManyToOne
+    private Tblresume resumeId;
+
+    private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Basic(optional = false)
+    @Column(name = "applicationId")
+    private Integer applicationId;
+    @Size(max = 50)
+    @Column(name = "resumeSnapshot")
+    private String resumeSnapshot;
     @OneToMany(mappedBy = "applicationId")
     private Collection<Tblinterview> tblinterviewCollection;
     @OneToMany(mappedBy = "applicationId")
@@ -126,21 +126,6 @@ public class Tblapplication implements Serializable {
         this.applicationId = applicationId;
     }
 
-    public Date getApplicationAppliedDate() {
-        return applicationAppliedDate;
-    }
-
-    public void setApplicationAppliedDate(Date applicationAppliedDate) {
-        this.applicationAppliedDate = applicationAppliedDate;
-    }
-
-    public String getApplicationStatus() {
-        return applicationStatus;
-    }
-
-    public void setApplicationStatus(String applicationStatus) {
-        this.applicationStatus = applicationStatus;
-    }
 
     public String getResumeSnapshot() {
         return resumeSnapshot;
@@ -150,13 +135,6 @@ public class Tblapplication implements Serializable {
         this.resumeSnapshot = resumeSnapshot;
     }
 
-    public Date getLastUpdatedDate() {
-        return lastUpdatedDate;
-    }
-
-    public void setLastUpdatedDate(Date lastUpdatedDate) {
-        this.lastUpdatedDate = lastUpdatedDate;
-    }
 
     @XmlTransient
     @JsonbTransient
@@ -227,6 +205,38 @@ public class Tblapplication implements Serializable {
     @Override
     public String toString() {
         return "Entity.Tblapplication[ applicationId=" + applicationId + " ]";
+    }
+
+    public Date getApplicationAppliedDate() {
+        return applicationAppliedDate;
+    }
+
+    public void setApplicationAppliedDate(Date applicationAppliedDate) {
+        this.applicationAppliedDate = applicationAppliedDate;
+    }
+
+    public String getApplicationStatus() {
+        return applicationStatus;
+    }
+
+    public void setApplicationStatus(String applicationStatus) {
+        this.applicationStatus = applicationStatus;
+    }
+
+    public Date getLastUpdatedDate() {
+        return lastUpdatedDate;
+    }
+
+    public void setLastUpdatedDate(Date lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
+    }
+
+    public Tblresume getResumeId() {
+        return resumeId;
+    }
+
+    public void setResumeId(Tblresume resumeId) {
+        this.resumeId = resumeId;
     }
     
 }
