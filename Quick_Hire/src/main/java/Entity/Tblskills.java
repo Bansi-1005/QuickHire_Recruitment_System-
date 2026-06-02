@@ -85,7 +85,6 @@ public class Tblskills implements Serializable {
     private Date approvedDate;
     @JoinColumn(name = "categoryId", referencedColumnName = "categoryId")
     @ManyToOne
-    @JsonbTransient
     private Tblskillcategory categoryId;
 
     private static final long serialVersionUID = 1L;

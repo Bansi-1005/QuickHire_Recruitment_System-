@@ -11,8 +11,10 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jwt.TokenProvider;
@@ -65,5 +67,27 @@ public class AuthResource {
         return Response.ok(json)
         .header("Authorization", "Bearer " + token)
         .build();
+    }
+    
+    @PUT
+    @Path("resetPassword")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response resetPassword(
+            @QueryParam("email") String email,
+            @QueryParam("password") String password) {
+
+        boolean result =
+                authBean.resetPassword(email, password);
+
+        if (result) {
+
+            return Response.ok(
+                    "Password Updated Successfully"
+            ).build();
+        }
+
+        return Response.status(Response.Status.BAD_REQUEST)
+                .entity("Invalid Email")
+                .build();
     }
 }

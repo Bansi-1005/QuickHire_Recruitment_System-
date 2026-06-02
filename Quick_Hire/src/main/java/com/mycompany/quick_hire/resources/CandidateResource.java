@@ -6,6 +6,7 @@ package com.mycompany.quick_hire.resources;
 
 import EJB.CandidateBeanLocal;
 import Entity.Tblapplication;
+import Entity.Tblcandidateeducation;
 import Entity.Tblcandidates;
 import Entity.Tblscreeningscore;
 import Entity.Tblskills;
@@ -16,6 +17,7 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
@@ -115,6 +117,30 @@ public class CandidateResource {
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
+
+    
+    @PUT
+    @Path("uploadProfilePhoto")
+    public Response uploadProfilePhoto(
+            @QueryParam("userId") int userId,
+            @QueryParam("photo") String photo) {
+
+        try {
+
+            ejb.uploadProfilePhoto(userId, photo);
+
+            return Response.ok("Profile photo updated").build();
+
+        } catch (Exception e) {
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
+
+
 
     // ================= RESUME =================
     
@@ -346,6 +372,126 @@ public class CandidateResource {
         }
     }
 
+    
+    
+    
+    
+    // ================= EDUCATION =================
+    @GET
+    @Path("getCandidateEducation")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getCandidateEducation(@QueryParam("candidateId") Integer candidateId) {
+
+        try {
+            if (candidateId == null) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("candidateId required")
+                        .build();
+            }
+
+            Collection<Tblcandidateeducation> list =
+                    ejb.getCandidateEducation(candidateId);
+
+            return Response.ok(list).build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error loading education")
+                    .build();
+        }
+    }
+    
+    @POST
+    @Path("addCandidateEducation/{candidateId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addCandidateEducation(
+            Tblcandidateeducation edu,
+            @PathParam("candidateId") Integer candidateId) {
+
+        try {
+
+            if (candidateId == null || candidateId <= 0 || edu == null) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid input")
+                        .build();
+            }
+
+            Tblcandidateeducation created =
+                    ejb.addCandidateEducation(edu, candidateId);
+
+            if (created == null) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Failed to create education")
+                        .build();
+            }
+
+            // ✅ return OBJECT (important fix)
+            return Response.status(Response.Status.CREATED)
+                    .entity(created)
+                    .build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error: " + e.getMessage())
+                    .build();
+        }
+    }
+
+    @PUT
+    @Path("updateCandidateEducation")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateCandidateEducation(Tblcandidateeducation edu) {
+
+        try {
+
+            if (edu == null || edu.getCandidateEducationId() == null) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Education ID required")
+                        .build();
+            }
+
+            Tblcandidateeducation updated =
+                    ejb.updateCandidateEducation(edu);
+
+            if (updated == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity("Education not found")
+                        .build();
+            }
+
+            return Response.ok(updated).build(); // ✅ return object
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error: " + e.getMessage())
+                    .build();
+        }
+    }
+
+    @DELETE
+    @Path("removeCandidateEducation/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response removeCandidateEducation(@PathParam("id") Integer id) {
+
+        try {
+            ejb.removeCandidateEducation(id);
+
+            return Response.ok("Deleted successfully").build();
+
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error: " + e.getMessage())
+                    .build();
+        }
+    }
+    
+    
+    
     // ================= JOBS =================
     @GET
     @Path("getAllJobs")
@@ -386,35 +532,44 @@ public class CandidateResource {
     // ================= APPLICATION =================
     @POST
     @Path("applyForJob")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response applyForJob(Tblapplication application) {
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response applyForJob(
+            @QueryParam("candidateId") int candidateId,
+            @QueryParam("jobId") int jobId,
+            @QueryParam("resumeId") int resumeId) {
+
         try {
-            if (application == null 
-                || application.getCandidateId() == null 
-                || application.getJobId() == null) {
 
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Application missing").build();
+            String result =
+                    ejb.applyForJob(
+                            candidateId,
+                            jobId,
+                            resumeId);
+
+            if ("Already Applied".equals(result)) {
+
+                return Response.status(Response.Status.CONFLICT)
+                        .entity(result)
+                        .build();
             }
 
-            String result = ejb.applyForJob(application);
+            if ("Applied Successfully".equals(result)) {
 
-            // Handle responses properly
-            if (result.equals("Already Applied")) {
-                return Response.status(Response.Status.CONFLICT) // 409
-                        .entity(result).build();
+                return Response.ok(result)
+                        .build();
             }
 
-            if (result.equals("Applied Successfully")) {
-                return Response.ok(result).build();
-            }
-
-            // Other cases
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(result).build();
+                    .entity(result)
+                    .build();
 
         } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
+
+            e.printStackTrace();
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error : " + e.getMessage())
+                    .build();
         }
     }
 

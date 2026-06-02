@@ -20,16 +20,9 @@
                     styleClass="menu-link #{activePage eq 'dashboard' ? 'active' : ''}" />
 
             <!-- Profile -->
-            <h:outputLink value="#"
-                styleClass="menu-link"
-                onclick="openCandidateModal(); return false;">
-                  👤 My Profile
-            </h:outputLink>
-            
-            <!-- Resume -->
-            <h:link outcome="manageResume"
-                value="📄 My Resumes"
-                styleClass="menu-link #{activePage eq 'resume' ? 'active' : ''}" />
+            <h:link outcome="myProfile"
+                value="👤 My Profile"
+                styleClass="menu-link #{activePage eq 'myProfile' ? 'active' : ''}" />
             
             <!-- SEARCH JOBS -->
             <h:link outcome="searchJobs"
@@ -40,11 +33,6 @@
             <h:link outcome="manageApplications"
                     value="📄 My Applications"
                     styleClass="menu-link #{activePage eq 'applications' ? 'active' : ''}" />
-
-            <!-- SKILLS -->
-            <h:link outcome="manageSkills"
-                    value="🛠 My Skills"
-                    styleClass="menu-link #{activePage eq 'skills' ? 'active' : ''}" />
             
             <!-- INTERVIEWS -->
             <h:link outcome="interviews"

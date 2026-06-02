@@ -1,327 +1,314 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE html>
-
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
 
-<!-- ================= METADATA ================= -->
 <f:metadata>
     <f:viewAction action="#{loginBean.checkLogin}" />
     <f:viewAction action="#{candidateCDIBean.loadUserData}" />
 </f:metadata>
-    
+
 <h:head>
-
     <title>Search Jobs</title>
-    <link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>    
-
-    <h:outputStylesheet library="css" name="/candidate/candidate.css" />
-    <h:outputStylesheet library="css" name="/candidate/searchJobs.css" />
-    <h:outputStylesheet library="css" name="/candidate/profile.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <h:outputStylesheet library="css" name="/candidate/candidate.css"/>
+    <h:outputStylesheet library="css" name="/candidate/searchJobs.css"/>
 </h:head>
 
 <h:body>
-
     <ui:include src="/common/header.xhtml"/>
 
     <h:panelGroup rendered="#{loginBean.role eq 'Candidate'}">
+        <div class="dashboard-layout">
+            <ui:include src="/candidate/sidebar.xhtml">
+                <ui:param name="activePage" value="searchJobs"/>
+            </ui:include>
 
-    <div class="dashboard-layout">
-
-        <!-- SIDEBAR -->
-        <ui:include src="/candidate/sidebar.xhtml">
-            <ui:param name="activePage" value="searchJobs"/>
-        </ui:include>
-
-        <!-- MAIN -->
-        <main class="main">
-
-            <!-- HERO -->
-            <section class="hero">
-
-                <div class="hero-grid">
-
-                    <div>
-
-                        <div class="welcome-tag">
-                            Search Jobs
-                        </div>
-
-                        <h1>
-                            Find Your Dream Job 
-                            <i class="fa-solid fa-rocket"></i>
-                        </h1>
-
-                        <p>
-                            Search jobs by title, location or skills.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-            <!-- SEARCH -->
-            <section class="panel">
-
-                <div class="panel-header">
-                    <h3>Search Filters</h3>
-                </div>
-
-                <h:form id="searchForm">
-
-                    <div class="search-box">
-
-                        <!-- JOB TITLE -->
-                        <h:inputText
-                            value="#{candidateCDIBean.searchTitle}"
-                            styleClass="search-input"
-                            pt:placeholder="Search Job Title">
-
-                            <f:ajax
-                                event="keyup"
-                                delay="500"
-                                listener="#{candidateCDIBean.searchJobs}"
-                                render="jobsPanel"/>
-                        </h:inputText>
-
-                        <!-- LOCATION -->
-                        <h:inputText
-                            value="#{candidateCDIBean.searchLocation}"
-                            styleClass="search-input"
-                            pt:placeholder="Search Location">
-
-                            <f:ajax
-                                event="keyup"
-                                delay="500"
-                                listener="#{candidateCDIBean.searchJobs}"
-                                render="jobsPanel"/>
-                        </h:inputText>
-                        
-                        <!-- JOB TYPE -->
-                        <h:selectOneMenu
-                            value="#{candidateCDIBean.searchJobType}"
-                            styleClass="search-dropdown">
-
-                            <f:selectItem
-                                itemLabel="All Job Types"
-                                itemValue=""/>
-
-                            <f:selectItems
-                                value="#{candidateCDIBean.jobTypeList}"/>
-
-                            <f:ajax
-                                listener="#{candidateCDIBean.searchJobs}"
-                                render="jobsPanel"/>
-
-                        </h:selectOneMenu>
-
-                        <!-- SKILL -->
-                        <h:inputText
-                            value="#{candidateCDIBean.searchSkill}"
-                            styleClass="search-input"
-                            pt:placeholder="Search Skill">
-
-                            <f:ajax
-                                event="keyup"
-                                delay="500"
-                                listener="#{candidateCDIBean.searchJobs}"
-                                render="@form :jobsPanel"/>
-                        </h:inputText>
-
-                        <!-- SEARCH BUTTON -->
-                        <h:commandButton
-                            value="🔍 Search"
-                            action="#{candidateCDIBean.searchJobs}"
-                            styleClass="btn-main">
-
-                            <f:ajax
-                                execute="@form"
-                                render="jobsPanel"/>
-                        </h:commandButton>
-                        
-                        <!-- RESET BUTTON -->
-                        <h:commandButton
-                            value="Reset"
-                            action="#{candidateCDIBean.resetSearch}"
-                            styleClass="btn-reset">
-
-                            <f:ajax
-                                execute="@this"
-                                render="@form :jobsPanel"/>
-
-                        </h:commandButton>
-                    </div>
-
+            <main class="main">
+                <h:form id="msgForm">
+                    <h:messages id="messages" globalOnly="true" showDetail="true" showSummary="false"
+                                styleClass="custom-toast" infoClass="info" warnClass="warn" errorClass="error"/>
                 </h:form>
 
-            </section>
-
-            <!-- JOBS -->
-            <h:panelGroup id="jobsPanel">
-
-                <section class="jobs-grid">
-
-                    <ui:repeat value="#{candidateCDIBean.jobList}" var="job">
-
-                        <div class="job-card">
-
-                            <div class="job-top">
-
-                                <div>
-
-                                    <div class="job-title">
-                                        #{job.jobTitle}
-                                    </div>
-
-                                    <div class="job-location">
-                                        <i class="fa-solid fa-location-dot"></i>
-                                        #{job.jobLocation}
-                                    </div>
-
-                                </div>
-
-                                <div class="job-icon">
-                                    <i class="fa-solid fa-briefcase"></i>
-                                </div>
-
-                            </div>
-
-                            <div class="job-desc">
-
-                                #{job.jobDescription.length() > 140
-                                  ? job.jobDescription.substring(0,140).concat('...')
-                                  : job.jobDescription}
-
-                            </div>
-
-                            <div class="job-info">
-
-                                <div class="info-row">
-                                    <span>Experience</span>
-                                    <strong>
-                                        #{job.experienceRequired} Years
-                                    </strong>
-                                </div>
-
-                                <div class="info-row">
-                                    <span>Job Type</span>
-                                    <span class="badge">
-                                        #{job.jobType}
-                                    </span>
-                                </div>
-
-                                <div class="info-row">
-                                    <span>Vacancies</span>
-                                    <strong>
-                                        #{job.jobVacancies}
-                                    </strong>
-                                </div>
-
-                                <div class="info-row">
-                                    <span>Status</span>
-                                    <span class="badge">
-                                        #{job.jobStatus}
-                                    </span>
-                                </div>
-
-                            </div>
-
-                            <!-- SKILLS -->
-                            <div style="margin-top:15px;">
-
-                                <ui:repeat value="#{job.tblskillsCollection}" var="skill">
-
-                                    <span class="skill-badge">
-                                        <i class="fa-solid fa-code"></i>
-                                        #{skill.skillName}
-                                    </span>
-
-                                </ui:repeat>
-
-                            </div>
-
-                            <!-- FOOTER -->
-                            <div class="job-footer">
-
-                                <div class="salary">
-
-                                    ₹ #{job.jobCompensationMin}
-                                    -
-                                    ₹ #{job.jobCompensationMax}
-
-                                </div>
-
-                                <h:form>
-
-                                    <h:commandButton
-                                        value="#{candidateCDIBean.isApplied(job.jobId) ? 'Applied' : 'Apply'}"
-
-                                        action="#{candidateCDIBean.applyJob(job.jobId, candidateCDIBean.candidateId)}"
-
-                                        styleClass="#{candidateCDIBean.isApplied(job.jobId) ? 'btn-disabled' : 'btn-apply'}"
-
-                                        disabled="#{candidateCDIBean.isApplied(job.jobId)}">
-
-                                        <f:ajax execute="@this" render="@all"/>
-
-                                    </h:commandButton>
-
-                                </h:form>
-
-                            </div>
-
+                <section class="hero hero-jobs">
+                    <div class="hero-grid hero-grid-single">
+                        <div class="hero-content">
+                            <span class="welcome-tag">Career Opportunities</span>
+                            <h1>Find Your Dream Job</h1>
+                            <p>Discover jobs that match your skills, experience, and career goals.</p>
                         </div>
-
-                    </ui:repeat>
-                    
-                    <h:panelGroup rendered="#{empty candidateCDIBean.jobList}">
-
-                        <div class="empty-jobs">
-
-                            <h2>
-                                No Jobs Found 
-                                <i class="fa-regular fa-face-frown"></i>
-                            </h2>
-
-                            <p>
-                                Try different search keywords.
-                            </p>
-
-                        </div>
-
-                    </h:panelGroup>
-
+                    </div>
                 </section>
 
-            </h:panelGroup>
+                <section class="search-panel">
+                    <div class="section-title">Search Filters</div>
 
-        </main>
+                    <h:form id="searchForm" styleClass="search-box-form">
+                        <div class="search-box">
+                            <h:inputText value="#{candidateCDIBean.searchTitle}" styleClass="search-input" pt:placeholder="Job Title">
+                                <f:ajax event="keyup" delay="500" listener="#{candidateCDIBean.searchJobs}" render="jobsPanel"/>
+                            </h:inputText>
 
+                            <h:inputText value="#{candidateCDIBean.searchSkill}" styleClass="search-input" pt:placeholder="Skill">
+                                <f:ajax event="keyup" delay="500" listener="#{candidateCDIBean.searchJobs}" render="jobsPanel"/>
+                            </h:inputText>
+
+                            <h:inputText value="#{candidateCDIBean.searchLocation}" styleClass="search-input" pt:placeholder="Location">
+                                <f:ajax event="keyup" delay="500" listener="#{candidateCDIBean.searchJobs}" render="jobsPanel"/>
+                            </h:inputText>
+
+                            <h:selectOneMenu value="#{candidateCDIBean.searchJobType}" styleClass="search-dropdown">
+                                <f:selectItem itemLabel="All Job Types" itemValue=""/>
+                                <f:selectItems value="#{candidateCDIBean.jobTypeList}"/>
+                                <f:ajax listener="#{candidateCDIBean.searchJobs}" render="jobsPanel"/>
+                            </h:selectOneMenu>
+
+                            <h:commandButton value="Search" action="#{candidateCDIBean.searchJobs}" styleClass="btn-main">
+                                <f:ajax execute="@form" render="jobsPanel"/>
+                            </h:commandButton>
+
+                            <h:commandButton value="Reset" action="#{candidateCDIBean.resetSearch}" styleClass="btn-reset">
+                                <f:ajax execute="@this" render="@form jobsPanel"/>
+                            </h:commandButton>
+                        </div>
+                    </h:form>
+                </section>
+
+                <h:panelGroup id="jobsPanel">
+                    <div class="results-bar">
+                        <h2>Jobs Found (#{candidateCDIBean.jobList.size()})</h2>
+                    </div>
+
+                    <h:panelGroup rendered="#{not empty candidateCDIBean.jobList}">
+                        <section class="jobs-grid">
+                            <ui:repeat value="#{candidateCDIBean.jobList}" var="job">
+                                <div class="job-card">
+                                    <div class="job-card-head">
+                                        <div class="job-main">
+                                            <h3 class="job-title">#{job.jobTitle}</h3>
+                                            <div class="company-name">
+                                                <i class="fa-solid fa-building"></i>
+                                                #{job.recruiterId.companyId.companyName}
+                                            </div>
+                                            <div class="job-location">
+                                                <i class="fa-solid fa-location-dot"></i>
+                                                <span>#{job.jobLocation}</span>
+                                                <span class="job-divider">•</span>
+                                                <span>#{job.workMode}</span>
+                                            </div>
+                                        </div>
+                                        <div class="job-icon">
+                                            <i class="fa-solid fa-briefcase"></i>
+                                        </div>
+                                    </div>
+
+                                    <div class="job-desc">#{job.jobDescription}</div>
+
+                                    <h:form id="applyForm_#{job.jobId}">
+                                        <h:inputHidden id="jobIdHidden" value="#{job.jobId}"/>
+                                        
+                                        <div class="job-info-grid">
+                                            <div class="info-item">
+                                                <span class="info-label">Experience</span>
+                                                <span class="info-value"><i class="fa-solid fa-briefcase"></i> #{job.experienceRequired}+ Years</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="info-label">Openings</span>
+                                                <span class="info-value"><i class="fa-solid fa-users"></i> #{job.jobVacancies}</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="info-label">Job Type</span>
+                                                <span class="info-value"><i class="fa-solid fa-calendar"></i> #{job.jobType}</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="info-label">Salary Range</span>
+                                                <span class="info-value salary-value"><i class="fa-solid fa-money-bill"></i> ₹#{job.jobCompensationMin} - ₹#{job.jobCompensationMax}</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="info-label">Status</span>
+                                                <span class="info-value"><i class="fa-solid fa-circle-check"></i> #{job.jobStatus}</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="info-label">Expiry Date</span>
+                                                <span class="info-value">
+                                                    <i class="fa-solid fa-calendar-days"></i>
+                                                    <h:outputText value="#{job.jobExpiryDate}">
+                                                        <f:convertDateTime pattern="dd MMM yyyy"/>
+                                                    </h:outputText>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="skills-section">
+                                            <div class="section-mini-title">Required Skills</div>
+                                            <div class="skills-wrap">
+                                                <ui:repeat value="#{job.tblskillsCollection}" var="skill">
+                                                    <span class="badge">#{skill.skillName}</span>
+                                                </ui:repeat>
+                                            </div>
+                                        </div>
+
+                                        <div class="job-footer">
+                                            <div class="job-footer-left">
+                                                <span class="posted-date">
+                                                    <i class="fa-solid fa-clock"></i>
+                                                    Posted: <h:outputText value="#{job.jobExpiryDate}">
+                                                        <f:convertDateTime pattern="dd MMM yyyy"/>
+                                                    </h:outputText>
+                                                </span>
+                                            </div>
+                                            <h:commandButton value="#{candidateCDIBean.isApplied(job.jobId) ? 'Applied' : 'Apply Now'}"
+                                                             styleClass="#{candidateCDIBean.isApplied(job.jobId) ? 'btn-disabled' : 'btn-apply'}"
+                                                             disabled="#{candidateCDIBean.isApplied(job.jobId)}"
+                                                             onclick="openResumeModal('#{job.jobId}'); return false;">
+                                                <f:ajax execute="@form" render="@form"/>
+                                            </h:commandButton>
+                                        </div>
+                                    </h:form>
+                                </div>
+                            </ui:repeat>
+                        </section>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{empty candidateCDIBean.jobList}">
+                        <div class="empty-jobs">
+                            <div class="empty-icon">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </div>
+                            <h2>No Jobs Found</h2>
+                            <p>Try changing your search criteria or browse more job categories.</p>
+                        </div>
+                    </h:panelGroup>
+                </h:panelGroup>
+            </main>
+        </div>
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{loginBean.role ne 'Candidate'}">
+        <div class="access-denied">
+            <div class="access-denied-icon">
+                <i class="fa-solid fa-circle-exclamation"></i>
+            </div>
+            <h2>Access Denied</h2>
+            <p>You must be logged in as a Candidate to view this page.</p>
+        </div>
+    </h:panelGroup>
+
+    <div id="resumeModal" class="modal-overlay" style="display:none;">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div>
+                    <h3>Select Resume</h3>
+                    <p class="modal-subtitle">Choose the resume you want to submit for this job.</p>
+                </div>
+                <button type="button" class="modal-close" onclick="closeResumeModal()">×</button>
+            </div>
+
+            <h:form id="resumeApplyForm">
+                <h:inputHidden id="selectedJobId" value="#{candidateCDIBean.selectedJobId}"/>
+
+                <div class="resume-area">
+                    <h:panelGroup rendered="#{empty candidateCDIBean.resumeList}">
+                        <div class="resume-empty">
+                            <i class="fa-solid fa-file-circle-xmark"></i>
+                            <h4>No resumes found</h4>
+                            <p>Please upload a resume first.</p>
+                        </div>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{not empty candidateCDIBean.resumeList}">
+                        <div class="resume-dropdown-wrapper">
+                            <label class="resume-label" for="resumeSelect">Select from your resumes</label>
+                            <h:selectOneMenu id="resumeSelect" value="#{candidateCDIBean.selectedResumeId}"
+                                             styleClass="resume-dropdown" required="true"
+                                             requiredMessage="Please select a resume">
+                                <f:selectItem itemLabel="-- Select Resume --" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems value="#{candidateCDIBean.resumeList}" var="resume"
+                                               itemValue="#{resume.resumeId}" itemLabel="#{resume.resumeFile}"/>
+                                <f:ajax render="resumeViewer"/>
+                            </h:selectOneMenu>
+
+                            <h:panelGroup id="resumeMessageContainer">
+                                <h:message for="resumeSelect" styleClass="field-error"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="resumeViewer" styleClass="resume-viewer">
+                                <ui:repeat value="#{candidateCDIBean.resumeList}" var="resume">
+                                    <h:panelGroup rendered="#{resume.resumeId eq candidateCDIBean.selectedResumeId}">
+                                        <div class="resume-selected-card">
+                                            <div class="resume-selected-info">
+                                                <div class="resume-selected-title">#{resume.resumeFile}</div>
+                                                <div class="resume-selected-meta">Resume ID: #{resume.resumeId}</div>
+                                            </div>
+                                            <a class="resume-view-btn"
+                                               href="#{request.contextPath}/resume?file=#{resume.resumeFile}"
+                                               target="_blank"
+                                               title="View Resume">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </h:panelGroup>
+                                </ui:repeat>
+                            </h:panelGroup>
+                        </div>
+                    </h:panelGroup>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeResumeModal()">Cancel</button>
+                    <h:commandButton value="Apply" action="#{candidateCDIBean.applySelectedJob}" styleClass="btn-confirm">
+                        <f:ajax execute="@form" render="@form :msgForm:messages" onevent="applySuccess"/>
+                    </h:commandButton>
+                </div>
+            </h:form>
+        </div>
     </div>
 
-    </h:panelGroup>
+    <script>
+        function openResumeModal(jobId) {
+            document.getElementById('resumeModal').style.display = 'flex';
+            document.getElementById('resumeApplyForm:selectedJobId').value = jobId;
+            const d = document.getElementById('resumeApplyForm:resumeSelect');
+            if (d) {
+                d.selectedIndex = 0;
+            }
+        }
 
-    <!-- ACCESS DENIED -->
-    <h:panelGroup rendered="#{loginBean.role ne 'Candidate'}">
+        function closeResumeModal() {
+            document.getElementById('resumeModal').style.display = 'none';
+        }
 
-        <div style="padding-top:120px; text-align:center;">
+        window.addEventListener('click', function (e) {
+            const m = document.getElementById('resumeModal');
+            if (e.target === m) m.style.display = 'none';
+        });
 
-            <h2 style="color:red;">
-                Access Denied ❌
-            </h2>
+        function applySuccess(data) {
+            if (data.status === 'success') {
+                setTimeout(function () {
+                    const error = document.querySelector('.field-error');
+                    if (!error || error.innerText.trim().length === 0) {
+                        closeResumeModal();
+                    }
+                }, 100);
+                hideToast();
+            }
+        }
 
-        </div>
-
-    </h:panelGroup>
-    <!-- ================= PROFILE MODAL ================= -->
-    <ui:include src="/candidate/updateProfile.xhtml"/>
-
+        function hideToast() {
+            setTimeout(function () {
+                const toast = document.querySelector('.custom-toast');
+                if (toast) {
+                    toast.classList.add('fade-out');
+                    setTimeout(function () {
+                        toast.style.display = 'none';
+                    }, 400);
+                }
+            }, 4000);
+        }
+    </script>
 </h:body>
-
 </html>

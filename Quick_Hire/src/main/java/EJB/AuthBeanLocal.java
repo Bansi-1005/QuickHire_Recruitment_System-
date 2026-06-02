@@ -13,6 +13,7 @@ import jakarta.ejb.Local;
  */
 @Local
 public interface AuthBeanLocal {
-      Tblusers login(String userName, String password);
+    Tblusers login(String userName, String password);
 
+    boolean resetPassword(String email, String password);
 }

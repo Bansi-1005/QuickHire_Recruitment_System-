@@ -76,4 +76,42 @@ public class AuthBean implements AuthBeanLocal {
         return null;
     };
     
+    @Override
+    public boolean resetPassword(String email, String password) {
+
+        try {
+
+            Tblusers user = em.createQuery(
+                    "SELECT u FROM Tblusers u WHERE u.userEmail = :email",
+                    Tblusers.class)
+                    .setParameter("email", email)
+                    .getSingleResult();
+
+            if (user == null) {
+                return false;
+            }
+
+            Map<String, String> params = new HashMap<>();
+            params.put("Pbkdf2PasswordHash.Iterations", "3072");
+            params.put("Pbkdf2PasswordHash.Algorithm",
+                    "PBKDF2WithHmacSHA256");
+
+            hash.initialize(params);
+
+            String encryptedPassword =
+                    hash.generate(password.toCharArray());
+
+            user.setUserPassword(encryptedPassword);
+
+            em.merge(user);
+
+            return true;
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
 }

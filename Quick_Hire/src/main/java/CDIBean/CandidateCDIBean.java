@@ -57,6 +57,9 @@ public class CandidateCDIBean implements Serializable {
     private Collection<String> jobTypeList = new ArrayList<>();
     
     // ================= APPLICATIONS =================
+    private Integer selectedResumeId;
+    private Integer selectedJobId;
+
     private Collection<Tblapplication> applicationList = new ArrayList<>();
     private Map<Integer, String> applicationStatusMap = new HashMap<>();
 
@@ -70,6 +73,12 @@ public class CandidateCDIBean implements Serializable {
     private Collection<Tblskillcategory> allCategories = new ArrayList<>();
     private Collection<Tblskills> filteredSkills = new ArrayList<>();
    
+    // ================= Education =================
+    private Collection<Tblcandidateeducation> educationList = new ArrayList<>();
+    private Tblcandidateeducation selectedEducation = new Tblcandidateeducation();
+    private Integer editEducationId;
+    
+    
     // ================= INTERVIEWS =================
     private Collection<Tblinterview> interviewList = new ArrayList<>();
 
@@ -91,7 +100,13 @@ public class CandidateCDIBean implements Serializable {
     }
     
     
-    
+    public void reloadAfterRememberMe() {
+        loadUserData();
+        loadJobs();
+        loadJobTypes();
+        loadAllCategories();
+        generateRecommendedJobs();
+    }
     
     
     
@@ -137,6 +152,7 @@ public class CandidateCDIBean implements Serializable {
                 loadCandidateSkills();
                 loadInterviews(); 
                 loadResumes();
+                loadEducation(); 
             }
 
             loadNotifications(userId);
@@ -150,6 +166,7 @@ public class CandidateCDIBean implements Serializable {
     
     
     // ================= PROFILE METHODS =======================
+    
     
     // ----- LOAD PROFILE -------
     public void loadCandidateProfile(int userId) {
@@ -177,55 +194,55 @@ public class CandidateCDIBean implements Serializable {
 
         try {
 
-            // ================= PROFILE PHOTO FOLDER =================
-            String basePath = "D:/QuickHireUploads/";
-            String profilePhotoPath = basePath + "profilephotos/";
-
-            Files.createDirectories(Paths.get(profilePhotoPath));
-
-            // ================= PROFILE PHOTO =================
-            if (profilePhoto != null && profilePhoto.getSize() > 0) {
-
-                String photoName = Paths.get(
-                        profilePhoto.getSubmittedFileName()
-                ).getFileName().toString();
-
-                String lowerPhoto = photoName.toLowerCase();
-
-                // VALIDATION
-                if (!(lowerPhoto.endsWith(".png")
-                        || lowerPhoto.endsWith(".jpg")
-                        || lowerPhoto.endsWith(".jpeg"))) {
-
-                    FacesContext.getCurrentInstance().addMessage(
-                            null,
-                            new FacesMessage(
-                                    FacesMessage.SEVERITY_ERROR,
-                                    "Invalid Photo",
-                                    "Only PNG/JPG/JPEG allowed"
-                            )
-                    );
-                    return;
-                }
-
-                // UNIQUE FILE NAME
-                String uniquePhotoName =
-                        System.currentTimeMillis() + "_PHOTO_" + photoName;
-
-                // SAVE FILE
-                InputStream photoInput = profilePhoto.getInputStream();
-
-                Files.copy(
-                        photoInput,
-                        Paths.get(profilePhotoPath + uniquePhotoName),
-                        StandardCopyOption.REPLACE_EXISTING
-                );
-
-                // SAVE INTO USER TABLE
-                if (candidateObj.getUserId() != null) {
-                    candidateObj.getUserId().setProfilePhoto(uniquePhotoName);
-                }                
-            }
+//            // ================= PROFILE PHOTO FOLDER =================
+//            String basePath = "D:/QuickHireUploads/";
+//            String profilePhotoPath = basePath + "profilephotos/";
+//
+//            Files.createDirectories(Paths.get(profilePhotoPath));
+//
+//            // ================= PROFILE PHOTO =================
+//            if (profilePhoto != null && profilePhoto.getSize() > 0) {
+//
+//                String photoName = Paths.get(
+//                        profilePhoto.getSubmittedFileName()
+//                ).getFileName().toString();
+//
+//                String lowerPhoto = photoName.toLowerCase();
+//
+//                // VALIDATION
+//                if (!(lowerPhoto.endsWith(".png")
+//                        || lowerPhoto.endsWith(".jpg")
+//                        || lowerPhoto.endsWith(".jpeg"))) {
+//
+//                    FacesContext.getCurrentInstance().addMessage(
+//                            null,
+//                            new FacesMessage(
+//                                    FacesMessage.SEVERITY_ERROR,
+//                                    "Invalid Photo",
+//                                    "Only PNG/JPG/JPEG allowed"
+//                            )
+//                    );
+//                    return;
+//                }
+//
+//                // UNIQUE FILE NAME
+//                String uniquePhotoName =
+//                        System.currentTimeMillis() + "_PHOTO_" + photoName;
+//
+//                // SAVE FILE
+//                InputStream photoInput = profilePhoto.getInputStream();
+//
+//                Files.copy(
+//                        photoInput,
+//                        Paths.get(profilePhotoPath + uniquePhotoName),
+//                        StandardCopyOption.REPLACE_EXISTING
+//                );
+//
+//                // SAVE INTO USER TABLE
+//                if (candidateObj.getUserId() != null) {
+//                    candidateObj.getUserId().setProfilePhoto(uniquePhotoName);
+//                }                
+//            }
 
             // ================= API CALL =================
             WebTarget target = getClient()
@@ -248,8 +265,8 @@ public class CandidateCDIBean implements Serializable {
 
                 message = new FacesMessage(
                         FacesMessage.SEVERITY_INFO,
-                        "Profile updated successfully",
-                        null
+                        "Success",
+                        "Profile updated successfully"
                 );
 
                 loadUserData();
@@ -279,6 +296,117 @@ public class CandidateCDIBean implements Serializable {
                                     "Something went wrong"
                             )
                     );
+        }
+    }
+    
+    public void uploadProfilePhoto() {
+
+        try {
+
+            if (profilePhoto == null
+                    || profilePhoto.getSize() == 0) {
+
+                FacesContext.getCurrentInstance()
+                        .addMessage(
+                                null,
+                                new FacesMessage(
+                                        FacesMessage.SEVERITY_ERROR,
+                                        "Please select photo",
+                                        null));
+
+                return;
+            }
+
+            String basePath =
+                    "D:/QuickHireUploads/profilephotos/";
+
+            Files.createDirectories(Paths.get(basePath));
+
+            String fileName =
+                    Paths.get(
+                            profilePhoto.getSubmittedFileName())
+                            .getFileName()
+                            .toString();
+
+            String lower = fileName.toLowerCase();
+
+            if (!(lower.endsWith(".png")
+                    || lower.endsWith(".jpg")
+                    || lower.endsWith(".jpeg"))) {
+
+                FacesContext.getCurrentInstance()
+                        .addMessage(
+                                null,
+                                new FacesMessage(
+                                        FacesMessage.SEVERITY_ERROR,
+                                        "Only PNG/JPG/JPEG allowed",
+                                        null));
+
+                return;
+            }
+
+            String uniqueName =
+                    System.currentTimeMillis()
+                    + "_PHOTO_"
+                    + fileName;
+
+            InputStream input =
+                    profilePhoto.getInputStream();
+
+            Files.copy(
+                    input,
+                    Paths.get(basePath + uniqueName),
+                    StandardCopyOption.REPLACE_EXISTING);
+
+            int userId =
+                    candidateObj.getUserId().getUserId();
+
+            Response response = getClient()
+                    .target(BASE_URL + "/uploadProfilePhoto")
+                    .queryParam("userId", userId)
+                    .queryParam("photo", uniqueName)
+                    .request()
+                    .put(
+                            jakarta.ws.rs.client.Entity.text("")
+                    );
+
+            if (response.getStatus() == 200) {
+
+                candidateObj.getUserId()
+                        .setProfilePhoto(uniqueName);
+
+                FacesContext.getCurrentInstance()
+                        .addMessage(
+                                null,
+                                new FacesMessage(
+                                        FacesMessage.SEVERITY_INFO,
+                                        "Profile photo uploaded successfully",
+                                        null));
+
+                loadUserData();
+
+            } else {
+
+                FacesContext.getCurrentInstance()
+                        .addMessage(
+                                null,
+                                new FacesMessage(
+                                        FacesMessage.SEVERITY_ERROR,
+                                        "Photo upload failed",
+                                        null));
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            FacesContext.getCurrentInstance()
+                    .addMessage(
+                            null,
+                            new FacesMessage(
+                                    FacesMessage.SEVERITY_ERROR,
+                                    "Error uploading photo",
+                                    null));
         }
     }
     
@@ -402,12 +530,28 @@ public class CandidateCDIBean implements Serializable {
 
         try {
 
+            if (candidateId == 0) {
+
+                int userId = getLoggedInCandidateId();
+
+                if (userId > 0) {
+                    loadCandidateProfile(userId);
+                }
+            }
+
+            if (candidateId == 0) {
+                System.out.println("Candidate ID not found");
+                return;
+            }
+
             WebTarget target = getClient()
                     .target(BASE_URL + "/getCandidateResumes")
                     .queryParam("candidateId", candidateId);
 
             resumeList = target.request(MediaType.APPLICATION_JSON)
                     .get(new GenericType<Collection<Tblresume>>() {});
+
+            System.out.println("Resume Loaded = " + resumeList.size());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -869,28 +1013,89 @@ public class CandidateCDIBean implements Serializable {
         }
     }
     
+    // ================= APPLICATION VALIDATION =================
+
+    private boolean validateJobApplication() {
+
+        FacesContext context = FacesContext.getCurrentInstance();
+
+        if (selectedJobId == null) {
+
+            context.addMessage(
+                    null,
+                    new FacesMessage(
+                            FacesMessage.SEVERITY_ERROR,
+                            "Please select a job.",
+                            null
+                    )
+            );
+
+            return false;
+        }
+
+        return true;
+    }
+
     // ------- APPLY JOB ---------
-    public void applyJob(int jobId, int candidateId) {
+    public void applySelectedJob() {
+
+        FacesContext context = FacesContext.getCurrentInstance();
+
         try {
-            if (isApplied(jobId)) {
+
+            if (!validateJobApplication()) {
                 return;
             }
 
-            WebTarget target = getClient().target(BASE_URL + "/applyForJob");
+            Response response = getClient()
+                    .target(BASE_URL + "/applyForJob")
+                    .queryParam("candidateId", candidateId)
+                    .queryParam("jobId", selectedJobId)
+                    .queryParam("resumeId", selectedResumeId)
+                    .request(MediaType.TEXT_PLAIN)
+                    .post(null);
 
-            Tblapplication app = new Tblapplication();
-            
-            // IMPORTANT: set IDs properly
-            app.setJobId(new Entity.Tbljob(jobId));
-            app.setCandidateId(new Entity.Tblcandidates(candidateId));
+            String result = response.readEntity(String.class);
 
-            target.request(MediaType.APPLICATION_JSON)
-                    .post(jakarta.ws.rs.client.Entity.entity(app, MediaType.APPLICATION_JSON));
+            if (response.getStatus() == 200) {
 
-            //loadApplications(candidateId);
-            loadUserData();
+                context.addMessage(null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_INFO,
+                                "",
+                                result));
+
+                loadUserData();
+
+                selectedJobId = null;
+                selectedResumeId = null;
+
+            } else if (response.getStatus() == 409) {
+
+                context.addMessage(null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_WARN,
+                                "",
+                                result));
+
+            } else {
+
+                context.addMessage(null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_ERROR,
+                                "",
+                                result));
+            }
+
         } catch (Exception e) {
+
             e.printStackTrace();
+
+            context.addMessage(null,
+                    new FacesMessage(
+                            FacesMessage.SEVERITY_ERROR,
+                            "",
+                            "Something went wrong while applying."));
         }
     }
 
@@ -1095,27 +1300,189 @@ public class CandidateCDIBean implements Serializable {
 
         try {
 
-            WebTarget target = getClient()
+            Response response = getClient()
                     .target(BASE_URL + "/removeSkillFromCandidate")
                     .queryParam("candidateId", candidateId)
-                    .queryParam("skillId", skillId);
-
-            Response response = target
+                    .queryParam("skillId", skillId)
                     .request()
                     .delete();
 
-            String msg = response.readEntity(String.class);
+            if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+
+                loadCandidateSkills();
+                String msg = response.readEntity(String.class);
+                FacesContext.getCurrentInstance().addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_INFO,
+                                "Skill removed successfully",
+                                null
+                        )
+                );
+
+            } else {
+
+                String errorMsg = response.hasEntity()
+                        ? response.readEntity(String.class)
+                        : "Failed to remove skill";
+
+                FacesContext.getCurrentInstance().addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_ERROR,
+                                errorMsg,
+                                null
+                        )
+                );
+            }
+
+            response.close();
+
+        } catch (Exception e) {
 
             FacesContext.getCurrentInstance().addMessage(
                     null,
                     new FacesMessage(
-                            FacesMessage.SEVERITY_INFO,
-                            msg,
+                            FacesMessage.SEVERITY_ERROR,
+                            "An error occurred while removing the skill",
                             null
                     )
             );
 
-            loadCandidateSkills();
+            e.printStackTrace();
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    // ================= CANDIDATE EDUCATION METHODS =========================
+    
+    public void loadEducation() {
+        try {
+            WebTarget target = getClient()
+                    .target(BASE_URL + "/getCandidateEducation")
+                    .queryParam("candidateId", candidateId);
+
+            Response response = target.request(MediaType.APPLICATION_JSON).get();
+
+            if (response.getStatus() == 200) {
+                educationList = response.readEntity(
+                        new GenericType<Collection<Tblcandidateeducation>>() {}
+                );
+            } else {
+                educationList = new ArrayList<>();
+                System.out.println("Education API failed: " + response.getStatus());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    
+    public void saveEducation() {
+
+        try {
+
+            if (candidateId == 0) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Candidate not loaded", null));
+                return;
+            }
+
+            WebTarget target;
+            Response response;
+
+            // ================= UPDATE =================
+            if (editEducationId != null) {
+
+                selectedEducation.setCandidateEducationId(editEducationId);
+
+                target = getClient()
+                        .target(BASE_URL + "/updateCandidateEducation");
+
+                response = target.request(MediaType.APPLICATION_JSON)
+                        .put(jakarta.ws.rs.client.Entity.entity(
+                                selectedEducation,
+                                MediaType.APPLICATION_JSON));
+
+            }
+            // ================= ADD =================
+            else {
+
+                target = getClient()
+                        .target(BASE_URL + "/addCandidateEducation/" + candidateId);
+
+                response = target.request(MediaType.APPLICATION_JSON)
+                        .post(jakarta.ws.rs.client.Entity.entity(
+                                selectedEducation,
+                                MediaType.APPLICATION_JSON));
+            }
+
+            // ================= RESULT CHECK =================
+            if (response.getStatus() != 200 && response.getStatus() != 201) {
+
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Save failed", null));
+                return;
+            }
+
+            // ================= RESET STATE (IMPORTANT FIX) =================
+            selectedEducation = new Tblcandidateeducation();
+            editEducationId = null;
+
+            loadEducation();
+
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_INFO,
+                            "Education saved successfully", null));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void editEducation(int id) {
+
+        for (Tblcandidateeducation edu : educationList) {
+
+            if (edu.getCandidateEducationId() == id) {
+
+                selectedEducation = new Tblcandidateeducation();
+
+                selectedEducation.setEducationName(edu.getEducationName());
+                selectedEducation.setInstituteName(edu.getInstituteName());
+                selectedEducation.setSpecialization(edu.getSpecialization());
+                selectedEducation.setStartYear(edu.getStartYear());
+                selectedEducation.setEndYear(edu.getEndYear());
+                selectedEducation.setPercentage(edu.getPercentage());
+                selectedEducation.setCgpa(edu.getCgpa());
+                selectedEducation.setGrade(edu.getGrade());
+                selectedEducation.setEducationDescription(edu.getEducationDescription());
+
+                editEducationId = id;
+                break;
+            }
+        }
+    }
+    
+    
+    public void deleteEducation(int id) {
+        try {
+            WebTarget target = getClient()
+                    .target(BASE_URL + "/removeCandidateEducation/" + id);
+
+            target.request().delete();
+
+            loadEducation();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -1315,6 +1682,22 @@ public class CandidateCDIBean implements Serializable {
     public Collection<String> getJobTypeList() {
         return jobTypeList;
     }
+    
+    public Integer getSelectedResumeId() {
+        return selectedResumeId;
+    }
+
+    public void setSelectedResumeId(Integer selectedResumeId) {
+        this.selectedResumeId = selectedResumeId;
+    }
+    
+    public Integer getSelectedJobId() {
+        return selectedJobId;
+    }
+
+    public void setSelectedJobId(Integer selectedJobId) {
+        this.selectedJobId = selectedJobId;
+    }
 
     public void setJobTypeList(Collection<String> jobTypeList) {
         this.jobTypeList = jobTypeList;
@@ -1384,6 +1767,32 @@ public class CandidateCDIBean implements Serializable {
         this.filteredSkills = filteredSkills;
     }
 
+    public Collection<Tblcandidateeducation> getEducationList() {
+        return educationList;
+    }
+
+    public void setEducationList(Collection<Tblcandidateeducation> educationList) {
+        this.educationList = educationList;
+    }
+
+    public Tblcandidateeducation getSelectedEducation() {
+        return selectedEducation;
+    }
+
+    public void setSelectedEducation(Tblcandidateeducation selectedEducation) {
+        this.selectedEducation = selectedEducation;
+    }
+
+    public Integer getEditEducationId() {
+        return editEducationId;
+    }
+
+    public void setEditEducationId(Integer editEducationId) {
+        this.editEducationId = editEducationId;
+    }
+
+    
+    
     public Collection<Tblinterview> getInterviewList() {
         return interviewList;
     }

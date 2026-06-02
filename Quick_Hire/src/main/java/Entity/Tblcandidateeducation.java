@@ -64,11 +64,9 @@ public class Tblcandidateeducation implements Serializable {
     @Column(name = "specialization")
     private String specialization;
     @Column(name = "startYear")
-    @Temporal(TemporalType.DATE)
-    private Date startYear;
+    private Integer startYear;
     @Column(name = "endYear")
-    @Temporal(TemporalType.DATE)
-    private Date endYear;
+    private Integer endYear;
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Column(name = "percentage")
     private BigDecimal percentage;
@@ -132,19 +130,19 @@ public class Tblcandidateeducation implements Serializable {
         this.specialization = specialization;
     }
 
-    public Date getStartYear() {
+    public Integer getStartYear() {
         return startYear;
     }
 
-    public void setStartYear(Date startYear) {
+    public void setStartYear(Integer startYear) {
         this.startYear = startYear;
     }
 
-    public Date getEndYear() {
+    public Integer getEndYear() {
         return endYear;
     }
 
-    public void setEndYear(Date endYear) {
+    public void setEndYear(Integer endYear) {
         this.endYear = endYear;
     }
 

@@ -400,6 +400,108 @@ body{
     font-size: 24px;
     font-weight: 800;
 }
+
+/* =========================
+   custom-toast message
+========================= */
+.custom-toast {
+    position: fixed;
+    top: 90px;
+    right: 24px;
+    z-index: 99999;
+    width: min(380px, calc(100vw - 32px));
+}
+
+.custom-toast ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.custom-toast li {
+    position: relative;
+    min-width: 320px;
+    margin-bottom: 12px;
+    padding: 15px 18px 15px 52px;
+    border-radius: 14px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.5;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    animation: slideIn 0.35s ease;
+    overflow: hidden;
+    word-break: break-word;
+}
+
+.custom-toast li::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 5px;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.35);
+}
+
+.custom-toast li::before {
+    position: absolute;
+    left: 18px;
+    top: 14px;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.custom-toast li.info {
+    background: linear-gradient(135deg, #0f9b8e, #0a7a6f);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.custom-toast .info::before {
+    content: "✓";
+    color: #ffffff;
+}
+
+.custom-toast li.warn {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.custom-toast .warn::before {
+    content: "!";
+    color: #ffffff;
+}
+
+.custom-toast li.error {
+    background: linear-gradient(135deg, #ef4444, #b91c1c);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.custom-toast .error::before {
+    content: "✕";
+    color: #ffffff;
+}
+
+.custom-toast.fade-out {
+    opacity: 0;
+    transform: translateX(50px);
+    transition: all 0.4s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(120%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+
 /* =========================
    FOOTER
 ========================= */
@@ -484,6 +586,18 @@ body{
         margin-left: 0;
         width: 100%;
     }
-}
+    
+    .custom-toast {
+        left: 12px;
+        right: 12px;
+        width: auto;
+        top: 75px;
+    }
 
+    .custom-toast li {
+        min-width: auto;
+        width: 100%;
+        font-size: 13px;
+    }
+}
 

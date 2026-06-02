@@ -4,6 +4,7 @@
  */
 package Entity;
 
+import jakarta.json.bind.annotation.JsonbTransient;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -135,6 +136,7 @@ public class Tblresume implements Serializable {
     }
 
     @XmlTransient
+    @JsonbTransient
     public Collection<Tblapplication> getTblapplicationCollection() {
         return tblapplicationCollection;
     }

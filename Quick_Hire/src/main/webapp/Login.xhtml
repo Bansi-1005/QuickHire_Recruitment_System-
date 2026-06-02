@@ -7,186 +7,470 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
 <h:head>
-    <title>Login</title>
+    <title>Login - QuickHire</title>
 
     <style>
-        body {
+        html, body {
             margin: 0;
-            font-family: 'Segoe UI', Arial;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f8f9fc;
+            font-size: 14px;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         .container {
             display: flex;
-            height: 100vh;
+            min-height: 100vh;
         }
 
+        /* LEFT SIDE */
         .left {
-            flex: 1;
+            width: 55%;
             background: linear-gradient(135deg, #0f9b8e, #1f6fdc);
             color: white;
-            padding: 70px;
+            padding: 50px;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .left::before {
+            content: "";
+            position: absolute;
+            width: 450px;
+            height: 450px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+            top: -180px;
+            right: -150px;
+        }
+
+        .left::after {
+            content: "";
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+            bottom: -120px;
+            left: -80px;
         }
 
         .logo {
-            font-size: 26px;
+            font-size: 28px;
             font-weight: bold;
             margin-bottom: 40px;
+            z-index: 2;
         }
 
         .left h1 {
-            font-size: 36px;
-            margin-bottom: 20px;
+            font-size: 32px;
+            margin-bottom: 15px;
+            z-index: 2;
         }
 
         .left p {
-            font-size: 16px;
-            opacity: 0.9;
-            line-height: 1.6;
+            font-size: 15px;
+            line-height: 1.7;
+            max-width: 420px;
+            z-index: 2;
         }
 
         .features {
-            margin-top: 40px;
+            margin-top: 35px;
             display: flex;
-            gap: 25px;
-            font-size: 14px;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 2;
         }
 
+        .features span {
+            font-size: 15px;
+        }
+
+        /* RIGHT SIDE */
         .right {
-            flex: 1;
-            background: #f8f9fc;
+            width: 45%;
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 25px;
         }
 
         .card {
-            width: 380px;
+            width: 100%;
+            max-width: 420px;
             background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 35px;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 26px;
+            color: #222;
+        }
+
+        .card-header p {
+            color: #777;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
         }
 
         .input {
             width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 6px;
-            border: 1px solid #ccc;
+            padding: 11px 12px;
+            border: 1px solid #dcdcdc;
+            border-radius: 8px;
+            font-size: 14px;
         }
 
         .input:focus {
-            border-color: #1f6fdc;
             outline: none;
-            box-shadow: 0 0 5px rgba(31,111,220,0.3);
+            border-color: #1f6fdc;
+            box-shadow: 0 0 0 3px rgba(31,111,220,0.15);
+        }
+
+        .error {
+            display: block;
+            color: #dc3545;
+            font-size: 11px;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        /* SUCCESS MESSAGE (GREEN) */
+        .server-success {
+            margin-bottom: 12px;
+            padding: 10px 12px;
+            background: #eafaf1;
+            border: 1px solid #2ecc71;
+            border-left: 5px solid #27ae60;
+            border-radius: 6px;
+            color: #1e7e34;
+            font-size: 13px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        /* ERROR MESSAGE (RED) */
+        .server-error {
+            margin-bottom: 12px;
+            padding: 10px 12px;
+            background: #fdecea;
+            border: 1px solid #e74c3c;
+            border-left: 5px solid #c0392b;
+            border-radius: 6px;
+            color: #a71d2a;
+            font-size: 13px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        /* OPTIONAL: WARNING (YELLOW if needed later) */
+        .server-warn {
+            margin-bottom: 12px;
+            padding: 10px 12px;
+            background: #fff8e6;
+            border: 1px solid #f1c40f;
+            border-left: 5px solid #f39c12;
+            border-radius: 6px;
+            color: #8a6d00;
+            font-size: 13px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+        }
+
+        .forgot-password a {
+            color: #1f6fdc;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
         }
 
         .btn {
             width: 100%;
+            border: none;
+            border-radius: 8px;
             padding: 12px;
-            margin-top: 10px;
             background: linear-gradient(to right, #0f9b8e, #1f6fdc);
             color: white;
-            border: none;
-            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
             cursor: pointer;
+        }
+
+        .btn:hover {
+            opacity: 0.95;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            color: #888;
+            font-weight: 500;
+            font-size: 13px;
         }
 
         .bottom {
             text-align: center;
-            margin-top: 15px;
-            font-size: 14px;
+            font-size: 13px;
         }
 
-        .error {
-            color: red;
-            font-size: 12px;
+        .bottom a {
+            color: #1f6fdc;
+            text-decoration: none;
+            font-weight: 600;
         }
 
-        .server-error {
-            color: red;
-            text-align: center;
-            margin-top: 10px;
+        .bottom a:hover {
+            text-decoration: underline;
         }
 
+        /* Responsive */
+        @media(max-width: 992px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .left,
+            .right {
+                width: 100%;
+            }
+
+            .left {
+                text-align: center;
+                padding: 40px 25px;
+            }
+
+            .left p {
+                margin: auto;
+            }
+
+            .features {
+                align-items: center;
+            }
+        }
+
+        @media(max-width: 576px) {
+            .card {
+                padding: 25px;
+                max-width: 360px;
+            }
+
+            .left h1 {
+                font-size: 26px;
+            }
+
+            .logo {
+                font-size: 24px;
+            }
+
+            .left {
+                padding: 35px 20px;
+            }
+
+            .left p {
+                font-size: 14px;
+            }
+
+            .features span {
+                font-size: 14px;
+            }
+
+            .options {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .card-header h2 {
+                font-size: 24px;
+            }
+
+            .input {
+                padding: 10px;
+            }
+
+            .btn {
+                padding: 11px;
+                font-size: 14px;
+            }
+        }
     </style>
 </h:head>
 
 <h:body>
+    
+    <f:metadata>
+        <f:viewAction action="#{loginBean.autoLogin}" />
+    </f:metadata>
 
-<div class="container">
+    <div class="container">
 
-    <!-- LEFT PANEL -->
-    <div class="left">
-        <div class="logo">QuickHire</div>
+        <!-- LEFT PANEL -->
+        <div class="left">
+            <div class="logo">QuickHire</div>
 
-        <h1>Welcome Back</h1>
-        <p>
-            Login to access your dashboard, manage hiring,
-            and explore new opportunities.
-        </p>
+            <h1>Welcome Back</h1>
 
-        <div class="features">
-            <span>✔ Smart Screening</span>
-            <span>✔ Secure &amp; Fast</span>
-            <span>✔ Easy Hiring</span>
+            <p>
+                Login to access your dashboard, manage hiring,
+                and explore new opportunities.
+            </p>
+
+            <div class="features">
+                <span>✔ Smart Screening</span>
+                <span>✔ Secure and Fast</span>
+                <span>✔ Easy Hiring</span>
+            </div>
         </div>
-    </div>
 
-    <!-- RIGHT PANEL -->
-    <div class="right">
-        <div class="card">
-
-            <h:form>
-
-                <h2>Sign in</h2>
-
-                <!-- GLOBAL ERRORS -->
-                <h:messages globalOnly="true" styleClass="error"/>
-
-                <!-- USERNAME -->
-                <h:inputText id="username"
-                             value="#{loginBean.username}"
-                             styleClass="input"
-                             required="true"
-                             requiredMessage="Username is required">
-                    <f:passThroughAttribute name="placeholder" value="Username"/>
-                </h:inputText>
-                <h:message for="username" styleClass="error"/>
-
-                <!-- PASSWORD -->
-                <h:inputSecret id="password"
-                               value="#{loginBean.password}"
-                               styleClass="input"
-                               required="true"
-                               requiredMessage="Password is required">
-                    <f:passThroughAttribute name="placeholder" value="Password"/>
-                </h:inputSecret>
-                <h:message for="password" styleClass="error"/>
-
-                <!-- LOGIN BUTTON -->
-                <h:commandButton value="Login"
-                                 action="#{loginBean.login()}"
-                                 styleClass="btn"/>
-
-                <!-- SERVER ERROR -->
-                <h:outputText value="#{loginBean.message}" styleClass="server-error"/>
-
-                <!-- REGISTER -->
-                <div class="bottom">
-                    Don’t have an account?
-                    <h:link value="Register" outcome="Registration.jsf"/>
+        <!-- RIGHT PANEL -->
+        <div class="right">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Sign In</h2>
+                    <p>Enter your credentials to continue</p>
                 </div>
 
-            </h:form>
+                <h:form id="loginForm">
 
+                   <h:messages globalOnly="true"
+                                infoClass="server-success"
+                                errorClass="server-error"/>
+                    
+                    <!-- USERNAME -->
+                    <div class="form-group">
+                        <label for="username">Username</label>
+
+                        <h:inputText id="username"
+                                     value="#{loginBean.username}"
+                                     styleClass="input"
+                                     required="true"
+                                     requiredMessage="Username is required">
+
+                            <f:passThroughAttribute name="placeholder"
+                                                    value="Enter your username"/>
+
+                            <f:ajax event="keyup"
+                                    execute="@this"
+                                    render="usernameMsg"/>
+
+                            <f:ajax event="blur"
+                                    execute="@this"
+                                    render="usernameMsg"/>
+
+                        </h:inputText>
+
+                        <h:message id="usernameMsg"
+                                   for="username"
+                                   styleClass="error"/>
+                    </div>
+
+                    <!-- PASSWORD -->
+                    <div class="form-group">
+                        <label for="password">Password</label>
+
+                        <h:inputSecret id="password"
+                                       value="#{loginBean.password}"
+                                       styleClass="input"
+                                       required="true"
+                                       requiredMessage="Password is required">
+
+                            <f:passThroughAttribute name="placeholder"
+                                                    value="Enter your password"/>
+
+                            <f:ajax event="keyup"
+                                    execute="@this"
+                                    render="passwordMsg"/>
+
+                            <f:ajax event="blur"
+                                    execute="@this"
+                                    render="passwordMsg"/>
+
+                        </h:inputSecret>
+
+                        <h:message id="passwordMsg"
+                                   for="password"
+                                   styleClass="error"/>
+                    </div>
+
+                    <!-- OPTIONS -->
+                    <div class="options">
+                        <label class="remember-me">
+                            <h:selectBooleanCheckbox value="#{loginBean.rememberMe}"/>
+                            <span>Remember Me</span>
+                        </label>
+
+                        <div class="forgot-password">
+                            <h:link value="Forgot Password?"
+                                    outcome="/ForgotPassword.xhtml"/>
+                        </div>
+                    </div>
+
+                    <!-- LOGIN BUTTON -->
+                    <h:commandButton value="Login"
+                                     action="#{loginBean.login}"
+                                     styleClass="btn"/>
+
+                    <div class="divider">OR</div>
+
+                    <div class="bottom">
+                        Don't have an account?
+                        <h:link value="Create Account"
+                                outcome="/Registration.xhtml"/>
+                    </div>
+
+                </h:form>
+            </div>
         </div>
-    </div>
 
-</div>
+    </div>
 
 </h:body>
 </html>

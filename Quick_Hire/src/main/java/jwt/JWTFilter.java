@@ -40,9 +40,10 @@ public class JWTFilter implements ContainerRequestFilter {
         if (path.contains("auth/login") 
             || path.contains("registration/registerUser")
             || path.contains("recruiter/registerRecruiter")
-            || path.contains("candidate/registerCandidate")) {
+            || path.contains("candidate/registerCandidate")
+            || path.contains("auth/resetPassword")) {
             return;// Skip token validation for these APIs
-            }
+        }
 
         // Read Authorization header from request
         String authHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);

@@ -22,7 +22,8 @@ public interface CandidateBeanLocal {
     // PROFILE
     Tblcandidates getCandidateProfile(int userId);
     void updateCandidateProfile(Tblcandidates candidate);
-
+    public void uploadProfilePhoto(int userId, String profilePhoto);
+    
     // RESUME
     Collection<Tblresume> getCandidateResumes(int candidateId);
     void uploadResume(int candidateId, String resumeFile);
@@ -40,13 +41,21 @@ Collection<Tblskills> getSkillsByCategory(int categoryId);
     void removeSkillFromCandidate(int candidateId, int skillId);
     Collection<Tblskills> getCandidateSkills(int candidateId);
 
+    
+    // ---------- Candidate Aducation ----------
+    public Collection<Tblcandidateeducation> getCandidateEducation(Integer candidateId);
+    public Tblcandidateeducation addCandidateEducation(Tblcandidateeducation edu, Integer candidateId);
+    public Tblcandidateeducation updateCandidateEducation(Tblcandidateeducation edu);
+    public void removeCandidateEducation(Integer candidateEducationId);
+            
+            
     // JOBS
     Collection<Tbljob> getAllJobs();
 //    Collection<Tbljob> searchJobsByLocation(String location);
 //    Collection<Tbljob> searchJobsBySkill(String skill);
 
     // Job APPLICATION
-    String applyForJob(Tblapplication application);
+    public String applyForJob(int candidateId, int jobId, int resumeId);
     Collection<Tblapplication> getCandidateApplications(int candidateId);
     public boolean alreadyApplied(int candidateId, int jobId);
     public void deleteApplication(int applicationId);

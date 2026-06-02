@@ -134,9 +134,6 @@ public class CandidateBean implements CandidateBeanLocal {
                         user.setUserName(candidate.getUserId().getUserName());
                         user.setUserEmail(candidate.getUserId().getUserEmail());
 
-                        // ⭐ THIS IS THE FIX
-                        user.setProfilePhoto(candidate.getUserId().getProfilePhoto());
-
                         em.merge(user);
                     }
                 }
@@ -148,6 +145,28 @@ public class CandidateBean implements CandidateBeanLocal {
             e.printStackTrace();
         }
     }
+    
+    
+    @Override
+    public void uploadProfilePhoto(int userId, String profilePhoto) {
+
+        try {
+
+            Tblusers user = em.find(Tblusers.class, userId);
+
+            if (user != null) {
+
+                user.setProfilePhoto(profilePhoto);
+
+                em.merge(user);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    
 
     // ================= RESUME =================
     
@@ -345,6 +364,92 @@ public class CandidateBean implements CandidateBeanLocal {
         }
     }
     
+    
+
+
+    // ================= EDUCATION =================
+    @Override
+    public Collection<Tblcandidateeducation> getCandidateEducation(Integer candidateId) {
+
+        if (candidateId == null) {
+            return new ArrayList<>();
+        }
+
+        try {
+            return em.createQuery(
+                    "SELECT e FROM Tblcandidateeducation e WHERE e.candidateId.candidateId = :cid",
+                    Tblcandidateeducation.class
+            )
+            .setParameter("cid", candidateId)
+            .getResultList();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+    
+    @Override
+    public Tblcandidateeducation addCandidateEducation(Tblcandidateeducation edu, Integer candidateId) {
+
+        if (edu == null || candidateId == null) {
+            return null;
+        }
+
+        Tblcandidates candidate = em.find(Tblcandidates.class, candidateId);
+
+        if (candidate == null) {
+            return null;
+        }
+
+        edu.setCandidateId(candidate);
+
+        em.persist(edu);
+        return edu;
+    }
+
+    @Override
+    public Tblcandidateeducation updateCandidateEducation(Tblcandidateeducation edu) {
+
+        if (edu == null || edu.getCandidateEducationId() == null) {
+            return null;
+        }
+
+        Tblcandidateeducation existing =
+                em.find(Tblcandidateeducation.class, edu.getCandidateEducationId());
+
+        if (existing == null) {
+            return null;
+        }
+
+        existing.setEducationName(edu.getEducationName());
+        existing.setInstituteName(edu.getInstituteName());
+        existing.setSpecialization(edu.getSpecialization());
+        existing.setStartYear(edu.getStartYear());
+        existing.setEndYear(edu.getEndYear());
+        existing.setPercentage(edu.getPercentage());
+        existing.setCgpa(edu.getCgpa());
+        existing.setGrade(edu.getGrade());
+        existing.setEducationDescription(edu.getEducationDescription());
+
+        return em.merge(existing);
+    }
+    
+    @Override
+    public void removeCandidateEducation(Integer candidateEducationId) {
+
+        if (candidateEducationId == null) return;
+
+        Tblcandidateeducation edu =
+                em.find(Tblcandidateeducation.class, candidateEducationId);
+
+        if (edu != null) {
+            em.remove(edu);
+        }
+    }
+    
+    
+
     // ================= JOBS =================
     @Override
     public Collection<Tbljob> getAllJobs() {
@@ -398,107 +503,133 @@ public class CandidateBean implements CandidateBeanLocal {
     }
     
     @Override
-    public String applyForJob(Tblapplication application) {
+    public String applyForJob(int candidateId, int jobId, int resumeId) {
         try {
-            if (application == null || application.getCandidateId() == null || application.getJobId() == null) {
-                return "Invalid Data";
-            }
-
-            int candidateId = application.getCandidateId().getCandidateId();
-            int jobId = application.getJobId().getJobId();
 
             if (alreadyApplied(candidateId, jobId)) {
                 return "Already Applied";
             }
 
-            Tblcandidates candidate = em.find(Tblcandidates.class, candidateId);
-            Tbljob job = em.find(Tbljob.class, jobId);
+            Tblcandidates candidate =
+                    em.find(Tblcandidates.class, candidateId);
 
-            if (candidate == null || job == null) {
-                return "Candidate or Job not found";
+            Tbljob job =
+                    em.find(Tbljob.class, jobId);
+
+            Tblresume resume =
+                    em.find(Tblresume.class, resumeId);
+
+            if (candidate == null) {
+                return "Candidate Not Found";
             }
+
+            if (job == null) {
+                return "Job Not Found";
+            }
+
+            if (resume == null) {
+                return "Resume Not Found";
+            }
+
+            if (resume.getCandidateId() == null
+                    || resume.getCandidateId().getCandidateId() == null
+                    || !resume.getCandidateId()
+                            .getCandidateId()
+                            .equals(candidateId)) {
+
+                return "Invalid Resume";
+            }
+
+            if (!Boolean.TRUE.equals(resume.getIsActive())) {
+                return "Resume Not Active";
+            }
+
+            Tblapplication application = new Tblapplication();
 
             application.setCandidateId(candidate);
-            
-            String latestResume = null;
-
-            if (candidate.getTblresumeCollection() != null && !candidate.getTblresumeCollection().isEmpty()) {
-
-                latestResume = candidate.getTblresumeCollection()
-                        .stream()
-                        .filter(r -> Boolean.TRUE.equals(r.getIsActive()))
-                        .sorted((r1, r2) -> r2.getUploadDate().compareTo(r1.getUploadDate()))
-                        .map(Tblresume::getResumeFile)
-                        .findFirst()
-                        .orElse(null);
-            }
-
-            application.setResumeSnapshot(latestResume);
-            
             application.setJobId(job);
+            application.setResumeId(resume);
+
+            application.setApplicationStatus("Applied");
             application.setApplicationAppliedDate(new Date());
             application.setLastUpdatedDate(new Date());
-            application.setApplicationStatus("Applied");
 
             em.persist(application);
             em.flush();
 
-            // recruiter + candidate users
             Tblrecruiters recruiter = job.getRecruiterId();
 
-            if (recruiter != null && recruiter.getUserId() != null) {
+            if (recruiter != null
+                    && recruiter.getUserId() != null) {
 
-                Tblusers recruiterUser = recruiter.getUserId();
-                Tblusers candidateUser = candidate.getUserId();
+                Tblusers recruiterUser =
+                        recruiter.getUserId();
 
-                 // ================= CREATE NOTIFICATION =================
+                Tblusers candidateUser =
+                        candidate.getUserId();
 
-                Tblnotification notification = new Tblnotification();
+                Tblnotification notification =
+                        new Tblnotification();
 
                 notification.setUserId(recruiterUser);
 
                 notification.setMessage(
-                    candidateUser.getUserName()
-                    + " applied for job: "
-                    + job.getJobTitle()
-                );
+                        candidateUser.getUserName()
+                        + " applied for "
+                        + job.getJobTitle());
 
-                notification.setNotificationType("Application");
+                notification.setNotificationType(
+                        "Application");
 
-                notification.setNotificationStatus("Unread");
+                notification.setNotificationStatus(
+                        "Unread");
 
-                notification.setCreatedDate(new Date());
+                notification.setCreatedDate(
+                        new Date());
 
                 em.persist(notification);
-                
-                // ================= SEND EMAIL =================
-                
-                if (recruiterUser.getUserEmail() != null && candidateUser != null) {
 
-                    String recruiterEmail = job.getRecruiterId().getUserId().getUserEmail();
+                try {
 
-                    String subject = "New Job Application";
+                    String recruiterEmail =
+                            recruiterUser.getUserEmail();
 
-                    String message = "Dear Recruiter " + recruiterUser.getUserName() + ",\n\n"
-                                    + "We are pleased to inform you that a new candidate has applied for your job posting on QuickHire.\n\n"
-                                    + "Job Details:\n"
-                                    + "Job Title: " + job.getJobTitle() + "\n\n"
-                                    + "Candidate Details:\n"
-                                    + "Name: " + candidateUser.getUserName() + "\n"
-                                    + "Candidate ID: " + candidate.getCandidateId() + "\n"
-                                    + "Resume: " + latestResume + "\n\n"
-                                    + "Please log in to your recruiter dashboard to review the application and take further action.\n\n"
-                                    + "Best Regards,\n"
-                                    + "QuickHire Team";
+                    String subject =
+                            "New Job Application";
 
-                    emailService.sendEmail(recruiterEmail, subject, message);
+                    String message =
+                            "Dear "
+                            + recruiterUser.getUserName()
+                            + ",\n\n"
+                            + candidateUser.getUserName()
+                            + " has applied for your job.\n\n"
+                            + "Job Title : "
+                            + job.getJobTitle()
+                            + "\n"
+                            + "Resume : "
+                            + resume.getResumeFile()
+                            + "\n\n"
+                            + "Please login and review the application.\n\n"
+                            + "Regards,\nQuickHire";
+
+                    emailService.sendEmail(
+                            recruiterEmail,
+                            subject,
+                            message);
+
+                } catch (Exception mailEx) {
+
+                    mailEx.printStackTrace();
                 }
             }
+
             return "Applied Successfully";
 
         } catch (Exception e) {
+
             e.printStackTrace();
-            return "Error: " + e.getMessage();
+
+            return "Error";
         }
     }
 

@@ -1,0 +1,1025 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+
+<f:metadata>
+    <f:viewAction action="#{loginBean.checkLogin}" />
+    <f:viewAction action="#{candidateCDIBean.loadUserData}" />
+    <f:viewAction action="#{candidateCDIBean.loadCandidateSkills}" />
+</f:metadata>
+
+<h:head>
+    <title>My Profile</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <h:outputStylesheet library="css" name="/candidate/candidate.css" />
+    <h:outputStylesheet library="css" name="/candidate/myProfile.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+</h:head>
+
+<h:body>
+
+<ui:include src="/common/header.xhtml"/>
+
+<h:panelGroup rendered="#{loginBean.role eq 'Candidate'}">
+
+    <div class="dashboard-layout">
+
+        <ui:include src="/candidate/sidebar.xhtml">
+            <ui:param name="activePage" value="myProfile"/>
+        </ui:include>
+
+        <main class="main">
+
+            <section class="hero hero-profile">
+                <div class="hero-grid hero-grid-single">
+                    <div class="hero-content">
+                        <span class="welcome-tag">Profile Settings</span>
+                        <h1>My Profile</h1>
+                        <p>Manage your personal information, skills, education, and resumes.</p>
+                    </div>
+                </div>
+            </section>
+
+            <h:form id="profileMsgForm">
+                <h:messages id="profileMessages" 
+                            globalOnly="true" 
+                            showDetail="true" 
+                            showSummary="false"
+                            styleClass="custom-toast" 
+                            infoClass="info" 
+                            warnClass="warn" 
+                            errorClass="error"/>
+            </h:form>
+
+            <div class="profile-tabs">
+                <div class="tab-buttons">
+                    <button type="button" class="tab-btn active" onclick="switchTab('personal', this)">
+                        <i class="fa-solid fa-user"></i> Personal Info
+                    </button>
+                    <button type="button" class="tab-btn" onclick="switchTab('skills', this)">
+                        <i class="fa-solid fa-bolt"></i> Skills
+                    </button>
+                    <button type="button" class="tab-btn" onclick="switchTab('education', this)">
+                        <i class="fa-solid fa-graduation-cap"></i> Education
+                    </button>
+                    <button type="button" class="tab-btn" onclick="switchTab('resumes', this)">
+                        <i class="fa-solid fa-file-pdf"></i> Resumes
+                    </button>
+                </div>
+            </div>
+
+            <!-- ================== PERSONAL INFO TAB ================== -->
+            <div id="personalTab" class="tab-content active">
+                <h:form id="personalForm" styleClass="profile-form" enctype="multipart/form-data">
+                    
+                    <div class="profile-section">
+                        <div class="section-header">
+                            <h2><i class="fa-solid fa-user-circle"></i> Personal Information</h2>
+                            <span class="profile-completion-badge">
+                                Profile Completion: #{candidateCDIBean.profileCompletion}%
+                            </span>
+                        </div>
+
+                        <div class="profile-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill"
+                                    style="width: #{candidateCDIBean.profileCompletion}%">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <!-- Profile Photo -->
+                            <div class="form-col-full">
+                               <div class="photo-upload-section">
+                                   
+                                    <div class="photo-preview">
+                                        <img src="#{request.contextPath}/profilephotos/#{candidateCDIBean.profilePhotoPath}"
+                                              class="profile-photo-img"/>
+                                    </div>
+
+                                    <div class="photo-upload-info">
+
+                                        <h4>Profile Photo</h4>
+                                        <p>JPG, PNG max 2MB</p>
+
+                                        <h:inputFile id="photoUpload"
+                                                     value="#{candidateCDIBean.profilePhoto}"
+                                                     styleClass="file-input"
+                                                     onchange="updateProfilePhotoName(this)"/>
+
+                                        <div class="photo-actions">
+
+                                            <h:outputLabel for="photoUpload"
+                                                           styleClass="choose-file-btn">
+                                                <i class="fa-solid fa-image"></i>
+                                                Choose Photo
+                                            </h:outputLabel>
+
+                                            <h:commandButton value="Upload Photo"
+                                                            action="#{candidateCDIBean.uploadProfilePhoto}"
+                                                            styleClass="btn-photo-upload">
+
+                                                <f:ajax execute="@form"
+                                                        render="@form :profileMsgForm:profileMessages"
+                                                        onevent="handlePhotoUpload"/>
+
+                                            </h:commandButton>
+
+                                        </div>
+                                        
+                                        <div class="selected-file-name" id="selectedPhotoName">
+                                            No file selected
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <!-- Full Name -->
+                            <div class="form-group">
+                                <label for="userName">Full Name <span class="required">*</span></label>
+                                <h:inputText id="userName"
+                                            value="#{candidateCDIBean.candidateObj.userId.userName}"
+                                            styleClass="form-input"
+                                            required="true"
+                                            requiredMessage="Full Name is required">
+
+                                    <f:validateLength minimum="2" maximum="100"/>
+
+                                </h:inputText>
+                                <h:message for="userName" styleClass="field-error"/>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="form-group">
+                                <label for="userEmail">Email Address <span class="required">*</span></label>
+                                <h:inputText id="userEmail" value="#{candidateCDIBean.candidateObj.userId.userEmail}"
+                                             styleClass="form-input" required="true" 
+                                             requiredMessage="Email is required" readonly="readonly"/>
+                                <h:message for="userEmail" styleClass="field-error"/>
+                                <small class="field-hint">Email cannot be changed</small>
+                            </div>
+
+                            <!-- Phone -->
+                            <div class="form-group">
+                                <label for="candidatePhone">Phone Number <span class="required">*</span></label>
+                                <h:inputText id="candidatePhone"
+                                            value="#{candidateCDIBean.candidateObj.candidatePhone}"
+                                            styleClass="form-input"
+                                            required="true"
+                                            requiredMessage="Phone Number is required"
+                                            validatorMessage="Enter valid 10-digit mobile number">
+
+                                    <f:validateRegex pattern="[6-9][0-9]{9}"/>
+
+                                </h:inputText>
+
+                                <h:message for="candidatePhone" styleClass="field-error"/>
+                            </div>
+
+                            <!-- Date of Birth -->
+                            <div class="form-group">
+                                <label for="candidateDOB">Date of Birth</label>
+                                <h:inputText id="candidateDOB"
+                                            value="#{candidateCDIBean.candidateObj.candidateDOB}"
+                                            pt:type="date"
+                                            styleClass="form-input">
+
+                                    <f:convertDateTime pattern="yyyy-MM-dd"/>
+
+                                </h:inputText>
+                                <h:message for="candidateDOB" styleClass="field-error"/>
+                            </div>
+
+                            <!-- Gender -->
+                            <div class="form-group">
+                                <label for="candidateGender">Gender <span class="required">*</span></label>
+                                <h:selectOneMenu id="candidateGender"
+                                                value="#{candidateCDIBean.candidateObj.candidateGender}"
+                                                styleClass="form-select"
+                                                required="true">
+
+                                    <f:selectItem itemLabel="-- Select Gender --"
+                                                  itemValue=""
+                                                  noSelectionOption="true"/>
+
+                                    <f:selectItem itemLabel="Male" itemValue="Male"/>
+                                    <f:selectItem itemLabel="Female" itemValue="Female"/>
+                                    <f:selectItem itemLabel="Other" itemValue="Other"/>
+
+                                </h:selectOneMenu>
+                                <h:message for="candidateGender" styleClass="field-error"/>
+                            </div>
+
+                            <!-- Experience -->
+                            <div class="form-group">
+                                <label for="candidateExperience">Total Experience (Years)</label>
+                                <h:inputText id="candidateExperience"
+                                            value="#{candidateCDIBean.candidateObj.candidateExperience}"
+                                            pt:type="number"
+                                            pt:min="0"
+                                            pt:max="50"
+                                            styleClass="form-input">
+
+                                    <f:validateLongRange minimum="0" maximum="50"/>
+
+                                </h:inputText>
+                                <h:message for="candidateExperience" styleClass="field-error"/>
+                            </div>
+
+                            <!-- City -->
+                            <div class="form-group">
+                                <label for="candidateCity">City <span class="required">*</span></label>
+                                <h:inputText id="candidateCity" value="#{candidateCDIBean.candidateObj.candidateCity}" 
+                                             styleClass="form-input" required="true" 
+                                             requiredMessage="City is required"/>
+                                <h:message for="candidateCity" styleClass="field-error"/>
+                            </div>
+
+                            <!-- State -->
+                            <div class="form-group">
+                                <label for="candidateState">State <span class="required">*</span></label>
+                                <h:inputText id="candidateState" value="#{candidateCDIBean.candidateObj.candidateState}" 
+                                             styleClass="form-input" required="true" 
+                                             requiredMessage="State is required"/>
+                                <h:message for="candidateState" styleClass="field-error"/>
+                            </div>
+
+                            <!-- Area -->
+                            <div class="form-group">
+                                <label for="candidateArea">Area/Locality</label>
+                                <h:inputText id="candidateArea" value="#{candidateCDIBean.candidateObj.candidateArea}" 
+                                             styleClass="form-input"/>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <h:commandButton value="Save Changes"
+                                            action="#{candidateCDIBean.updateProfile}"
+                                            styleClass="btn-save">
+
+                                <f:ajax execute="@form"
+                                        render="@form :profileMsgForm:profileMessages"
+                                        onevent="showToast"/>
+
+                            </h:commandButton>
+                        </div>
+                    </div>
+                </h:form>
+            </div>
+
+            <!-- ================== SKILLS TAB ================== -->
+            <div id="skillsTab" class="tab-content">
+                <h:form id="skillsForm" styleClass="profile-form">
+                    
+                    <div class="profile-section">
+                        <div class="section-header">
+                            <h2><i class="fa-solid fa-bolt"></i> My Skills</h2>
+                            <span class="skills-count">
+                                #{candidateCDIBean.candidateSkills.size()} Skills Added
+                            </span>
+                        </div>
+
+                        <!-- Add New Skill -->
+                        <div class="add-skill-section">
+                            <h3>Add New Skill</h3>
+
+                            <div class="add-skill-row">
+
+                                <!-- Category Dropdown -->
+                                <h:selectOneMenu value="#{candidateCDIBean.selectedCategoryId}"
+                                                 styleClass="form-select skill-category-select">
+
+                                    <f:selectItem itemLabel="-- Select Category --"
+                                                  itemValue="#{null}"
+                                                  noSelectionOption="true"/>
+
+                                    <f:selectItems value="#{candidateCDIBean.allCategories}"
+                                                   var="cat"
+                                                   itemValue="#{cat.categoryId}"
+                                                   itemLabel="#{cat.categoryName}"/>
+
+                                    <f:ajax listener="#{candidateCDIBean.loadSkillsByCategory}"
+                                            render="skillList"/>
+                                </h:selectOneMenu>
+
+                                <!-- Skill Dropdown -->
+                                <h:selectOneMenu id="skillList"
+                                                 value="#{candidateCDIBean.selectedSkillId}"
+                                                 styleClass="form-select skill-select">
+
+                                    <f:selectItem itemLabel="-- Select Skill --"
+                                                  itemValue="#{null}"
+                                                  noSelectionOption="true"/>
+
+                                    <f:selectItems value="#{candidateCDIBean.filteredSkills}"
+                                                   var="skill"
+                                                   itemValue="#{skill.skillId}"
+                                                   itemLabel="#{skill.skillName}"/>
+                                </h:selectOneMenu>
+
+                                <!-- Add Button -->
+                                <h:commandButton value="Add Skill"
+                                                 action="#{candidateCDIBean.addSkill}"
+                                                 styleClass="btn-add">
+
+                                    <f:ajax execute="@form"
+                                            render="@form skillsListSection :profileMsgForm:profileMessages"
+                                            onevent="showToast" />
+
+                                </h:commandButton>
+
+                            </div>
+                        </div>
+                        
+                        <!-- Skills List -->
+                        <h:panelGroup id="skillsListSection">
+
+                            <div class="skills-grid">
+
+                                <ui:repeat value="#{candidateCDIBean.candidateSkills}" var="skill">
+
+                                    <div class="skill-card">
+
+                                        <div class="skill-info">
+
+                                            <div class="skill-name">
+                                                <i class="fa-solid fa-bolt"></i>
+                                                #{skill.skillName}
+                                            </div>
+
+                                            <div class="skill-category">
+                                                #{skill.categoryId.categoryName}
+                                            </div>
+
+                                        </div>
+
+                                        <h:commandLink
+                                            action="#{candidateCDIBean.removeSkill(skill.skillId)}"
+                                            styleClass="btn-remove-icon"
+                                            title="Remove Skill">
+
+                                            <i class="fa-solid fa-trash"></i>
+
+                                            <f:ajax execute="@this"
+                                                    render=":skillsForm:skillsListSection :profileMsgForm:profileMessages"
+                                                    onevent="showToast"/>
+
+                                        </h:commandLink>
+
+                                    </div>
+
+                                </ui:repeat>
+
+                            </div>
+
+                            <!-- Empty State -->
+                            <h:panelGroup rendered="#{empty candidateCDIBean.candidateSkills}">
+                                <div class="empty-state">
+                                    <i class="fa-solid fa-code"></i>
+                                    <p>No skills added yet.</p>
+                                </div>
+                            </h:panelGroup>
+
+                        </h:panelGroup>
+                    </div>
+                </h:form>
+            </div>
+
+            <!-- ================== EDUCATION TAB ================== -->
+            <div id="educationTab" class="tab-content">
+                <h:form id="educationForm" styleClass="profile-form">
+                    <h:messages id="educationMessages"
+                                showDetail="true"
+                                showSummary="false"
+                                errorClass="field-error"/>
+
+                    <div class="profile-section">
+                        <!-- HEADER -->
+                        <div class="section-header">
+                            <h2>
+                                <i class="fa-solid fa-graduation-cap"></i>
+                                Education
+                            </h2>
+                            <span class="education-count">
+                                #{empty candidateCDIBean.educationList ? 0 : candidateCDIBean.educationList.size()} Records
+                            </span>
+                        </div>
+
+                        <!-- EDUCATION FORM -->
+                        <div class="education-form-card">
+                            <h3>
+                                #{candidateCDIBean.editEducationId == null ? 'Add New Education' : 'Update Education'}
+                            </h3>
+
+                            <div class="form-grid">
+                                <!-- DEGREE -->
+                                <div class="form-col-full">
+                                    <div class="form-group">
+                                        <label for="educationName">
+                                            Degree / Certificate <span class="required">*</span>
+                                        </label>
+                                        <h:inputText value="#{candidateCDIBean.selectedEducation.educationName}"
+                                                     id="educationName"
+                                                     styleClass="form-input"
+                                                     pt:placeholder="e.g. B.Tech, MCA, Diploma, B.Com"/>
+                                        <h:message for="educationName" styleClass="field-error"/>
+                                    </div>
+                                </div>
+
+                                <!-- INSTITUTE -->
+                                <div class="form-col-full">
+                                    <div class="form-group">
+                                        <label for="instituteName">
+                                            Institute / University <span class="required">*</span>
+                                        </label>
+                                        <h:inputText value="#{candidateCDIBean.selectedEducation.instituteName}"
+                                                     id="instituteName"
+                                                     styleClass="form-input"
+                                                     pt:placeholder="e.g. Gujarat University, GTU, IIT Bombay"/>
+                                        <h:message for="instituteName" styleClass="field-error"/>
+                                    </div>
+                                </div>
+
+                                <!-- SPECIALIZATION -->
+                                <div class="form-col-full">
+                                    <div class="form-group">
+                                        <label for="specialization">Specialization</label>
+                                        <h:inputText value="#{candidateCDIBean.selectedEducation.specialization}"
+                                                     id="specialization"
+                                                     styleClass="form-input"
+                                                     pt:placeholder="e.g. Computer Science, IT, Electronics"/>
+                                        <h:message for="specialization" styleClass="field-error"/>
+                                    </div>
+                                </div>
+
+                                <!-- YEARS -->
+                                <div>
+                                    <div class="form-group">
+                                        <label for="startYear">Start Year</label>
+                                        <h:inputText value="#{candidateCDIBean.selectedEducation.startYear}"
+                                                     id="startYear"
+                                                     styleClass="form-input"
+                                                     pt:placeholder="2018"
+                                                     pt:type="number">
+                                            <f:validateLongRange minimum="1980" maximum="2030"/>
+                                        </h:inputText>
+                                        <h:message for="startYear" styleClass="field-error"/>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="form-group">
+                                        <label for="endYear">End Year</label>
+                                        <h:inputText value="#{candidateCDIBean.selectedEducation.endYear}"
+                                                     id="endYear"
+                                                     styleClass="form-input"
+                                                     pt:placeholder="2022"
+                                                     pt:type="number">
+                                            <f:validateLongRange minimum="1980" maximum="2035"/>
+                                        </h:inputText>
+                                        <h:message for="endYear" styleClass="field-error"/>
+                                    </div>
+                                </div>
+
+                                <!-- MARKS -->
+                                <div>
+                                    <div class="form-group">
+                                        <label for="percentage">Percentage (%)</label>
+                                        <h:inputText value="#{candidateCDIBean.selectedEducation.percentage}"
+                                                     id="percentage"
+                                                     styleClass="form-input"
+                                                     pt:placeholder="e.g. 78.50"
+                                                     pt:type="number"
+                                                     pt:step="0.01">
+                                            <f:validateDoubleRange minimum="0.0" maximum="100.0"/>
+                                        </h:inputText>
+                                        <h:message for="percentage" styleClass="field-error"/>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="form-group">
+                                        <label for="cgpa">CGPA</label>
+                                        <h:inputText value="#{candidateCDIBean.selectedEducation.cgpa}"
+                                                     id="cgpa"
+                                                     styleClass="form-input"
+                                                     pt:placeholder="e.g. 8.2"
+                                                     pt:type="number"
+                                                     pt:step="0.01">
+                                            <f:validateDoubleRange minimum="0.0" maximum="10.0"/>
+                                        </h:inputText>
+                                        <h:message for="cgpa" styleClass="field-error"/>
+                                    </div>
+                                </div>
+
+                                <!-- GRADE -->
+                                <div class="form-col-full">
+                                    <div class="form-group">
+                                        <label for="grade">Grade</label>
+                                        <h:inputText value="#{candidateCDIBean.selectedEducation.grade}"
+                                                     id="grade"
+                                                     styleClass="form-input"
+                                                     pt:placeholder="A / B / First Class / Distinction"/>
+                                        <h:message for="grade" styleClass="field-error"/>
+                                    </div>
+                                </div>
+
+                                <!-- DESCRIPTION -->
+                                <div class="form-col-full">
+                                    <div class="form-group">
+                                        <label for="educationDescription">Description</label>
+                                        <h:inputTextarea value="#{candidateCDIBean.selectedEducation.educationDescription}"
+                                                         id="educationDescription"
+                                                         styleClass="form-textarea"
+                                                         pt:placeholder="Add details about your education, achievements, projects, or relevant coursework..."
+                                                         rows="3"/>
+                                        <h:message for="educationDescription" styleClass="field-error"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- BUTTONS -->
+                            <div class="form-actions">
+                                <h:commandButton value="#{candidateCDIBean.editEducationId == null ? 'Add Education' : 'Update Education'}"
+                                                 action="#{candidateCDIBean.saveEducation}"
+                                                 styleClass="btn-save">
+                                    <f:ajax execute="@form"
+                                            render="@form :profileMsgForm:profileMessages"
+                                            onevent="showToast"/>
+                                </h:commandButton>
+                            </div>
+                        </div>
+
+                        <!-- EDUCATION LIST -->
+                        <h:panelGroup id="educationListSection">
+                            <div class="education-list-header">
+                                <h4>Your Educational Background</h4>
+                            </div>
+
+                            <div class="education-list-grid">
+                                <ui:repeat value="#{candidateCDIBean.educationList}" var="edu">
+                                    <div class="education-card">
+                                        <div class="education-main">
+                                            <div class="education-header">
+                                                <h3>
+                                                    <i class="fa-solid fa-certificate"></i>
+                                                    #{edu.educationName}
+                                                </h3>
+                                                <div class="education-year-badge">
+                                                    #{edu.startYear} - #{edu.endYear}
+                                                </div>
+                                            </div>
+
+                                            <div class="education-institute">
+                                                <i class="fa-solid fa-building-columns"></i>
+                                                <span>#{edu.instituteName}</span>
+                                            </div>
+
+                                            <div class="education-specialization" rendered="#{not empty edu.specialization}">
+                                                <i class="fa-solid fa-layer-group"></i>
+                                                <span>#{edu.specialization}</span>
+                                            </div>
+
+                                            <div class="education-marks" >
+                                                <h:panelGroup rendered="#{not empty edu.percentage}">
+                                                    <span class="mark-badge percentage">
+                                                        <i class="fa-solid fa-percent"></i>
+                                                        #{edu.percentage}%
+                                                    </span>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{not empty edu.cgpa}">
+                                                    <span class="mark-badge cgpa">
+                                                        <i class="fa-solid fa-chart-line"></i>
+                                                        CGPA: #{edu.cgpa}
+                                                    </span>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{not empty edu.grade}">
+                                                    <span class="mark-badge grade">
+                                                        <i class="fa-solid fa-award"></i>
+                                                        #{edu.grade}
+                                                    </span>
+                                                </h:panelGroup>
+                                                
+                                                 <!-- ACTIONS RIGHT SIDE -->
+                                                <div class="education-actions">
+                                                    <h:commandLink
+                                                        action="#{candidateCDIBean.editEducation(edu.candidateEducationId)}"
+                                                        styleClass="action-icon edit-icon"
+                                                        title="Edit">
+                                                        <i class="fa-solid fa-pen-to-square"></i>
+                                                        <f:ajax execute="@this" render="@form"/>
+                                                    </h:commandLink>
+
+                                                    <h:commandLink
+                                                        action="#{candidateCDIBean.deleteEducation(edu.candidateEducationId)}"
+                                                        styleClass="action-icon delete-icon"
+                                                        title="Delete"
+                                                        onclick="return confirm('Are you sure?')">
+                                                        <i class="fa-solid fa-trash"></i>
+                                                        <f:ajax execute="@this" render="@form"/>
+                                                    </h:commandLink>
+                                                </div>
+
+                                            </div>
+
+                                            <h:panelGroup rendered="#{not empty edu.educationDescription}">
+                                                <div class="education-desc">
+                                                    <i class="fa-solid fa-align-left"></i>
+                                                    <span>#{edu.educationDescription}</span>
+                                                </div>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                </ui:repeat>
+
+                                <!-- EMPTY STATE -->
+                                <h:panelGroup rendered="#{empty candidateCDIBean.educationList}">
+                                    <div class="empty-state" style="grid-column: 1 / -1;">
+                                        <div class="empty-icon">
+                                            <i class="fa-solid fa-graduation-cap"></i>
+                                        </div>
+                                        <h3>No Education Added Yet</h3>
+                                        <p>Add your educational qualifications to complete your profile</p>
+                                    </div>
+                                </h:panelGroup>
+                            </div>
+                        </h:panelGroup>
+                    </div>
+                </h:form>
+            </div>
+
+            <!-- ================== RESUMES TAB ================== -->
+            <div id="resumesTab" class="tab-content resumes-tab">
+                <h:form id="resumesForm" styleClass="profile-form resume-form" enctype="multipart/form-data">
+
+                    <div class="profile-section resume-section">
+                        <div class="section-header resume-header">
+                            <div>
+                                <h2><i class="fa-solid fa-file-pdf"></i> My Resumes</h2>
+                                <p class="section-subtitle">Upload, manage, and switch the active resume easily.</p>
+                            </div>
+
+                            <span class="resumes-count">
+                                #{empty candidateCDIBean.resumeList ? 0 : candidateCDIBean.resumeList.size()} Resumes
+                            </span>
+                        </div>
+
+                        <!-- Upload Resume -->
+                        <div class="upload-resume-section">
+                            <h3>Upload New Resume</h3>
+                            <p class="upload-hint">PDF, DOC, DOCX up to 5 MB.</p>
+
+                            <div class="upload-row">
+                                <div class="file-upload-area">
+                                    <h:inputFile value="#{candidateCDIBean.resumeFile}"
+                                            id="resumeFileUpload"
+                                            styleClass="file-input-hidden"
+                                            accept=".pdf,.doc,.docx" 
+                                            onchange="updateResumeFileName(this)"/>
+
+                                    <label for="resumesForm:resumeFileUpload" class="file-upload-label">
+                                        <span class="upload-icon">
+                                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                                        </span>
+
+                                        <span class="upload-text">
+                                            <span class="upload-title">Choose file</span>
+                                            <span class="file-name" id="selectedFileName">No file selected</span>
+                                        </span>
+                                    </label>
+                                </div>
+
+                                <h:commandButton value="Upload Resume"
+                                                 action="#{candidateCDIBean.uploadResume}"
+                                                 styleClass="btn-upload">
+                                   <f:ajax execute="resumeFileUpload"
+                                        render="resumesListSection :profileMsgForm:profileMessages" 
+                                        onevent="handleResumeUpload"/>
+                                </h:commandButton>
+                            </div>
+                        </div>
+
+                        <!-- Resume List -->
+                        <h:panelGroup id="resumesListSection" layout="block">
+
+                            <h:panelGroup rendered="#{not empty candidateCDIBean.resumeList}">
+                                <div class="table-responsive resume-table-wrap">
+                                    <table class="resume-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Resume File</th>
+                                                <th>Upload Date</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            <ui:repeat value="#{candidateCDIBean.resumeList}" var="resume">
+                                                <tr>
+                                                    <td data-label="Resume File">
+                                                        <div class="file-cell">
+                                                            <span class="file-type-icon #{resume.resumeFile.toLowerCase().endsWith('.pdf') ? 'pdf' : 'doc'}">
+                                                                <i class="fa-solid #{resume.resumeFile.toLowerCase().endsWith('.pdf') ? 'fa-file-pdf' : 'fa-file-word'}"></i>
+                                                            </span>
+                                                            <span class="file-name-text">#{resume.resumeFile}</span>
+                                                        </div>
+                                                    </td>
+
+                                                    <td data-label="Upload Date">
+                                                        <h:outputText value="#{resume.uploadDate}">
+                                                            <f:convertDateTime pattern="dd-MM-yyyy hh:mm a" />
+                                                        </h:outputText>
+                                                    </td>
+
+                                                    <td data-label="Status">
+                                                        <div class="status-wrap">
+                                                            <h:outputText value="#{resume.isActive ? 'Active' : 'Inactive'}"
+                                                                          styleClass="status-badge #{resume.isActive ? 'active' : 'inactive'}" />
+
+                                                            <label class="switch">
+                                                                <h:selectBooleanCheckbox value="#{resume.isActive}" styleClass="switch-input">
+                                                                    <f:ajax execute="@this"
+                                                                            render=":resumesForm:resumesListSection :profileMessages"
+                                                                            listener="#{candidateCDIBean.toggleResumeStatus(resume)}" />
+                                                                </h:selectBooleanCheckbox>
+                                                                <span class="slider"></span>
+                                                            </label>
+                                                        </div>
+                                                    </td>
+
+                                                    <td data-label="Actions">
+                                                        <div class="action-group">
+                                                            <h:outputLink value="#{request.contextPath}/resume?file=#{resume.resumeFile}"
+                                                                          target="_blank"
+                                                                          styleClass="action-btn btn-view">
+                                                                <i class="fa-solid fa-eye"></i>
+                                                                <span>View</span>
+                                                            </h:outputLink>
+
+                                                            <h:commandButton value="Delete"
+                                                                action="#{candidateCDIBean.deleteResume(resume.resumeId)}"
+                                                                styleClass="action-btn btn-delete delete-btn"
+                                                                type="button"
+                                                                onclick="openDeleteConfirm(#{resume.resumeId}, this);">
+
+                                                                    <f:ajax execute="@this"
+                                                                            render=":resumesForm:resumesListSection :profileMsgForm:profileMessages" />
+                                                                </h:commandButton>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </ui:repeat>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{empty candidateCDIBean.resumeList}">
+                                <div class="empty-box">
+                                    <div class="empty-icon">
+                                        <i class="fa-solid fa-file-circle-xmark"></i>
+                                    </div>
+                                    <h2>No Resumes Found</h2>
+                                    <p>Please upload your first resume to get started.</p>
+                                </div>
+                            </h:panelGroup>
+
+                        </h:panelGroup>
+                    </div>
+                </h:form>
+            </div>
+        </main>
+    </div>
+
+</h:panelGroup>
+
+<h:panelGroup rendered="#{loginBean.role ne 'Candidate'}">
+    <div class="access-denied">
+        <div class="access-denied-icon">
+            <i class="fa-solid fa-circle-exclamation"></i>
+        </div>
+        <h2>Access Denied</h2>
+        <p>You must be logged in as a Candidate to view this page.</p>
+    </div>
+</h:panelGroup>
+
+<ui:include src="/common/footer.xhtml"/>
+
+    <script>
+        var currentTab = "personal";
+
+        function switchTab(tabName, btn) {
+
+            currentTab = tabName;
+
+            document.querySelectorAll('.tab-content').forEach(function(tab) {
+                tab.classList.remove('active');
+            });
+
+            document.querySelectorAll('.tab-btn').forEach(function(button) {
+                button.classList.remove('active');
+            });
+
+            document.getElementById(tabName + 'Tab').classList.add('active');
+
+            if (btn) {
+                btn.classList.add('active');
+            }
+        }
+
+        function updateProfilePhotoName(input) {
+
+            var fileName = input.files[0]
+                ? input.files[0].name
+                : 'No file selected';
+
+            document.getElementById('selectedPhotoName').textContent = fileName;
+        }
+        
+        function clearPhotoInputAfterUpload() {
+
+            document.getElementById('personalForm:photoUpload').value = '';
+            document.getElementById('selectedPhotoName').textContent =
+                'No file selected';
+        }
+
+        function updateResumeFileName(input) {
+            var fileName = input.files[0] ? input.files[0].name : 'No file selected';
+            document.getElementById('selectedFileName').textContent = fileName;
+        }
+        
+        function clearFileInputAfterUpload() {
+            document.getElementById('resumesForm:resumeFileUpload').value = '';
+            document.getElementById('selectedFileName').textContent = 'No file selected';
+        }
+        
+        function handlePhotoUpload(data) {
+
+            if (data.status === 'success') {
+
+                clearPhotoInputAfterUpload();
+                showToast(data);
+            }
+        }
+
+        setTimeout(function() {
+            const toast = document.querySelector('.custom-toast');
+            if (toast) {
+                toast.classList.add('fade-out');
+                setTimeout(function() {
+                    toast.style.display = 'none';
+                }, 400);
+            }
+        }, 5000);
+
+        function handleUpload(data) {
+            if (data.status === 'success') {
+                const error = document.querySelector('.field-error');
+                if (!error || error.innerText.trim().length === 0) {
+                    // Photo uploaded successfully
+                }
+            }
+        }
+
+        function handleResumeUpload(data) {
+            if (data.status === 'success') {
+                clearFileInputAfterUpload();
+                showToast(data);
+            }
+        }
+        function showToast(data) {
+
+            if (data.status === 'success') {
+
+                const activeButton = document.querySelector(
+                    '.tab-btn[onclick*="' + currentTab + '"]'
+                );
+
+                switchTab(currentTab, activeButton);
+
+                setTimeout(function () {
+
+                    const toast = document.querySelector('.custom-toast');
+
+                    if (toast) {
+
+                        toast.classList.remove('fade-out');
+
+                        setTimeout(function () {
+
+                            toast.classList.add('fade-out');
+
+                            setTimeout(function () {
+                                toast.style.display = 'none';
+                            }, 400);
+
+                        }, 4000);
+
+                    }
+
+                }, 100);
+            }
+        }
+    </script>
+
+ <script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    // Create overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+
+    // Modal container
+    const modal = document.createElement('div');
+    modal.className = 'confirm-modal';
+
+    const icon = document.createElement('div');
+    icon.className = 'confirm-icon';
+    icon.innerHTML = '<i class="fas fa-trash-alt"></i>';
+
+    const title = document.createElement('h3');
+    title.textContent = 'Delete Resume?';
+
+    const desc = document.createElement('p');
+    desc.textContent = 'Are you sure you want to delete this resume?';
+
+    const btnWrapper = document.createElement('div');
+    btnWrapper.className = 'confirm-buttons';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.className = 'confirm-btn confirm-btn-cancel';
+    cancelBtn.textContent = 'Cancel';
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'confirm-btn confirm-btn-delete';
+    deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
+
+    btnWrapper.appendChild(cancelBtn);
+    btnWrapper.appendChild(deleteBtn);
+
+    modal.appendChild(icon);
+    modal.appendChild(title);
+    modal.appendChild(desc);
+    modal.appendChild(btnWrapper);
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    let currentResumeId = null;
+    let currentDeleteButton = null;
+
+    // Open confirm dialog
+    window.openDeleteConfirm = function(resumeId, btn) {
+        currentResumeId = resumeId;
+        currentDeleteButton = btn; // IMPORTANT
+        overlay.classList.add('active');
+    };
+
+    // Cancel
+    cancelBtn.addEventListener('click', function() {
+        overlay.classList.remove('active');
+        currentResumeId = null;
+        currentDeleteButton = null;
+    });
+
+    // Confirm delete
+    deleteBtn.addEventListener('click', function() {
+        overlay.classList.remove('active');
+
+        if (currentDeleteButton) {
+            jsf.ajax.request(currentDeleteButton, null, {
+                render: ':resumesForm:resumesListSection :profileMsgForm:profileMessages'
+            });
+        }
+    });
+
+    // Click outside
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) {
+            overlay.classList.remove('active');
+        }
+    });
+
+    // ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            overlay.classList.remove('active');
+        }
+    });
+
+});
+</script>
+</h:body>
+</html>

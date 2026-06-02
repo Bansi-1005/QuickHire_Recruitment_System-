@@ -215,7 +215,9 @@ public class Tblcandidates implements Serializable {
     public void setTblresumeCollection(Collection<Tblresume> tblresumeCollection) {
         this.tblresumeCollection = tblresumeCollection;
     }
+    
     @XmlTransient
+    @JsonbTransient
     public Collection<Tblsavedjobs> getTblsavedjobsCollection() {
         return tblsavedjobsCollection;
     }
@@ -264,6 +266,7 @@ public class Tblcandidates implements Serializable {
     }
 
     @XmlTransient
+    @JsonbTransient
     public Collection<Tblcandidateeducation> getTblcandidateeducationCollection() {
         return tblcandidateeducationCollection;
     }

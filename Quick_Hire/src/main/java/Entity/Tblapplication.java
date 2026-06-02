@@ -39,7 +39,6 @@ import java.util.Date;
     @NamedQuery(name = "Tblapplication.findByApplicationId", query = "SELECT t FROM Tblapplication t WHERE t.applicationId = :applicationId"),
     @NamedQuery(name = "Tblapplication.findByApplicationAppliedDate", query = "SELECT t FROM Tblapplication t WHERE t.applicationAppliedDate = :applicationAppliedDate"),
     @NamedQuery(name = "Tblapplication.findByApplicationStatus", query = "SELECT t FROM Tblapplication t WHERE t.applicationStatus = :applicationStatus"),
-    @NamedQuery(name = "Tblapplication.findByResumeSnapshot", query = "SELECT t FROM Tblapplication t WHERE t.resumeSnapshot = :resumeSnapshot"),
     @NamedQuery(name = "Tblapplication.findByLastUpdatedDate", query = "SELECT t FROM Tblapplication t WHERE t.lastUpdatedDate = :lastUpdatedDate"),
 
     @NamedQuery(name = "Tblapplication.findByCandidate", query = "SELECT t FROM Tblapplication t WHERE t.candidateId.candidateId = :candidateId"),
@@ -89,9 +88,6 @@ public class Tblapplication implements Serializable {
     @Basic(optional = false)
     @Column(name = "applicationId")
     private Integer applicationId;
-    @Size(max = 50)
-    @Column(name = "resumeSnapshot")
-    private String resumeSnapshot;
     @OneToMany(mappedBy = "applicationId")
     private Collection<Tblinterview> tblinterviewCollection;
     @OneToMany(mappedBy = "applicationId")
@@ -125,16 +121,6 @@ public class Tblapplication implements Serializable {
     public void setApplicationId(Integer applicationId) {
         this.applicationId = applicationId;
     }
-
-
-    public String getResumeSnapshot() {
-        return resumeSnapshot;
-    }
-
-    public void setResumeSnapshot(String resumeSnapshot) {
-        this.resumeSnapshot = resumeSnapshot;
-    }
-
 
     @XmlTransient
     @JsonbTransient
