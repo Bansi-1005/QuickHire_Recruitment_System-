@@ -19,6 +19,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -150,13 +151,17 @@ public class RecruiterResource {
     @Path("createJob")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response createJob(Tbljob job, @QueryParam("skillIds") String skillIdsStr) {
+    public Response createJob(
+            Tbljob job,
+            @QueryParam("skillIds") String skillIdsStr,
+            @QueryParam("educationIds") String educationIdsStr) {
 
         try {
 
+            // ================= SKILLS =================
             Collection<Integer> skillIds = new ArrayList<>();
 
-            if (skillIdsStr != null && !skillIdsStr.isEmpty()) {
+            if (skillIdsStr != null && !skillIdsStr.trim().isEmpty()) {
 
                 String[] arr = skillIdsStr.split(",");
 
@@ -164,67 +169,242 @@ public class RecruiterResource {
 
                     if (!s.trim().isEmpty()) {
 
+                        skillIds.add(
+                                Integer.valueOf(s.trim())
+                        );
+                    }
+                }
+            }
+
+            // ================= EDUCATION =================
+            Collection<Integer> educationIds = new ArrayList<>();
+
+            if (educationIdsStr != null
+                    && !educationIdsStr.trim().isEmpty()) {
+
+                String[] arr = educationIdsStr.split(",");
+
+                for (String s : arr) {
+
+                    if (!s.trim().isEmpty()) {
+
+                        educationIds.add(
+                                Integer.valueOf(s.trim())
+                        );
+                    }
+                }
+            }
+
+            // ================= CREATE JOB =================
+            ejb.createJob(
+                    job,
+                    skillIds,
+                    educationIds
+            );
+
+            return Response.ok(
+                    "Job Created Successfully"
+            ).build();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return Response.status(
+                    Response.Status.INTERNAL_SERVER_ERROR
+            )
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
+    @PUT
+    @Path("updateJob")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response updateJob(
+            Tbljob job,
+            @QueryParam("skillIds") String skillIdsStr,
+            @QueryParam("educationIds") String educationIdsStr) {
+
+        try {
+
+            // ================= BASIC VALIDATION =================
+            if (job == null || job.getJobId() == null) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Job ID is required")
+                        .build();
+            }
+
+            if (job.getRecruiterId() == null
+                    || job.getRecruiterId().getRecruiterId() == null) {
+
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Recruiter ID is required")
+                        .build();
+            }
+
+            // ================= SKILLS =================
+            Collection<Integer> skillIds = new ArrayList<>();
+
+            if (skillIdsStr != null && !skillIdsStr.trim().isEmpty()) {
+
+                String[] arr = skillIdsStr.split(",");
+
+                for (String s : arr) {
+
+                    if (s != null && !s.trim().isEmpty()) {
                         skillIds.add(Integer.valueOf(s.trim()));
                     }
                 }
             }
 
-            ejb.createJob(job, skillIds);
+            // ================= EDUCATION =================
+            Collection<Integer> educationIds = new ArrayList<>();
 
-            return Response.ok("Job Created Successfully").build();
+            if (educationIdsStr != null && !educationIdsStr.trim().isEmpty()) {
+
+                String[] arr = educationIdsStr.split(",");
+
+                for (String s : arr) {
+
+                    if (s != null && !s.trim().isEmpty()) {
+                        educationIds.add(Integer.valueOf(s.trim()));
+                    }
+                }
+            }
+
+            // ================= UPDATE JOB =================
+            ejb.updateJob(job, skillIds, educationIds);
+
+            return Response.ok("Job Updated Successfully").build();
+
+        } catch (NumberFormatException e) {
+
+            e.printStackTrace();
+
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Skill IDs and Education IDs must be valid numbers")
+                    .build();
+
+        } catch (RuntimeException e) {
+
+            e.printStackTrace();
+
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(e.getMessage())
+                    .build();
 
         } catch (Exception e) {
 
             e.printStackTrace();
 
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(e.getMessage())
+                    .entity("Error updating job: " + e.getMessage())
                     .build();
         }
     }
 
-    ////    @PUT
-////    @Path("updateJob")
-////    @Consumes(MediaType.APPLICATION_JSON)
-////    @Produces(MediaType.TEXT_PLAIN)
-////    public Response updateJob(Tbljob job) {
-////        try {
-////            if (job == null || job.getJobId() == null) {
-////                return Response.status(Response.Status.BAD_REQUEST)
-////                        .entity("Job ID required")
-////                        .build();
-////            }
-////
-////            ejb.updateJob(job);
-////
-////            return Response.ok("Job Updated Successfully").build();
-////
-////        } catch (Exception e) {
-////            return Response.status(500).entity(e.getMessage()).build();
-////        }
-////    }
-//    @PUT
-//    @Path("updateJob")
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.TEXT_PLAIN)
-//    public Response updateJob(Tbljob job) {
-//        try {
-//            if (job == null || job.getJobId() == null) {
-//                return Response.status(Response.Status.BAD_REQUEST)
-//                        .entity("Job ID is required")
-//                        .build();
-//            }
-//            ejb.updateJob(job);
-//
-//            return Response.ok("Job Updated Successfully").build();
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-//                    .entity("Error updating job: " + e.getMessage())
-//                    .build();
-//        }
-//    }
+    @PUT
+    @Path("toggleJobStatus")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response toggleJobStatus(
+            @QueryParam("jobId") int jobId,
+            @QueryParam("recruiterId") int recruiterId) {
+
+        try {
+
+            // ================= BASIC VALIDATION =================
+            if (jobId <= 0) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid Job ID")
+                        .build();
+            }
+
+            if (recruiterId <= 0) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid Recruiter ID")
+                        .build();
+            }
+
+            // ================= TOGGLE STATUS =================
+            ejb.toggleJobStatus(jobId, recruiterId);
+
+            return Response.ok("Job Status Updated Successfully").build();
+
+        } catch (RuntimeException e) {
+
+            e.printStackTrace();
+
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(e.getMessage())
+                    .build();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error updating job status: " + e.getMessage())
+                    .build();
+        }
+    }
+
+    @PUT
+    @Path("updateJobExpiryDate")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response updateJobExpiryDate(
+            @QueryParam("jobId") int jobId,
+            @QueryParam("recruiterId") int recruiterId,
+            @QueryParam("expiryDate") String expiryDate) {
+
+        try {
+
+            if (jobId <= 0) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid Job ID")
+                        .build();
+            }
+
+            if (recruiterId <= 0) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid Recruiter ID")
+                        .build();
+            }
+
+            if (expiryDate == null || expiryDate.trim().isEmpty()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Please select an expiry date.")
+                        .build();
+            }
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            sdf.setLenient(false);
+
+            Date parsedDate = sdf.parse(expiryDate.trim());
+
+            ejb.updateJobExpiryDate(jobId, recruiterId, parsedDate);
+
+            return Response.ok(
+                    "Expiry date updated successfully. Job status is now Open."
+            ).build();
+
+        } catch (RuntimeException e) {
+
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(e.getMessage())
+                    .build();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Unable to update expiry date.")
+                    .build();
+        }
+    }
+
 //
 //    @DELETE
 //    @Path("deleteJob")
@@ -248,7 +428,7 @@ public class RecruiterResource {
 //    }
 //
 //    //multiple,single and all job delete logic
-////    @DELETE
+    ////    @DELETE
 ////@Path("deleteJob")
 ////@Produces(MediaType.TEXT_PLAIN)
 ////public Response deleteJob(@QueryParam("jobId") Integer jobId,
@@ -371,10 +551,8 @@ public class RecruiterResource {
 
             Collection<Tblskills> skills = ejb.getJobSkills(jobId);
 
-            if (skills == null || skills.isEmpty()) {
-                return Response.status(Response.Status.NOT_FOUND)
-                        .entity("No skills found for this job")
-                        .build();
+            if (skills == null) {
+                skills = new ArrayList<>();
             }
 
             return Response.ok(skills).build();
@@ -547,9 +725,6 @@ public class RecruiterResource {
     }
 
     //===========================================Job Education ==========================================
-    // ===========================================
-// EDUCATION
-// ===========================================
     @GET
     @Path("getAllEducation")
     @Produces(MediaType.APPLICATION_JSON)
@@ -578,156 +753,144 @@ public class RecruiterResource {
         }
     }
 
-//    @POST
-//    @Path("addSkillCategory")
-//    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-//    @Produces(MediaType.TEXT_PLAIN)
-//    public Response addSkillCategory(@QueryParam("categoryName") String categoryName, @QueryParam("userId") Integer userId) {
-//
-//        try {
-//
-//            ejb.addSkillCategory(
-//                    categoryName,
-//                    userId
-//            );
-//
-//            return Response
-//                    .ok("Category Added")
-//                    .build();
-//
-//        } catch (Exception e) {
-//
-//            e.printStackTrace();
-//
-//            return Response
-//                    .status(Response.Status.INTERNAL_SERVER_ERROR)
-//                    .entity("Error adding category")
-//                    .build();
-//        }
-//    }
-//    @POST
-//    @Path("addSkill")
-//    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-//    @Produces(MediaType.TEXT_PLAIN)
-//    public Response addSkill(@QueryParam("skillName") String skillName,@QueryParam("categoryId") Integer categoryId,@QueryParam("userId") Integer userId) {
-//
-//        try {
-//
-//            ejb.addSkill(
-//                    skillName,
-//                    categoryId,
-//                    userId
-//            );
-//
-//            return Response
-//                    .ok("Skill Added")
-//                    .build();
-//
-//        } catch (Exception e) {
-//
-//            e.printStackTrace();
-//
-//            return Response
-//                    .status(Response.Status.INTERNAL_SERVER_ERROR)
-//                    .entity("Error adding skill")
-//                    .build();
-//        }
-//    }
-//    @POST
-//    @Path("addSkillToJob")
-//    @Produces(MediaType.TEXT_PLAIN)
-//    public Response addSkillToJob(@QueryParam("jobId") int jobId,
-//            @QueryParam("skillId") int skillId) {
-//        try {
-//            if (jobId <= 0 || skillId <= 0) {
-//                return Response.status(Response.Status.BAD_REQUEST)
-//                        .entity("JobId or SkillId missing")
-//                        .build();
-//            }
-//
-//            ejb.addSkillToJob(jobId, skillId);
-//
-//            return Response.ok("Skill Added Successfully").build();
-//
-//        } catch (Exception e) {
-//            return Response.status(500).entity(e.getMessage()).build();
-//        }
-//    }
-//
-//    @DELETE
-//    @Path("removeSkillFromJob")
-//    @Produces(MediaType.TEXT_PLAIN)
-//    public Response removeSkillFromJob(@QueryParam("jobId") int jobId,
-//            @QueryParam("skillId") int skillId) {
-//        try {
-//            if (jobId <= 0 || skillId <= 0) {
-//                return Response.status(Response.Status.BAD_REQUEST)
-//                        .entity("JobId or SkillId missing")
-//                        .build();
-//            }
-//
-//            ejb.removeSkillFromJob(jobId, skillId);
-//
-//            return Response.ok("Skill Removed Successfully").build();
-//
-//        } catch (Exception e) {
-//            return Response.status(500).entity(e.getMessage()).build();
-//        }
-//    }
-//
-//    @GET
-//    @Path("getJobSkillWeights")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response getJobSkillWeights(@QueryParam("jobId") int jobId) {
-//        try {
-//            if (jobId <= 0) {
-//                return Response.status(Response.Status.BAD_REQUEST)
-//                        .entity("Invalid jobId")
-//                        .build();
-//            }
-//
-//            Collection<Tbljobskillweightage> list = ejb.getJobSkillWeightage(jobId);
-//
-//            if (list == null) {
-//                list = new ArrayList<>();
-//            }
-//
-//            return Response.ok(list).build();
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return Response.status(500)
-//                    .entity(e.getMessage())
-//                    .build();
-//        }
-//    }
-//
-//    @POST
-//    @Path("addJobSkillWeight")
-//    @Produces(MediaType.TEXT_PLAIN)
-//    public Response addJobSkillWeight(@QueryParam("jobId") int jobId,
-//            @QueryParam("skillId") int skillId,
-//            @QueryParam("weight") int weight) {
-//        try {
-//            if (jobId <= 0 || skillId <= 0 || weight <= 0) {
-//                return Response.status(Response.Status.BAD_REQUEST)
-//                        .entity("Invalid input")
-//                        .build();
-//            }
-//
-//            // FIX: call correct method
-//            ejb.updateJobSkillWeightage(jobId, skillId, weight);
-//
-//            return Response.ok("Skill weight updated successfully").build();
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return Response.status(500)
-//                    .entity(e.getMessage())
-//                    .build();
-//        }
-//    }
-//
+    @GET
+    @Path("getJobEducation")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getJobEducation(@QueryParam("jobId") int jobId) {
+
+        try {
+
+            if (jobId <= 0) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid Job ID")
+                        .build();
+            }
+
+            Collection<Tbleducation> educations
+                    = ejb.getJobEducation(jobId);
+
+            if (educations == null) {
+                educations = new ArrayList<>();
+            }
+
+            return Response.ok(educations).build();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
+    // ================= CANDIDATE MANAGEMENT =================
+    @GET
+    @Path("getRecruiterApplications")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getRecruiterApplications(
+            @QueryParam("recruiterId") int recruiterId) {
+
+        try {
+
+            // ================= VALIDATION =================
+            if (recruiterId <= 0) {
+
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid Recruiter ID")
+                        .build();
+            }
+
+            // ================= FETCH APPLICATIONS =================
+            Collection<Tblapplication> applications
+                    = ejb.getRecruiterApplications(recruiterId);
+
+            // ================= NULL SAFETY =================
+            if (applications == null) {
+
+                applications = new ArrayList<>();
+            }
+
+            return Response.ok(applications).build();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return Response.status(
+                    Response.Status.INTERNAL_SERVER_ERROR
+            )
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
+    @POST
+    @Path("generateScreeningScore")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response generateScreeningScore(
+            @QueryParam("applicationId") int applicationId) {
+
+        try {
+
+            if (applicationId <= 0) {
+
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid Application ID")
+                        .build();
+            }
+
+            double score
+                    = ejb.calculateAndSaveScreeningScore(applicationId);
+
+            return Response.ok(
+                    "Screening Score Generated : " + score
+            ).build();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return Response.status(
+                    Response.Status.INTERNAL_SERVER_ERROR
+            )
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
+    @GET
+    @Path("getScreeningScore")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getScreeningScore(
+            @QueryParam("applicationId") int applicationId) {
+
+        try {
+
+            if (applicationId <= 0) {
+
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid Application ID")
+                        .build();
+            }
+
+            return Response.ok(
+                    ejb.getScreeningScore(applicationId)
+            ).build();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return Response.status(
+                    Response.Status.INTERNAL_SERVER_ERROR
+            )
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
 //    // ================= APPLICATION =================
 //    @GET
 //    @Path("getApplications")

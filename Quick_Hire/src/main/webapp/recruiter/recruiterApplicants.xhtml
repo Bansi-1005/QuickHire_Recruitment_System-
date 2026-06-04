@@ -1,0 +1,500 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <f:view>
+        <h:head>
+            <title>Applicants – QuickHire</title>
+            <h:outputStylesheet library="css" name="/recruiter/recruiter.css" />
+            <h:outputStylesheet library="css" name="/recruiter/recruiterApplicants.css" />
+        </h:head>
+
+        <h:body>
+
+            <f:metadata>
+                <f:viewAction action="#{loginBean.checkLogin}" />
+                <f:viewAction action="#{recruiterCDIBean.loadProfile}" />
+                <f:viewAction action="#{recruiterApplicationInterviewCDIBean.getRecruiterApplications}" />
+            </f:metadata>
+            <ui:include src="/common/header.xhtml"/>
+
+            <div class="dashboard-layout">
+
+                <!-- ================= SIDEBAR ================= -->
+                <aside class="sidebar">
+                    <div class="sidebar-title">Navigation</div>
+
+                    <div class="menu-form">
+                        <h:form styleClass="menu-form">
+                            <h:commandLink value="🏠 Dashboard" action="recruiterDashboard?faces-redirect=true" styleClass="menu-link" />
+                            <h:commandLink value="📋 Job Postings" action="recruiterPostJob?faces-redirect=true" styleClass="menu-link" />
+                            <h:commandLink value="👥 Applicants" styleClass="menu-link active" />
+                            <h:commandLink value="📅 Interviews" styleClass="menu-link" />
+                            <h:commandLink value="📊 Reports" styleClass="menu-link" />
+                            <h:commandLink value="⚙ Settings" styleClass="menu-link" />
+                        </h:form>
+                    </div>
+
+                    <div class="sidebar-card">
+                        <h4>Applicant Pipeline</h4>
+                        <p>Review, screen and shortlist candidates from all your active jobs.</p>
+                        <a href="#" class="sidebar-btn">View Overview</a>
+                    </div>
+
+                    <div class="sidebar-card sidebar-insight">
+                        <h4>Today’s Snapshot</h4>
+                        <ul class="mini-points">
+                            <li>12 new applications received</li>
+                            <li>5 profiles screened</li>
+                            <li>3 interviews ready to schedule</li>
+                        </ul>
+                    </div>
+                </aside>
+
+                <!-- ================= MAIN ================= -->
+                <main class="main">
+
+                    <!-- PAGE HEADER -->
+                    <div class="page-header">
+                        <div class="page-header-left">
+                            <div class="eyebrow">Recruitment Workspace</div>
+                            <h2 class="page-title">👥 Applicants</h2>
+                            <p class="page-subtitle">Review and manage all candidate applications across your job postings.</p>
+                        </div>
+
+                        <div class="page-header-right">
+                            <button type="button" class="btn-light header-btn" onclick="openInsightsPanel()">📈 Pipeline View</button>
+                             <button type="button" class="btn-screen-all" onclick="simulateScreenAll()">⚡ Screen All Pending</button>
+                        </div>
+                    </div>
+
+                    <!-- QUICK STRIP -->
+                    <div class="quick-strip">
+                        <div class="quick-strip-card">
+                            <span class="quick-strip-label">Top Match</span>
+                            <strong>Neha Patel</strong>
+                            <small>94% match for Senior Java Developer</small>
+                        </div>
+                        <div class="quick-strip-card">
+                            <span class="quick-strip-label">Next Action</span>
+                            <strong>Schedule 3 interviews</strong>
+                            <small>Shortlisted candidates awaiting slots</small>
+                        </div>
+                        <div class="quick-strip-card">
+                            <span class="quick-strip-label">Average Score</span>
+                            <strong>78%</strong>
+                            <small>Across current visible applicants</small>
+                        </div>
+                    </div>
+
+                    <!-- ================= STATS ROW ================= -->
+                    <div class="applicant-stats">
+                        <div class="astat-card">
+                            <span class="astat-icon">📥</span>
+                            <div>
+                                <strong>#{recruiterApplicationInterviewCDIBean.totalApplicationsCount}</strong>
+                                <span>Total Applied</span>
+                            </div>
+                        </div>
+                        <div class="astat-card astat-new">
+                            <span class="astat-icon">🆕</span>
+                            <div>
+                                <strong>#{recruiterApplicationInterviewCDIBean.newTodayCount}</strong>
+                                <span>New Today</span>
+                            </div>
+                        </div>
+                        <div class="astat-card astat-screened">
+                            <span class="astat-icon">🔍</span>
+                            <div>
+                                <strong>#{recruiterApplicationInterviewCDIBean.screenedCount}</strong>
+                                <span>Screened</span>
+                            </div>
+                        </div>
+                        <div class="astat-card astat-shortlisted">
+                            <span class="astat-icon">✅</span>
+                            <div>
+                                <strong>#{recruiterApplicationInterviewCDIBean.shortlistedCount}</strong>
+                                <span>Shortlisted</span>
+                            </div>
+                        </div>
+                        <div class="astat-card astat-rejected">
+                            <span class="astat-icon">❌</span>
+                            <div>
+                                <strong>#{recruiterApplicationInterviewCDIBean.rejectedCount}</strong>
+                                <span>Rejected</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ================= FILTERS ================= -->
+                    <div class="filter-bar">
+                        <div class="filter-search-wrap">
+                            <span class="filter-search-icon">🔎</span>
+                            <input type="text" id="searchInput" class="filter-search" placeholder="Search by candidate, email or job title" />
+                        </div>
+
+                        <select id="jobFilter" class="filter-select">
+                            <option>All Jobs</option>
+                            <option>Senior Java Developer</option>
+                            <option>Frontend Engineer</option>
+                            <option>UI/UX Designer</option>
+                            <option>QA Analyst</option>
+                        </select>
+
+                        <select id="statusFilter" class="filter-select">
+                            <option>All Status</option>
+                            <option>Applied</option>
+                            <option>Screened</option>
+                            <option>Shortlisted</option>
+                            <option>Rejected</option>
+                            <option>Selected</option>
+                        </select>
+
+                        <select id="sortFilter" class="filter-select">
+                            <option>Newest First</option>
+                            <option>Oldest First</option>
+                            <option>Top Score First</option>
+                            <option>Lowest Score First</option>
+                        </select>
+
+                        <button type="button" class="filter-apply-btn" onclick="applyStaticFilters()">Apply Filters</button>
+                        <button type="button" class="filter-reset-btn" onclick="resetStaticFilters()">Reset</button>
+                    </div>
+
+                    <!-- FILTER CHIPS -->
+                    <div class="active-filters">
+                        <span class="af-chip active">Senior Java Developer</span>
+                        <span class="af-chip">Top Score First</span>
+                        <span class="af-chip muted">Static Preview Mode</span>
+                    </div>
+
+                    <!-- ================= APPLICANTS TABLE ================= -->
+                    <h:form id="applicantsForm">
+                        <div class="applicants-panel">
+
+                            <div class="applicants-table-wrap">
+                                <table class="applicants-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Candidate</th>
+                                            <th>Job Applied</th>
+                                            <th>Applied Date</th>
+                                            <th>Experience</th>
+                                            <th>Score</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+
+                                        <ui:repeat value="#{recruiterApplicationInterviewCDIBean.recruiterApplicationList}" var="app">
+
+                                            <tr class="applicant-row">
+                                                <td>
+                                                    <div class="cand-cell">
+                                                        <div class="cand-avatar">
+                                                            #{recruiterApplicationInterviewCDIBean.getCandidateInitial(app)}
+                                                        </div>
+
+                                                        <div class="cand-info">
+                                                            <span class="cand-name">
+                                                                #{app.candidateId.userId.userName}
+                                                            </span>
+
+                                                            <span class="cand-email">
+                                                                #{app.candidateId.userId.userEmail}
+                                                            </span>
+
+                                                            <span class="cand-meta">
+                                                                #{app.candidateId.candidateCity} &#8226; Candidate
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                <td>
+                                                    <span class="job-title-cell">
+                                                        #{app.jobId.jobTitle}
+                                                    </span>
+
+                                                    <span class="job-type-badge">
+                                                        #{app.jobId.jobType}
+                                                    </span>
+                                                </td>
+
+                                                <td>
+                                                    <span class="date-cell">
+                                                        #{recruiterApplicationInterviewCDIBean.formatApplicationDate(app.applicationAppliedDate)}
+                                                    </span>
+                                                </td>
+
+                                                <td>
+                                                    <span class="exp-cell">
+                                                        #{recruiterApplicationInterviewCDIBean.formatExperience(app.candidateId.candidateExperience)}
+                                                    </span>
+                                                </td>
+
+                                                <td>
+                                                    <div class="score-pill-wrap">
+                                                        <span class="score-pill #{recruiterApplicationInterviewCDIBean.getScorePillClass(app.applicationId)}">
+                                                            <h:outputText value="#{recruiterApplicationInterviewCDIBean.getScoreDisplay(app.applicationId)}"
+                                                                          rendered="#{recruiterApplicationInterviewCDIBean.getScoreForApplication(app.applicationId) == null}" />
+                                                            <h:outputText value="#{recruiterApplicationInterviewCDIBean.getScoreDisplay(app.applicationId)}%"
+                                                                          rendered="#{recruiterApplicationInterviewCDIBean.getScoreForApplication(app.applicationId) != null}" />
+                                                        </span>
+                                                        <div class="score-bar-bg">
+                                                            <div class="score-bar-fill" style="width:#{recruiterApplicationInterviewCDIBean.getScoreBarWidth(app.applicationId)}"></div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                <td>
+                                                    <span class="status-badge
+                                                          #{app.applicationStatus eq 'Shortlisted' ? 'status-shortlisted' :
+                                                            app.applicationStatus eq 'Screened' ? 'status-screened' :
+                                                            app.applicationStatus eq 'Rejected' ? 'status-rejected' :
+                                                            app.applicationStatus eq 'Selected' ? 'status-selected' :
+                                                            'status-applied'}">
+                                                          #{app.applicationStatus}
+                                                    </span>
+                                                </td>
+
+                                                <td>
+                                                    <div class="action-btns">
+                                                        <button type="button"
+                                                                class="action-btn action-view"
+                                                                title="View Profile"
+                                                                onclick="openProfileDrawer(
+                                                                                '#{app.candidateId.userId.userName}',
+                                                                                '#{app.jobId.jobTitle}',
+                                                                                '#{app.candidateId.candidateExperience} years',
+                                                                                'Skills will be added later',
+                                                                                'Candidate profile details will be added later.',
+                                                                                '78%',
+                                                                                '#{app.applicationStatus}'
+                                                                                )">
+                                                            👤
+                                                        </button>
+
+
+                                                        <!-- Screen button — only show if no score yet -->
+                                                        <h:commandButton
+                                                            rendered="#{recruiterApplicationInterviewCDIBean.isNotScreened(app.applicationId) == null}"
+                                                            value="Screen"
+                                                            styleClass="btn-screen-single"
+                                                            action="#{recruiterApplicationInterviewCDIBean.screenApplicant(app.applicationId)}"
+                                                            title="Generate screening score">
+                                                            <f:ajax execute="@form"
+                                                                    render="applicantsForm"
+                                                                    onevent="handleScreeningEvent" />
+                                                        </h:commandButton>
+
+                                                        <button type="button"
+                                                                class="action-btn action-shortlist"
+                                                                title="Shortlist"
+                                                                onclick="showToast('Applicant shortlisted successfully.', 'success')">
+                                                            ✅
+                                                        </button>
+
+                                                        <button type="button"
+                                                                class="action-btn action-reject"
+                                                                title="Reject"
+                                                                onclick="showToast('Applicant rejected successfully.', 'error')">
+                                                            ❌
+                                                        </button>
+
+                                                        <button type="button"
+                                                                class="action-btn action-interview"
+                                                                title="Schedule Interview"
+                                                                onclick="openScheduleModal('#{app.applicationId}','#{app.candidateId.userId.userName}','#{app.jobId.jobTitle}')">
+                                                            📅
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+
+                                        </ui:repeat>
+
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- PAGINATION -->
+                            <div class="pagination-bar">
+                                <div class="paging-form">
+                                    <button type="button" class="page-btn" disabled="disabled">‹ Prev</button>
+                                    <span class="page-info">Page 1 of 3</span>
+                                    <button type="button" class="page-btn" onclick="showToast('Static preview: next page not connected yet.', 'info')">Next ›</button>
+                                </div>
+                            </div>
+                        </div>
+                    </h:form>
+                </main>
+            </div>
+
+            <!-- ================= PROFILE DRAWER ================= -->
+            <div id="profileDrawer" class="profile-drawer-overlay">
+                <div class="profile-drawer">
+                    <div class="profile-drawer-header">
+                        <div>
+                            <h3>Candidate Profile</h3>
+                            <p>Quick preview of applicant details</p>
+                        </div>
+                        <button type="button" class="close-btn" onclick="closeProfileDrawer()">×</button>
+                    </div>
+
+                    <div class="profile-hero">
+                        <div class="profile-avatar" id="drawerAvatar">N</div>
+                        <div>
+                            <h4 id="drawerName">Neha Patel</h4>
+                            <p id="drawerRole">Senior Java Developer</p>
+                            <span class="drawer-score" id="drawerScore">94%</span>
+                        </div>
+                    </div>
+
+                    <div class="profile-grid">
+                        <div class="profile-card">
+                            <span class="profile-label">Experience</span>
+                            <strong id="drawerExperience">5 years</strong>
+                        </div>
+                        <div class="profile-card">
+                            <span class="profile-label">Status</span>
+                            <strong id="drawerStatus">Shortlisted</strong>
+                        </div>
+                    </div>
+
+                    <div class="profile-section">
+                        <h5>Skills</h5>
+                        <p id="drawerSkills">Java, Spring Boot, MySQL, REST API</p>
+                    </div>
+
+                    <div class="profile-section">
+                        <h5>Recruiter Notes</h5>
+                        <p id="drawerNotes">Excellent backend profile with strong enterprise project exposure.</p>
+                    </div>
+
+                    <div class="profile-actions">
+                        <button type="button" class="btn-light" onclick="showToast('Resume preview will be added later.', 'info')">View Resume</button>
+                        <button type="button" class="btn-main" onclick="showToast('Candidate moved to shortlist.', 'success')">Shortlist</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= SCHEDULE INTERVIEW MODAL ================= -->
+            <div id="scheduleModal" class="modal-overlay" style="display:none;">
+                <div class="modal-box modal-lg">
+
+                    <div class="modal-header">
+                        <h3>📅 Schedule Interview</h3>
+                        <span class="close-btn" onclick="closeScheduleModal()">×</span>
+                    </div>
+                    <p class="modal-subtitle" id="scheduleModalSubtitle"></p>
+
+                    <form id="scheduleForm" class="modal-form" action="#">
+
+                        <input type="hidden" id="scheduleApplicationId" />
+
+                        <div class="schedule-grid">
+
+                            <div class="form-group">
+                                <label>Interview Round *</label>
+                                <select class="form-control" id="interviewRound">
+                                    <option value="">-- Select Round --</option>
+                                    <option value="1">Round 1</option>
+                                    <option value="2">Round 2</option>
+                                    <option value="3">Round 3</option>
+                                    <option value="4">HR Round</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Round Name *</label>
+                                <input type="text" class="form-control" id="roundName" placeholder="Technical Discussion" />
+                            </div>
+
+                            <div class="form-group">
+                                <label>Interview Date &amp; Time *</label>
+                                <input type="text" id="interviewDateTime" class="form-control" placeholder="2026-06-01 11:00" />
+                            </div>
+
+                            <div class="form-group">
+                                <label>Mode *</label>
+                                <select class="form-control" id="interviewMode">
+                                    <option value="">-- Select Mode --</option>
+                                    <option value="Online">Online</option>
+                                    <option value="Offline">Offline</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Interviewer Name *</label>
+                                <input type="text" class="form-control" id="interviewerName" placeholder="Enter interviewer name" />
+                            </div>
+
+                            <div class="form-group form-group-full">
+                                <label>Notes / Instructions</label>
+                                <textarea class="form-control" rows="3" id="interviewNotes" placeholder="Add interview instructions..."></textarea>
+                            </div>
+
+                        </div>
+
+                        <div id="scheduleMessages" class="modal-message" style="display:none;"></div>
+
+                        <div class="modal-actions">
+                            <button type="button" class="btn-main" onclick="submitScheduleForm()">📅 Schedule Interview</button>
+                            <button type="button" class="btn-light btn-cancel" onclick="closeScheduleModal()">Cancel</button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+            <!-- ================= SCREENING LOADER OVERLAY ================= -->
+            <div id="screeningLoader" class="screening-loader" style="display:none;">
+                <div class="loader-box">
+                    <div class="loader-spinner"></div>
+                    <p>Generating AI Screening Scores…</p>
+                </div>
+            </div>
+
+            <!-- ================= INSIGHTS PANEL ================= -->
+            <div id="insightsPanel" class="insights-panel-overlay">
+                <div class="insights-panel">
+                    <div class="profile-drawer-header">
+                        <div>
+                            <h3>Pipeline Insights</h3>
+                            <p>Static UI preview for recruiter dashboard flow</p>
+                        </div>
+                        <button type="button" class="close-btn" onclick="closeInsightsPanel()">×</button>
+                    </div>
+
+                    <div class="insight-cards">
+                        <div class="insight-card">
+                            <span>Highest Conversion</span>
+                            <strong>Frontend Engineer</strong>
+                            <small>42% shortlisted from screened pool</small>
+                        </div>
+                        <div class="insight-card">
+                            <span>Fastest Moving Role</span>
+                            <strong>Senior Java Developer</strong>
+                            <small>Average screening turnaround: 4 hrs</small>
+                        </div>
+                        <div class="insight-card">
+                            <span>Interview Bottleneck</span>
+                            <strong>3 pending schedules</strong>
+                            <small>Recommend assigning slots today</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <ui:include src="/common/footer.xhtml"/>
+
+            <h:outputScript library="js" name="/recruiter/recruiterApplicants.js" />
+
+        </h:body>
+    </f:view>
+</html>

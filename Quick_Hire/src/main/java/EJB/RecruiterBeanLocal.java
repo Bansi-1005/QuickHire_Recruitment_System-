@@ -6,7 +6,9 @@ package EJB;
 
 import Entity.*;
 import jakarta.ejb.Local;
+import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -16,8 +18,6 @@ import java.util.Map;
 @Local
 public interface RecruiterBeanLocal {
 
-    // ================= AUTH =================
-//    void registerRecruiter(Tblusers user, Tblrecruiters recruiter);
     // ================= PROFILE =================
     Tblrecruiters getProfile(int userId);
 
@@ -26,35 +26,50 @@ public interface RecruiterBeanLocal {
     // ================= COMPANY =================
 //    Tblcompany getCompanyDetails(int recruiterId);
     // ================= JOB MANAGEMENT =================
-    void createJob(Tbljob job, Collection<Integer> skillIds);
-//    void updateJob(Tbljob job);
-//    void deleteJob(int jobId,int recruiterId);
-//     //single,multiple,all job delete logic:
-//    //public void deleteJob(Integer jobId, Collection<Integer> jobIds, int recruiterId);
-//    void updateJobStatus(int jobId, String status);
+    void createJob(Tbljob job, Collection<Integer> skillIds, Collection<Integer> educationIds);
+
     Collection<Tbljob> getJobs(int recruiterId);
 
-    
-    
+    void updateJob(Tbljob job, Collection<Integer> skillIds, Collection<Integer> educationIds);
+
+    void toggleJobStatus(int jobId, int recruiterId);
+
+    void updateJobExpiryDate(int jobId, int recruiterId, Date expiryDate);
+
+    public void closeExpiredJobs();
+
     // ================= JOB SKILLS =========================================================
-//    void addSkillToJob(int jobId, int skillId);
-//    void removeSkillFromJob(int jobId, int skillId);
-    //    public void saveJobSkillWeightage(int jobId,Map<Integer, Integer> skillWeightMap);
-//    public Collection<Tbljobskillweightage> getJobSkillWeightage(int jobId);
-//    public void updateJobSkillWeightage(int jobId,int skillId,int weightage);
     Collection<Tblskills> getJobSkills(int jobId);
 
     public Collection<Tblskills> getAllSkills(Integer userId);
 
     public Collection<Tblskillcategory> getSkillCategories(Integer recruiterUserId);
 
-    public Collection<Tblskills> getSkillsByCategory(Integer categoryId,Integer recruiterUserId);
-    
-    public void addSkillAndOrCategory(String categoryName,Collection<String> skillNames,Integer existingCategoryId,Integer recruiterUserId);
-    
-    
+    public Collection<Tblskills> getSkillsByCategory(Integer categoryId, Integer recruiterUserId);
+
+    public void addSkillAndOrCategory(String categoryName, Collection<String> skillNames, Integer existingCategoryId, Integer recruiterUserId);
+
     // ================= JOB Education =======================================================
     Collection<Tbleducation> getAllEducation();
+
+    Collection<Tbleducation> getJobEducation(int jobId);
+
+    // ================= CANDIDATE MANAGEMENT =================
+    public Collection<Tblapplication> getRecruiterApplications(int recruiterId);
+    
+    public double calculateAndSaveScreeningScore(int applicationId);
+    
+    public String getScreeningLevel(int applicationId);
+    
+    public BigDecimal getScreeningScore(int applicationId);
+
+    public Collection<Tblapplication> getApplicationsByStatus(int recruiterId,String status);
+
+    public Collection<Tblapplication> searchRecruiterCandidates(int recruiterId,String keyword);
+
+    public Tblapplication getApplicationDetails(int applicationId,int recruiterId);
+
+    public void updateApplicationStatus(int applicationId,int recruiterId,String newStatus);
 
 //    // ================= APPLICATION =================
 //    Collection<Tblapplication> getApplications(int jobId);

@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 /**
  *
  * @author RINKAL
@@ -38,9 +39,6 @@ import java.util.Map;
  * If you want to add new states or cities,
  * update only STATE_CITY_MAP below.
  */
-
-
-
 public class LocationData {
 
     // Stores State -> Cities mapping
@@ -154,5 +152,17 @@ public class LocationData {
                 state,
                 new ArrayList<>()
         );
+    }
+
+    // ================= GET ALL CITIES =================
+    public static List<String> getAllCities() {
+
+        List<String> allCities = new ArrayList<>();
+
+        for (List<String> cities : STATE_CITY_MAP.values()) {
+            allCities.addAll(cities);
+        }
+
+        return allCities;
     }
 }

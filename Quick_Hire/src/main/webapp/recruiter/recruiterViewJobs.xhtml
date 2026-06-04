@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
@@ -35,8 +36,10 @@
 
                             <h:commandLink value="📋 Job Postings"
                                            action="recruiterPostJob?faces-redirect=true"
+                                           styleClass="menu-link" />
+                            <h:commandLink value="📋 View Jobs"
+                                           action="recruiterViewJobs?faces-redirect=true"
                                            styleClass="menu-link active" />
-
                             <h:commandLink value="👥 Applicants" styleClass="menu-link" />
                             <h:commandLink value="📅 Interviews" styleClass="menu-link" />
                             <h:commandLink value="📊 Reports" styleClass="menu-link" />
@@ -67,35 +70,41 @@
 
                             <div class="viewjobs-hero-actions">
                                 <a href="recruiterPostJob.jsf" class="viewjobs-btn viewjobs-btn-primary">+ Post New Job</a>
-                                <a href="#" class="viewjobs-btn viewjobs-btn-light">Export List</a>
+                                <a href="#" id="exportJobsBtn" class="viewjobs-btn viewjobs-btn-light" onclick="exportJobList(); return false;">
+                                    Export List
+                                </a>
                             </div>
                         </section>
 
-                        <section class="viewjobs-stats">
-                            <div class="viewjobs-stat-card">
-                                <span class="viewjobs-stat-label">Total Jobs</span>
-                                <strong>#{recruiterCDIBean.totalJobs}</strong>
-                                <small>All recruiter postings</small>
-                            </div>
+                        <h:panelGroup id="statsWrapper" layout="block">
+                            <section class="viewjobs-stats">
 
-                            <div class="viewjobs-stat-card">
-                                <span class="viewjobs-stat-label">Open Jobs</span>
-                                <strong>#{recruiterCDIBean.openJobs}</strong>
-                                <small>Currently accepting applications</small>
-                            </div>
+                                <div class="viewjobs-stat-card">
+                                    <span class="viewjobs-stat-label">Total Jobs</span>
+                                    <strong>#{recruiterCDIBean.totalJobs}</strong>
+                                    <small>All recruiter postings</small>
+                                </div>
 
-                            <div class="viewjobs-stat-card">
-                                <span class="viewjobs-stat-label">Closed Jobs</span>
-                                <strong>#{recruiterCDIBean.closedJobs}</strong>
-                                <small>Expired or closed listings</small>
-                            </div>
+                                <div class="viewjobs-stat-card">
+                                    <span class="viewjobs-stat-label">Open Jobs</span>
+                                    <strong>#{recruiterCDIBean.openJobs}</strong>
+                                    <small>Currently accepting applications</small>
+                                </div>
 
-                            <div class="viewjobs-stat-card">
-                                <span class="viewjobs-stat-label">Expiring Soon</span>
-                                <strong>#{recruiterCDIBean.expiringJobs}</strong>
-                                <small>Ends in the next 7 days</small>
-                            </div>
-                        </section>
+                                <div class="viewjobs-stat-card">
+                                    <span class="viewjobs-stat-label">Closed Jobs</span>
+                                    <strong>#{recruiterCDIBean.closedJobs}</strong>
+                                    <small>Expired or closed listings</small>
+                                </div>
+
+                                <div class="viewjobs-stat-card">
+                                    <span class="viewjobs-stat-label">Expiring Soon</span>
+                                    <strong>#{recruiterCDIBean.expiringJobs}</strong>
+                                    <small>Ends in the next 7 days</small>
+                                </div>
+
+                            </section>
+                        </h:panelGroup>
 
                         <section class="panel viewjobs-filter-panel">
                             <div class="viewjobs-section-header">
@@ -141,27 +150,41 @@
 
                                     <div class="viewjobs-filter-group">
                                         <label for="stateFilter">State</label>
+
                                         <div class="viewjobs-select-wrap">
-                                            <select id="stateFilter" class="viewjobs-form-control viewjobs-select-control">
-                                                <option value="">All States</option>
-                                                <option value="Gujarat">Gujarat</option>
-                                                <option value="Maharashtra">Maharashtra</option>
-                                                <option value="Rajasthan">Rajasthan</option>
-                                                <option value="Karnataka">Karnataka</option>
-                                            </select>
+
+                                            <h:selectOneMenu id="stateFilter"
+                                                             value="#{recruiterCDIBean.selectedState}"
+                                                             styleClass="viewjobs-form-control viewjobs-select-control">
+
+                                                <f:selectItem itemLabel="All States" itemValue="" />
+
+                                                <f:selectItems value="#{recruiterCDIBean.availableStates}" />
+
+                                                <f:ajax listener="#{recruiterCDIBean.onStateChange}"
+                                                        render="cityFilter" />
+
+                                            </h:selectOneMenu>
+
                                         </div>
                                     </div>
 
                                     <div class="viewjobs-filter-group">
+
                                         <label for="cityFilter">City</label>
+
                                         <div class="viewjobs-select-wrap">
-                                            <select id="cityFilter" class="viewjobs-form-control viewjobs-select-control">
-                                                <option value="">All Cities</option>
-                                                <option value="Surat">Surat</option>
-                                                <option value="Ahmedabad">Ahmedabad</option>
-                                                <option value="Vadodara">Vadodara</option>
-                                                <option value="Mumbai">Mumbai</option>
-                                            </select>
+
+                                            <h:selectOneMenu id="cityFilter"
+                                                             value="#{recruiterCDIBean.selectedCity}"
+                                                             styleClass="viewjobs-form-control viewjobs-select-control">
+
+                                                <f:selectItem itemLabel="All Cities" itemValue="" />
+
+                                                <f:selectItems value="#{recruiterCDIBean.availableCities}" />
+
+                                            </h:selectOneMenu>
+
                                         </div>
                                     </div>
 
@@ -192,11 +215,11 @@
                                     </div>
 
                                     <div class="viewjobs-filter-group full">
-                                        <label for="jobSearch">Search Job Title / Location</label>
+                                        <label for="jobSearch">Search Job Title / Location / Skills</label>
                                         <input id="jobSearch"
                                                type="text"
                                                class="viewjobs-form-control"
-                                               placeholder="Search by title, city, or state..." />
+                                               placeholder="Search by title, city, state, or skills..." />
                                     </div>
                                 </div>
 
@@ -210,8 +233,27 @@
                                 </div>
                             </h:form>
                         </section>
+                        <h:form id="messageForm">
+
+                            <h:panelGroup id="jobStatusMessageWrapper"
+                                          layout="block"
+                                          styleClass="viewjobs-global-message-wrap">
+
+                                <h:messages globalOnly="true"
+                                            layout="list"
+                                            showSummary="false"
+                                            showDetail="true"
+                                            infoClass="viewjobs-msg viewjobs-msg-success"
+                                            errorClass="viewjobs-msg viewjobs-msg-error"
+                                            warnClass="viewjobs-msg viewjobs-msg-warning" />
+
+                            </h:panelGroup>
+
+                        </h:form>
 
                         <section class="panel viewjobs-results-panel">
+
+
                             <div class="viewjobs-section-header">
                                 <div class="viewjobs-section-title">
                                     <span class="viewjobs-section-icon">&#9776;</span>
@@ -226,47 +268,221 @@
                                 </div>
                             </div>
 
-                            <div class="viewjobs-table-wrap">
-                                <table class="viewjobs-table">
-                                    <thead>
-                                        <tr>
-                                            <th class="viewjobs-col-title">Job Details</th>
-                                            <th class="viewjobs-col-workmode">Work Mode</th>
-                                            <th class="viewjobs-col-type">Type</th>
-                                            <th class="viewjobs-col-status">Status</th>
-                                            <th class="viewjobs-col-vacancies">Vacancies</th>
-                                            <th class="viewjobs-col-posted">Posted</th>
-                                            <th class="viewjobs-col-expiry">Expiry</th>
-                                            <th class="viewjobs-col-actions">Actions</th>
-                                        </tr>
-                                    </thead>
+                            <h:form id="jobsForm">
+                                <h:panelGroup id="jobsTableWrapper" layout="block">
+                                    <div class="viewjobs-table-wrap">
+                                        <table class="viewjobs-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="viewjobs-col-title">Job Details</th>
+                                                    <th class="viewjobs-col-workmode">Work Mode</th>
+                                                    <th class="viewjobs-col-type">Type</th>
+                                                    <th class="viewjobs-col-vacancies">Vacancies</th>
+                                                    <th class="viewjobs-col-applications">Applications</th>
+                                                    <th class="viewjobs-col-status">Status</th>
+                                                    <th class="viewjobs-col-posted">Posted</th>
+                                                    <th class="viewjobs-col-expiry">Expiry</th>
+                                                    <th class="viewjobs-col-actions">Actions</th>
+                                                </tr>
+                                            </thead>
 
-                                    <tbody id="viewjobsTableBody">
+                                            <tbody id="viewjobsTableBody">
+                                                <ui:repeat value="#{recruiterCDIBean.jobList}" var="j">
+                                                    <tr class="viewjobs-table-row"
+                                                        data-jobid="#{j.jobId}"
+                                                        data-title="#{j.jobTitle}"
+                                                        data-workmode="#{j.workMode}"
+                                                        data-status="#{j.jobStatus}"
+                                                        data-state="#{j.jobState}"
+                                                        data-city="#{j.jobCity}"
+                                                        data-jobtype="#{j.jobType}"
+                                                        data-posted="#{recruiterCDIBean.formatJobDate(j.jobPostedDate)}"
+                                                        data-expiry="#{recruiterCDIBean.formatJobDate(j.jobExpiryDate)}"
+                                                        data-vacancies="#{j.jobVacancies}"
+                                                        data-experience="#{recruiterCDIBean.formatExperience(j.experienceRequired)}"
+                                                        data-skills="#{recruiterCDIBean.getJobSkills(j)}"
+                                                        data-education="#{recruiterCDIBean.getJobEducation(j.jobId)}"
+                                                        data-description="#{j.jobDescription}"
+                                                        data-compensation-type="#{j.jobCompensationType}"
+                                                        data-compensation-min="#{j.jobCompensationMin}"
+                                                        data-compensation-max="#{j.jobCompensationMax}"
+                                                        data-compensation-period="#{j.jobCompensationPeriod}"
+                                                        data-compensation-display="#{recruiterCDIBean.getFormattedCompensation(j)}"
+                                                        data-applications-total="16"
+                                                        data-applications-applied="8"
+                                                        data-applications-shortlisted="4"
+                                                        data-applications-rejected="3"
+                                                        data-applications-selected="1">
+
+                                                        <td class="viewjobs-title-cell">
+                                                            <div class="viewjobs-job-main">
+                                                                <span class="viewjobs-job-title-text" title="#{j.jobTitle}">
+                                                                    #{j.jobTitle}
+                                                                </span>
+
+                                                                <div class="viewjobs-job-location">
+                                                                    <svg class="viewjobs-location-pin" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                                        <path d="M12 2C8.686 2 6 4.686 6 8c0 5.25 6 14 6 14s6-8.75 6-14c0-3.314-2.686-6-6-6zm0 8.5A2.5 2.5 0 1 1 12 5.5a2.5 2.5 0 0 1 0 5z"/>
+                                                                    </svg>
+                                                                    <span class="viewjobs-location-text">
+                                                                        <h:outputText value="#{j.jobCity}" />
+                                                                        <h:outputText value=", " rendered="#{not empty j.jobCity and not empty j.jobState}" />
+                                                                        <h:outputText value="#{j.jobState}" />
+                                                                        <h:outputText value="Location not specified"
+                                                                                      rendered="#{empty j.jobCity and empty j.jobState}" />
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+
+                                                        <td>
+                                                            <span class="viewjobs-pill
+                                                                  #{j.workMode eq 'Remote' ? 'viewjobs-pill-remote' :
+                                                                    j.workMode eq 'Hybrid' ? 'viewjobs-pill-hybrid' :
+                                                                    'viewjobs-pill-onsite'}">
+                                                                  #{j.workMode}
+                                                            </span>
+                                                        </td>
+
+                                                        <td>
+                                                            <span class="viewjobs-data-text">#{j.jobType}</span>
+                                                        </td>
+
+                                                        <td class="viewjobs-center-cell">
+                                                            <span class="viewjobs-vacancy-badge">#{j.jobVacancies}</span>
+                                                        </td>
+
+                                                        <td class="viewjobs-center-cell">
+                                                            <span class="viewjobs-application-count">16</span>
+                                                        </td>
+
+                                                        <td>
+                                                            <h:panelGroup id="statusCell" layout="block">
+                                                                <span class="viewjobs-pill
+                                                                      #{j.jobStatus eq 'Open' ? 'viewjobs-pill-open' :
+                                                                        j.jobStatus eq 'Closed' ? 'viewjobs-pill-closed' :
+                                                                        'viewjobs-pill-hold'}">
+                                                                      #{j.jobStatus}
+                                                                </span>
+                                                            </h:panelGroup>
+                                                        </td>
+
+                                                        <td>
+                                                            <span class="viewjobs-date-text">
+                                                                #{recruiterCDIBean.formatJobDate(j.jobPostedDate)}
+                                                            </span>
+                                                        </td>
+
+
+                                                        <td>
+                                                            <h:panelGroup id="expiryCell" layout="block">
+                                                                <h:panelGroup rendered="#{not recruiterCDIBean.editingExpiryJob(j)}"
+                                                                              layout="block"
+                                                                              styleClass="viewjobs-expiry-display">
+
+                                                                    <span class="viewjobs-date-text">
+                                                                        #{recruiterCDIBean.formatJobDate(j.jobExpiryDate)}
+                                                                    </span>
+
+                                                                    <h:commandLink action="#{recruiterCDIBean.startExpiryEdit(j)}"
+                                                                                   styleClass="viewjobs-expiry-edit-btn"
+                                                                                   title="Edit expiry date">
+                                                                        ✎
+                                                                        <f:ajax execute="@this" render="expiryCell" />
+                                                                    </h:commandLink>
+                                                                </h:panelGroup>
+
+                                                                <h:panelGroup rendered="#{recruiterCDIBean.editingExpiryJob(j)}"
+                                                                              layout="block"
+                                                                              styleClass="viewjobs-expiry-edit">
+
+                                                                    <h:inputText value="#{j.jobExpiryDate}"
+                                                                                 styleClass="viewjobs-date-input"
+                                                                                 pt:type="date"
+                                                                                 pt:min="#{recruiterCDIBean.todayInputDate}">
+                                                                        <f:convertDateTime pattern="yyyy-MM-dd"
+                                                                                           timeZone="Asia/Kolkata" />
+
+                                                                        <f:ajax event="change"
+                                                                                execute="@this"
+                                                                                listener="#{recruiterCDIBean.updateJobExpiryDate(j)}"
+                                                                                render="expiryCell statusCell actionCell :statsWrapper :messageForm:jobStatusMessageWrapper"
+                                                                                onevent="handleJobStatusChange" />
+                                                                    </h:inputText>
+
+                                                                    <h:commandLink action="#{recruiterCDIBean.cancelExpiryEdit(j)}"
+                                                                                   styleClass="viewjobs-expiry-cancel-btn"
+                                                                                   title="Cancel edit">
+                                                                        ×
+                                                                        <f:ajax execute="@this" render="expiryCell" />
+                                                                    </h:commandLink>
+                                                                </h:panelGroup>
+                                                            </h:panelGroup>
+                                                        </td>
+                                                        <td>
+                                                            <h:panelGroup id="actionCell" layout="block">
+                                                                <div class="viewjobs-actions">
+                                                                    <a href="#" class="viewjobs-action-link viewjobs-action-view view-job-btn">View</a>
+                                                                    <h:link outcome="recruiterPostJob"
+                                                                            styleClass="viewjobs-action-link viewjobs-action-edit">
+                                                                        <f:param name="jobId" value="#{j.jobId}" />
+                                                                        Edit
+                                                                    </h:link>
+
+                                                                    <h:commandLink
+                                                                        id="toggleBtn"
+                                                                        value="#{j.jobStatus eq 'Closed' ? 'Reopen' : 'Close'}"
+                                                                        action="#{recruiterCDIBean.toggleJobStatus(j)}"
+                                                                        styleClass="viewjobs-action-link viewjobs-action-danger">
+
+                                                                        <f:ajax execute="@this"
+                                                                                render="statusCell actionCell :statsWrapper :messageForm:jobStatusMessageWrapper"
+                                                                                onevent="handleJobStatusChange" />
+                                                                    </h:commandLink>
+                                                                </div>
+                                                            </h:panelGroup>
+                                                        </td>
+                                                    </tr>
+                                                </ui:repeat>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="viewjobs-mobile-list" id="viewjobsMobileList">
                                         <ui:repeat value="#{recruiterCDIBean.jobList}" var="j">
-                                            <tr class="viewjobs-table-row"
-                                                data-title="#{j.jobTitle}"
-                                                data-workmode="#{j.workMode}"
-                                                data-status="#{j.jobStatus}"
-                                                data-state="#{j.jobState}"
-                                                data-city="#{j.jobCity}"
-                                                data-jobtype="#{j.jobType}"
-                                                data-posted="#{recruiterCDIBean.formatJobDate(j.jobPostedDate)}"
-                                                data-expiry="#{recruiterCDIBean.formatJobDate(j.jobExpiryDate)}"
-                                                data-vacancies="#{j.jobVacancies}"
-                                                data-skills="#{recruiterCDIBean.getJobSkills(j)}"
-                                                data-description="#{j.jobDescription}">
+                                            <div class="viewjobs-job-card viewjobs-mobile-card"
+                                                 data-title="#{j.jobTitle}"
+                                                 data-workmode="#{j.workMode}"
+                                                 data-status="#{j.jobStatus}"
+                                                 data-state="#{j.jobState}"
+                                                 data-city="#{j.jobCity}"
+                                                 data-jobtype="#{j.jobType}"
+                                                 data-posted="#{recruiterCDIBean.formatJobDate(j.jobPostedDate)}"
+                                                 data-expiry="#{recruiterCDIBean.formatJobDate(j.jobExpiryDate)}"
+                                                 data-vacancies="#{j.jobVacancies}"
+                                                 data-experience="#{j.experienceRequired}"
+                                                 data-skills="#{recruiterCDIBean.getJobSkills(j)}"
+                                                 data-education="#{recruiterCDIBean.getJobEducation(j.jobId)}"
+                                                 data-description="#{j.jobDescription}"
+                                                 data-compensation-type="#{j.jobCompensationType}"
+                                                 data-compensation-min="#{j.jobCompensationMin}"
+                                                 data-compensation-max="#{j.jobCompensationMax}"
+                                                 data-compensation-period="#{j.jobCompensationPeriod}"
+                                                 data-compensation-display="#{recruiterCDIBean.getFormattedCompensation(j)}"
+                                                 data-applications-total="16"
+                                                 data-applications-applied="8"
+                                                 data-applications-shortlisted="4"
+                                                 data-applications-rejected="3"
+                                                 data-applications-selected="1">
 
-                                                <td class="viewjobs-title-cell">
-                                                    <div class="viewjobs-job-main">
-                                                        <span class="viewjobs-job-title-text" title="#{j.jobTitle}">
-                                                            #{j.jobTitle}
-                                                        </span>
-
-                                                        <div class="viewjobs-job-location">
+                                                <div class="viewjobs-job-card-top">
+                                                    <div>
+                                                        <h3>#{j.jobTitle}</h3>
+                                                        <div class="viewjobs-card-location">
                                                             <svg class="viewjobs-location-pin" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                                                 <path d="M12 2C8.686 2 6 4.686 6 8c0 5.25 6 14 6 14s6-8.75 6-14c0-3.314-2.686-6-6-6zm0 8.5A2.5 2.5 0 1 1 12 5.5a2.5 2.5 0 0 1 0 5z"/>
                                                             </svg>
-                                                            <span class="viewjobs-location-text">
+                                                            <span>
                                                                 <h:outputText value="#{j.jobCity}" />
                                                                 <h:outputText value=", " rendered="#{not empty j.jobCity and not empty j.jobState}" />
                                                                 <h:outputText value="#{j.jobState}" />
@@ -275,206 +491,249 @@
                                                             </span>
                                                         </div>
                                                     </div>
-                                                </td>
 
-                                                <td>
                                                     <span class="viewjobs-pill
-                                                        #{j.workMode eq 'Remote' ? 'viewjobs-pill-remote' :
-                                                          j.workMode eq 'Hybrid' ? 'viewjobs-pill-hybrid' :
-                                                          'viewjobs-pill-onsite'}">
-                                                        #{j.workMode}
-                                                    </span>
-                                                </td>
-
-                                                <td>
-                                                    <span class="viewjobs-data-text">#{j.jobType}</span>
-                                                </td>
-
-                                                <td>
-                                                    <span class="viewjobs-pill
-                                                        #{j.jobStatus eq 'Open' ? 'viewjobs-pill-open' :
-                                                          j.jobStatus eq 'Closed' ? 'viewjobs-pill-closed' :
-                                                          'viewjobs-pill-hold'}">
-                                                        #{j.jobStatus}
-                                                    </span>
-                                                </td>
-
-                                                <td class="viewjobs-center-cell">
-                                                    <span class="viewjobs-vacancy-badge">#{j.jobVacancies}</span>
-                                                </td>
-
-                                                <td>
-                                                    <span class="viewjobs-date-text">
-                                                        #{recruiterCDIBean.formatJobDate(j.jobPostedDate)}
-                                                    </span>
-                                                </td>
-
-                                                <td>
-                                                    <span class="viewjobs-date-text">
-                                                        #{recruiterCDIBean.formatJobDate(j.jobExpiryDate)}
-                                                    </span>
-                                                </td>
-
-                                                <td>
-                                                    <div class="viewjobs-actions">
-                                                        <a href="#" class="viewjobs-action-link viewjobs-action-view view-job-btn">View</a>
-                                                        <a href="#" class="viewjobs-action-link viewjobs-action-edit">Edit</a>
-                                                        <a href="#" class="viewjobs-action-link viewjobs-action-danger">
-                                                            #{j.jobStatus eq 'Onhold' ? 'Delete' : 'Close'}
-                                                        </a>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </ui:repeat>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div class="viewjobs-mobile-list" id="viewjobsMobileList">
-                                <ui:repeat value="#{recruiterCDIBean.jobList}" var="j">
-                                    <div class="viewjobs-job-card viewjobs-mobile-card"
-                                         data-title="#{j.jobTitle}"
-                                         data-workmode="#{j.workMode}"
-                                         data-status="#{j.jobStatus}"
-                                         data-state="#{j.jobState}"
-                                         data-city="#{j.jobCity}"
-                                         data-jobtype="#{j.jobType}"
-                                         data-posted="#{recruiterCDIBean.formatJobDate(j.jobPostedDate)}"
-                                         data-expiry="#{recruiterCDIBean.formatJobDate(j.jobExpiryDate)}"
-                                         data-vacancies="#{j.jobVacancies}"
-                                         data-skills="#{recruiterCDIBean.getJobSkills(j)}"
-                                         data-description="#{j.jobDescription}">
-
-                                        <div class="viewjobs-job-card-top">
-                                            <div>
-                                                <h3>#{j.jobTitle}</h3>
-                                                <div class="viewjobs-card-location">
-                                                    <svg class="viewjobs-location-pin" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                        <path d="M12 2C8.686 2 6 4.686 6 8c0 5.25 6 14 6 14s6-8.75 6-14c0-3.314-2.686-6-6-6zm0 8.5A2.5 2.5 0 1 1 12 5.5a2.5 2.5 0 0 1 0 5z"/>
-                                                    </svg>
-                                                    <span>
-                                                        <h:outputText value="#{j.jobCity}" />
-                                                        <h:outputText value=", " rendered="#{not empty j.jobCity and not empty j.jobState}" />
-                                                        <h:outputText value="#{j.jobState}" />
-                                                        <h:outputText value="Location not specified"
-                                                                      rendered="#{empty j.jobCity and empty j.jobState}" />
+                                                          #{j.jobStatus eq 'Open' ? 'viewjobs-pill-open' :
+                                                            j.jobStatus eq 'Closed' ? 'viewjobs-pill-closed' :
+                                                            'viewjobs-pill-hold'}">
+                                                          #{j.jobStatus}
                                                     </span>
                                                 </div>
+
+                                                <div class="viewjobs-job-extra">
+                                                    <div class="viewjobs-job-chip-row">
+                                                        <span class="viewjobs-pill
+                                                              #{j.workMode eq 'Remote' ? 'viewjobs-pill-remote' :
+                                                                j.workMode eq 'Hybrid' ? 'viewjobs-pill-hybrid' :
+                                                                'viewjobs-pill-onsite'}">
+                                                              #{j.workMode}
+                                                        </span>
+
+                                                        <span class="viewjobs-info-chip">#{j.jobType}</span>
+                                                        <span class="viewjobs-info-chip">Exp: #{recruiterCDIBean.formatExperience(j.experienceRequired)}</span>
+                                                        <span class="viewjobs-info-chip">#{j.jobVacancies} vacancies</span>
+                                                        <span class="viewjobs-info-chip">Applications: 16</span>
+                                                        <span class="viewjobs-info-chip">Posted: #{recruiterCDIBean.formatJobDate(j.jobPostedDate)}</span>
+                                                        <span class="viewjobs-info-chip">Expires: #{recruiterCDIBean.formatJobDate(j.jobExpiryDate)}</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="viewjobs-actions viewjobs-mobile-actions">
+                                                    <a href="#" class="viewjobs-action-link viewjobs-action-view view-job-btn">View</a>
+                                                    <h:link outcome="recruiterPostJob"
+                                                            styleClass="viewjobs-action-link viewjobs-action-edit">
+                                                        <f:param name="jobId" value="#{j.jobId}" />
+                                                        Edit
+                                                    </h:link>
+                                                </div>
                                             </div>
-
-                                            <span class="viewjobs-pill
-                                                #{j.jobStatus eq 'Open' ? 'viewjobs-pill-open' :
-                                                  j.jobStatus eq 'Closed' ? 'viewjobs-pill-closed' :
-                                                  'viewjobs-pill-hold'}">
-                                                #{j.jobStatus}
-                                            </span>
-                                        </div>
-
-                                        <div class="viewjobs-job-extra">
-                                            <div class="viewjobs-job-chip-row">
-                                                <span class="viewjobs-pill
-                                                    #{j.workMode eq 'Remote' ? 'viewjobs-pill-remote' :
-                                                      j.workMode eq 'Hybrid' ? 'viewjobs-pill-hybrid' :
-                                                      'viewjobs-pill-onsite'}">
-                                                    #{j.workMode}
-                                                </span>
-
-                                                <span class="viewjobs-info-chip">#{j.jobType}</span>
-                                                <span class="viewjobs-info-chip">#{j.jobVacancies} vacancies</span>
-                                                <span class="viewjobs-info-chip">Posted: #{recruiterCDIBean.formatJobDate(j.jobPostedDate)}</span>
-                                                <span class="viewjobs-info-chip">Expires: #{recruiterCDIBean.formatJobDate(j.jobExpiryDate)}</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="viewjobs-actions viewjobs-mobile-actions">
-                                            <a href="#" class="viewjobs-action-link viewjobs-action-view view-job-btn">View</a>
-                                            <a href="#" class="viewjobs-action-link viewjobs-action-edit">Edit</a>
-                                            <a href="#" class="viewjobs-action-link viewjobs-action-danger">
-                                                #{j.jobStatus eq 'Onhold' ? 'Delete' : 'Close'}
-                                            </a>
-                                        </div>
+                                        </ui:repeat>
                                     </div>
-                                </ui:repeat>
-                            </div>
 
-                            <div id="viewJobsEmptyState" class="viewjobs-empty-state" style="display:none;">
-                                <div class="viewjobs-empty-icon">&#128269;</div>
-                                <p>No jobs found for the selected filters.</p>
-                            </div>
-
-                            
+                                    <div id="viewJobsEmptyState" class="viewjobs-empty-state" style="display:none;">
+                                        <div class="viewjobs-empty-icon">&#128269;</div>
+                                        <p>No jobs found for the selected filters.</p>
+                                    </div>
+                                </h:panelGroup>
+                            </h:form>
                         </section>
-                        
+
                         <div class="viewjobs-loadmore-wrap" id="loadMoreWrap">
-                                <button type="button"
-                                        class="viewjobs-loadmore-btn"
-                                        id="loadMoreBtn"
-                                        onclick="loadMoreJobs(); return false;">
-                                    <span class="viewjobs-loadmore-text">Load More Jobs</span>
-                                    <span class="viewjobs-loadmore-icon">&#8595;</span>
-                                </button>
+                            <button type="button"
+                                    class="viewjobs-loadmore-btn"
+                                    id="loadMoreBtn"
+                                    onclick="loadMoreJobs(); return false;">
+                                <span class="viewjobs-loadmore-text">Load More Jobs</span>
+                                <span class="viewjobs-loadmore-icon">&#8595;</span>
+                            </button>
                         </div>
                     </main>
                 </div>
 
-                <div class="viewjobs-modal-overlay" id="jobDetailsModal">
-                    <div class="viewjobs-modal-card">
+                <ui:include src="/common/footer.xhtml"/>
+
+                <div class="viewjobs-modal-overlay" id="jobDetailsModal" aria-hidden="true">
+                    <div class="viewjobs-modal-card" role="dialog" aria-modal="true" aria-labelledby="modalJobTitle">
+
                         <button type="button" class="viewjobs-modal-close" id="jobModalCloseBtn">&#215;</button>
 
                         <div class="viewjobs-modal-header">
-                            <div>
+                            <div class="viewjobs-modal-header-main">
                                 <div class="viewjobs-modal-tag">Job Details</div>
-                                <h2 id="modalJobTitle">Job Title</h2>
-                                <p id="modalJobLocation">Location</p>
-                            </div>
+                                <div class="viewjobs-modal-title-row">
+                                    <h2 id="modalJobTitle">Job Title</h2>
+                                    <div class="viewjobs-modal-status-wrap" id="modalJobStatusWrap"></div>
+                                </div>
+                                <p id="modalJobLocation">
 
-                            <div class="viewjobs-modal-status-wrap" id="modalJobStatusWrap"></div>
+                                    <svg class="viewjobs-modal-location-icon"
+                                         viewBox="0 0 24 24"
+                                         xmlns="http://www.w3.org/2000/svg">
+
+                                        <path d="M12 2C8.686 2 6 4.686 6 8
+                                              c0 5.25 6 14 6 14
+                                              s6-8.75 6-14
+                                              c0-3.314-2.686-6-6-6zm0 8.5
+                                              A2.5 2.5 0 1 1 12 5.5
+                                              a2.5 2.5 0 0 1 0 5z"/>
+
+                                    </svg>
+
+                                    <span id="modalLocationText">Location</span>
+
+                                </p>
+                            </div>
                         </div>
 
                         <div class="viewjobs-modal-body">
-                            <div class="viewjobs-modal-grid">
-                                <div class="viewjobs-modal-info-box">
-                                    <span class="viewjobs-modal-label">Work Mode</span>
-                                    <div class="viewjobs-modal-value" id="modalWorkMode">-</div>
+                            <div class="viewjobs-modal-section">
+                                <div class="viewjobs-modal-section-head">
+                                    <h3>
+                                        <svg class="viewjobs-section-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                                        </svg>
+                                        Job Summary
+                                    </h3>
                                 </div>
 
-                                <div class="viewjobs-modal-info-box">
-                                    <span class="viewjobs-modal-label">Job Type</span>
-                                    <div class="viewjobs-modal-value" id="modalJobType">-</div>
-                                </div>
+                                <div class="viewjobs-modal-grid">
+                                    <div class="viewjobs-modal-info-box">
+                                        <span class="viewjobs-modal-label">Work Mode</span>
+                                        <div class="viewjobs-modal-value" id="modalWorkMode">-</div>
+                                    </div>
 
-                                <div class="viewjobs-modal-info-box">
-                                    <span class="viewjobs-modal-label">Vacancies</span>
-                                    <div class="viewjobs-modal-value" id="modalVacancies">-</div>
-                                </div>
+                                    <div class="viewjobs-modal-info-box">
+                                        <span class="viewjobs-modal-label">Job Type</span>
+                                        <div class="viewjobs-modal-value" id="modalJobType">-</div>
+                                    </div>
 
-                                <div class="viewjobs-modal-info-box">
-                                    <span class="viewjobs-modal-label">Posted Date</span>
-                                    <div class="viewjobs-modal-value" id="modalPostedDate">-</div>
-                                </div>
+                                    <div class="viewjobs-modal-info-box">
+                                        <span class="viewjobs-modal-label">Vacancies</span>
+                                        <div class="viewjobs-modal-value">
+                                            <span class="viewjobs-modal-value-badge" id="modalVacancies">-</span>
+                                        </div>
+                                    </div>
 
-                                <div class="viewjobs-modal-info-box">
-                                    <span class="viewjobs-modal-label">Expiry Date</span>
-                                    <div class="viewjobs-modal-value" id="modalExpiryDate">-</div>
-                                </div>
+                                    <div class="viewjobs-modal-info-box">
+                                        <span class="viewjobs-modal-label">Experience Required</span>
+                                        <div class="viewjobs-modal-value" id="modalExperience">-</div>
+                                    </div>
 
-                                <div class="viewjobs-modal-info-box">
-                                    <span class="viewjobs-modal-label">Status</span>
-                                    <div class="viewjobs-modal-value" id="modalStatusText">-</div>
+                                    <div class="viewjobs-modal-info-box">
+                                        <span class="viewjobs-modal-label">Posted Date</span>
+                                        <div class="viewjobs-modal-value" id="modalPostedDate">-</div>
+                                    </div>
+
+                                    <div class="viewjobs-modal-info-box">
+                                        <span class="viewjobs-modal-label">Expiry Date</span>
+                                        <div class="viewjobs-modal-value" id="modalExpiryDate">-</div>
+                                    </div>
+
+                                    <div class="viewjobs-modal-info-box">
+                                        <span class="viewjobs-modal-label">Status</span>
+                                        <div class="viewjobs-modal-value" id="modalStatusText">-</div>
+                                    </div>
+
+                                    <div class="viewjobs-modal-info-box viewjobs-modal-info-box-wide">
+                                        <span class="viewjobs-modal-label">Location</span>
+                                        <div class="viewjobs-modal-value" id="modalLocationText2">-</div>
+                                    </div>
                                 </div>
                             </div>
 
                             <div class="viewjobs-modal-section">
-                                <span class="viewjobs-modal-label">Skills</span>
-                                <div class="viewjobs-modal-skills" id="modalSkills"></div>
+                                <div class="viewjobs-modal-section-head">
+                                    <h3>
+                                        <svg class="viewjobs-section-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 3L1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
+                                        </svg>
+                                        Compensation
+                                    </h3>
+                                </div>
+                                <div class="viewjobs-modal-compensation" id="modalCompensation">
+                                    Not specified.
+                                </div>
                             </div>
 
                             <div class="viewjobs-modal-section">
-                                <span class="viewjobs-modal-label">Job Description</span>
+                                <div class="viewjobs-modal-section-head">
+                                    <h3>
+                                        <svg class="viewjobs-section-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 3L1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
+                                        </svg>
+                                        Required Skills
+                                    </h3>
+                                </div>
+                                <div class="viewjobs-modal-skills" id="modalSkills" style="padding-top: 20px;"></div>
+                            </div>
+
+                            <div class="viewjobs-modal-section">
+                                <div class="viewjobs-modal-section-head">
+                                    <h3>
+                                        <svg class="viewjobs-section-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>
+                                        </svg>
+                                        Education
+                                    </h3>
+                                </div>
+                                <div class="viewjobs-modal-education" id="modalEducation" style="padding-top: 20px;"></div>
+                            </div>
+
+                            <div class="viewjobs-modal-section">
+                                <div class="viewjobs-modal-section-head">
+                                    <h3>
+                                        <svg class="viewjobs-section-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                                        </svg>
+                                        Application Summary
+                                    </h3>
+                                </div>
+                                <div class="viewjobs-modal-summary-grid" style="padding-top: 20px;">
+                                    <div class="viewjobs-summary-card viewjobs-summary-card-primary">
+                                        <span class="viewjobs-summary-label">Total</span>
+                                        <strong id="modalApplicationsTotal">0</strong>
+                                    </div>
+                                    <div class="viewjobs-summary-card viewjobs-summary-card-success">
+                                        <span class="viewjobs-summary-label">Applied</span>
+                                        <strong id="modalApplicationsApplied">0</strong>
+                                    </div>
+                                    <div class="viewjobs-summary-card viewjobs-summary-card-info">
+                                        <span class="viewjobs-summary-label">Shortlisted</span>
+                                        <strong id="modalApplicationsShortlisted">0</strong>
+                                    </div>
+                                    <div class="viewjobs-summary-card viewjobs-summary-card-warning">
+                                        <span class="viewjobs-summary-label">Rejected</span>
+                                        <strong id="modalApplicationsRejected">0</strong>
+                                    </div>
+                                    <div class="viewjobs-summary-card viewjobs-summary-card-danger">
+                                        <span class="viewjobs-summary-label">Selected</span>
+                                        <strong id="modalApplicationsSelected">0</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="viewjobs-modal-section viewjobs-modal-section-full">
+                                <div class="viewjobs-modal-section-head">
+                                    <h3>
+                                        <svg class="viewjobs-section-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                                        </svg>
+                                        Job Description
+                                    </h3>
+                                </div>
                                 <div class="viewjobs-modal-description" id="modalDescription">
                                     No description available.
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="viewjobs-modal-footer">
+                            <button type="button" class="viewjobs-modal-btn viewjobs-modal-btn-secondary" onclick="closeJobModal()">
+                                Close
+                            </button>
+                            <a id="modalEditLink" href="#" class="viewjobs-modal-btn viewjobs-modal-btn-primary">
+                                Edit
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -486,7 +745,6 @@
                 </div>
             </h:panelGroup>
 
-            <ui:include src="/common/footer.xhtml"/>
             <h:outputScript library="js" name="recruiter/recruiterViewJob.js" target="body" />
         </h:body>
     </f:view>

@@ -31,7 +31,8 @@
                         <h:form styleClass="menu-form">
                             <h:commandLink value="🏠 Dashboard" styleClass="menu-link active" />
                             <h:commandLink value="📋 Job Postings" action="recruiterPostJob?faces-redirect=true" styleClass="menu-link" />
-                            <h:commandLink value="👥 Applicants" styleClass="menu-link" />
+                            <h:commandLink value="📋 View Jobs" action="recruiterViewJobs?faces-redirect=true" styleClass="menu-link" />
+                            <h:commandLink value="👥 Applicants" action="recruiterApplicants?faces-redirect=true" styleClass="menu-link" />
                             <h:commandLink value="📅 Interviews" styleClass="menu-link" />
                             <h:commandLink value="📊 Reports" styleClass="menu-link" />
                             <h:commandLink value="⚙ Settings" styleClass="menu-link" />
@@ -264,18 +265,39 @@
                                         </h:panelGroup>
 
                                         <ui:repeat value="#{recruiterCDIBean.recentActivities}" var="a">
+
                                             <div class="activity-item">
+
                                                 <div class="activity-dot"></div>
 
                                                 <div class="activity-content">
-                                                    <p class="activity-message">#{a.message}</p>
+
+                                                    <strong>
+                                                        #{a.notificationTitle}
+                                                    </strong>
+
+                                                    <p class="activity-message">
+                                                        #{a.notificationMessage}
+                                                    </p>
+
                                                     <span class="activity-time">
                                                         #{recruiterCDIBean.getTimeAgo(a.createdDate)}
                                                     </span>
+
                                                 </div>
 
-                                                <div class="activity-icon">⚡</div>
+                                                <div class="activity-icon">
+
+                                                    <h:outputText value="#{a.notificationType eq 'APPLICATION' ? '📄' :
+                                                                           a.notificationType eq 'INTERVIEW' ? '📅' :
+                                                                           a.notificationType eq 'SHORTLIST' ? '⭐' :
+                                                                           a.notificationType eq 'HIRED' ? '🎉' :
+                                                                           '⚡'}"/>
+
+                                                </div>
+
                                             </div>
+
                                         </ui:repeat>
                                     </div>
                                 </h:panelGroup>

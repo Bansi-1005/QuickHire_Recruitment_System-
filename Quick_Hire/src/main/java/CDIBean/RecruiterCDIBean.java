@@ -5,6 +5,7 @@
 package CDIBean;
 
 import Client.RecruiterJerseyClient;
+import Entity.Tbleducation;
 import Entity.Tblinterview;
 import Entity.Tbljob;
 import Entity.Tblnotification;
@@ -31,6 +32,8 @@ import util.LocationData;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.validator.ValidatorException;
 import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 /**
  *
@@ -40,7 +43,6 @@ import java.math.BigDecimal;
 @SessionScoped
 public class RecruiterCDIBean implements Serializable {
 
-    // ================= RECRUITER =================
     private Tblrecruiters recruiter = new Tblrecruiters();
 
     private final RecruiterJerseyClient client
@@ -49,7 +51,6 @@ public class RecruiterCDIBean implements Serializable {
     @Inject
     LoginCDIBean loginBean;
 
-    // ================= DASHBOARD VARIABLES =================
     private int recruiterId;
 
     private int todayInterviews;
@@ -62,7 +63,6 @@ public class RecruiterCDIBean implements Serializable {
     private int upcomingInterviews;
     private int avgTimeToHire;
 
-    // ================= DASHBOARD LISTS =================
     private List<Tblscreeningscore> topCandidateslist
             = new ArrayList<>();
 
@@ -72,21 +72,21 @@ public class RecruiterCDIBean implements Serializable {
     private List<Tblnotification> recentActivities
             = new ArrayList<>();
 
-    // ================= JOB POST VARIABLES =================
     private Tbljob job = new Tbljob();
 
     private String skillInput;
-    
+
     private Integer expYears;
     private Integer expMonths;
 
     private List<Integer> yearList;
     private List<Integer> monthList;
-    
+
     private String modalActionType;
 
+    private Integer editJobId;
+    private boolean editMode = false;
 
-    // ================= LOCATION VARIABLES =================
     private List<String> availableStates
             = new ArrayList<>();
 
@@ -97,18 +97,19 @@ public class RecruiterCDIBean implements Serializable {
 
     private String selectedCity;
 
-    // ================= VIEW JOBS VARIABLES =================
     private List<Tbljob> jobList = new ArrayList<>();
 
     private List<Tblskills> allSkills = new ArrayList<>();
+    private List<Tbleducation> educationList = new ArrayList<>();
     private List<Integer> selectedSkillIds = new ArrayList<>();
+    private List<Integer> selectedEducationIds = new ArrayList<>();
+    private List<Tbleducation> jobEducationList = new ArrayList<>();
     private int totalJobs;
     private int openJobs;
     private int closedJobs;
     private int expiringJobs;
+    private Integer editingExpiryJobId;
 
-    
-    // ================= SKILL CATEGORY VARIABLES =================
     private List<Tblskillcategory> skillCategories
             = new ArrayList<>();
 
@@ -122,37 +123,33 @@ public class RecruiterCDIBean implements Serializable {
     private String newSkillName;
 
     private String skillActionType;
-    
-    
 
-
-
-    // ================= CONSTRUCTOR =================
+    // RecruiterCDIBean
     public RecruiterCDIBean() {
     }
 
-    // ================= INIT =================
     @PostConstruct
+
+    // init
     public void init() {
 
         availableStates = LocationData.getStates();
-        
-         yearList = new ArrayList<>();
+        availableCities = LocationData.getAllCities();
+
+        yearList = new ArrayList<>();
         monthList = new ArrayList<>();
 
-        // YEARS
         for (int i = 0; i <= 50; i++) {
             yearList.add(i);
         }
 
-        // MONTHS
         for (int i = 0; i <= 11; i++) {
             monthList.add(i);
         }
 
     }
 
-    // ================= INIT LOCATION DATA =================
+    // initLocationData
     public void initLocationData() {
 
         availableStates = LocationData.getStates();
@@ -169,32 +166,53 @@ public class RecruiterCDIBean implements Serializable {
         }
     }
 
+    // initializeJobForm
     public void initializeJobForm() {
 
-        loadSkills();
+        try {
 
-        loadSkillCategories();
-        selectedSkillCategory = 0;
+            client.setToken(loginBean.getToken());
 
-//        if (filteredSkills == null || filteredSkills.isEmpty()) {
-        filteredSkills = new ArrayList<>(allSkills);
-//        }
+            if (recruiter == null || recruiter.getRecruiterId() == 0) {
+                loadProfile();
+            }
 
+            loadSkills();
+            loadSkillCategories();
+            loadEducation();
+
+            selectedSkillCategory = 0;
+            filteredSkills = new ArrayList<>(allSkills);
+
+            if (editJobId != null && editJobId > 0) {
+                loadJobForEdit();
+            } else {
+                editMode = false;
+                job = new Tbljob();
+
+                selectedSkillIds = new ArrayList<>();
+                selectedEducationIds = new ArrayList<>();
+
+                selectedState = null;
+                selectedCity = null;
+                availableCities = new ArrayList<>();
+
+                expYears = null;
+                expMonths = null;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    // ================= AJAX LISTENER FOR CATEGORY CHANGE =================
+    // onSkillCategoryChange
     public void onSkillCategoryChange(
             jakarta.faces.event.AjaxBehaviorEvent event) {
-
-        System.out.println(
-                "onSkillCategoryChange fired, category = "
-                + selectedSkillCategory
-        );
-
         loadSkillsByCategory();
     }
 
-    // ================= WORK MODE CHANGE =================
+    // onWorkModeChange
     public void onWorkModeChange() {
 
         selectedState = null;
@@ -209,29 +227,23 @@ public class RecruiterCDIBean implements Serializable {
         generateJobLocation();
     }
 
-    // ================= STATE CHANGE =================
+// onStateChange
     public void onStateChange() {
 
         if (selectedState != null
                 && !selectedState.isEmpty()) {
 
-            availableCities
-                    = LocationData.getCitiesByState(selectedState);
+            availableCities = LocationData.getCitiesByState(selectedState);
 
         } else {
 
-            availableCities = new ArrayList<>();
+            availableCities = LocationData.getAllCities();
         }
 
         selectedCity = null;
-
-        job.setJobState(selectedState);
-        job.setJobCity(null);
-
-        generateJobLocation();
     }
 
-    // ================= CITY CHANGE =================
+    // onCityChange
     public void onCityChange() {
 
         job.setJobState(selectedState);
@@ -240,7 +252,7 @@ public class RecruiterCDIBean implements Serializable {
         generateJobLocation();
     }
 
-    // ================= GENERATE JOB LOCATION =================
+    // generateJobLocation
     public void generateJobLocation() {
 
         String workMode = job.getWorkMode();
@@ -252,7 +264,6 @@ public class RecruiterCDIBean implements Serializable {
             return;
         }
 
-        // REMOTE
         if (workMode.equalsIgnoreCase("Remote")) {
 
             job.setJobLocation("Remote");
@@ -263,7 +274,6 @@ public class RecruiterCDIBean implements Serializable {
             return;
         }
 
-        // HYBRID / ON-SITE
         StringBuilder sb = new StringBuilder();
 
         sb.append(workMode);
@@ -288,7 +298,7 @@ public class RecruiterCDIBean implements Serializable {
         job.setJobCity(selectedCity);
     }
 
-    // ================= LOAD PROFILE =================
+    // loadProfile
     public void loadProfile() {
 
         try {
@@ -303,7 +313,6 @@ public class RecruiterCDIBean implements Serializable {
             );
 
             recruiterId = recruiter.getRecruiterId();
-//            loadSkills();
 
         } catch (Exception e) {
 
@@ -311,7 +320,7 @@ public class RecruiterCDIBean implements Serializable {
         }
     }
 
-    // ================= LOAD DASHBOARD =================
+    // loadDashboardData
     public void loadDashboardData() {
 
         try {
@@ -327,7 +336,6 @@ public class RecruiterCDIBean implements Serializable {
             int recruiterId
                     = recruiter.getRecruiterId();
 
-            // ================= ACTIVE JOBS =================
             try {
 
                 Collection jobs = client.getJobs(
@@ -347,7 +355,6 @@ public class RecruiterCDIBean implements Serializable {
                 activeJobs = 0;
             }
 
-            // ================= TOTAL APPLICANTS =================
             try {
 
                 String totalApplicantsStr
@@ -365,7 +372,6 @@ public class RecruiterCDIBean implements Serializable {
                 totalApplicants = 0;
             }
 
-            // ================= NEW APPLICANTS =================
             try {
 
                 String newApplicantsStr
@@ -383,7 +389,6 @@ public class RecruiterCDIBean implements Serializable {
                 newApplicants = 0;
             }
 
-            // ================= SHORTLISTED =================
             try {
 
                 String shortlistedStr
@@ -401,7 +406,6 @@ public class RecruiterCDIBean implements Serializable {
                 shortlistedCandidates = 0;
             }
 
-            // ================= TODAY INTERVIEWS =================
             try {
 
                 String todayInterviewStr
@@ -419,7 +423,6 @@ public class RecruiterCDIBean implements Serializable {
                 todayInterviews = 0;
             }
 
-            // ================= UPCOMING INTERVIEWS =================
             try {
 
                 String upcomingStr
@@ -437,7 +440,6 @@ public class RecruiterCDIBean implements Serializable {
                 upcomingInterviews = 0;
             }
 
-            // ================= HIRING RATE =================
             try {
 
                 String hiringRateStr
@@ -455,7 +457,6 @@ public class RecruiterCDIBean implements Serializable {
                 hiringRate = 0;
             }
 
-            // ================= AVG TIME TO HIRE =================
             try {
 
                 String avgTimeStr
@@ -473,7 +474,6 @@ public class RecruiterCDIBean implements Serializable {
                 avgTimeToHire = 0;
             }
 
-            // ================= TOP CANDIDATES =================
             try {
 
                 Collection<Tblscreeningscore> topList
@@ -495,7 +495,6 @@ public class RecruiterCDIBean implements Serializable {
                         = new ArrayList<>();
             }
 
-            // ================= UPCOMING INTERVIEW LIST =================
             try {
 
                 Collection<Tblinterview> interviewData
@@ -517,7 +516,6 @@ public class RecruiterCDIBean implements Serializable {
                         = new ArrayList<>();
             }
 
-            // ================= RECENT ACTIVITIES =================
             try {
 
                 Collection<Tblnotification> activityData
@@ -547,7 +545,7 @@ public class RecruiterCDIBean implements Serializable {
         }
     }
 
-    // ================= UPDATE PROFILE =================
+    // updateProfile
     public void updateProfile() {
 
         try {
@@ -600,7 +598,7 @@ public class RecruiterCDIBean implements Serializable {
         }
     }
 
-    // ================= FORMAT INTERVIEW DATE =================
+    // formatInterviewDate
     public String formatInterviewDate(Object interviewObj) {
 
         try {
@@ -644,7 +642,6 @@ public class RecruiterCDIBean implements Serializable {
                     && today.get(Calendar.DAY_OF_YEAR)
                     == interviewCal.get(Calendar.DAY_OF_YEAR);
 
-            // CHANGED HERE
             SimpleDateFormat timeFormat
                     = new SimpleDateFormat("h:mm a");
 
@@ -655,7 +652,6 @@ public class RecruiterCDIBean implements Serializable {
 
             } else {
 
-                // CHANGED HERE ALSO
                 SimpleDateFormat fullFormat
                         = new SimpleDateFormat(
                                 "d MMM yyyy  h:mm a"
@@ -672,7 +668,7 @@ public class RecruiterCDIBean implements Serializable {
         }
     }
 
-    // ================= TIME AGO =================
+    // getTimeAgo
     public String getTimeAgo(Object dateObj) {
 
         try {
@@ -755,7 +751,7 @@ public class RecruiterCDIBean implements Serializable {
         }
     }
 
-    // ================= TOMORROW DATE =================
+    // getTomorrowDate
     public String getTomorrowDate() {
 
         return java.time.LocalDate.now()
@@ -763,41 +759,58 @@ public class RecruiterCDIBean implements Serializable {
                 .toString();
     }
 
-    // ================= SAVE JOB =================
+    // saveJob
     public String saveJob() {
 
         FacesContext fc = FacesContext.getCurrentInstance();
-  
+
         try {
 
             client.setToken(loginBean.getToken());
 
             generateJobLocation();
-            
+
             job.setRecruiterId(recruiter);
 
-            // CONVERT EXPERIENCE TO TOTAL MONTHS
             int years = (expYears != null) ? expYears : 0;
             int months = (expMonths != null) ? expMonths : 0;
 
             int totalMonths = (years * 12) + months;
 
             job.setExperienceRequired(totalMonths);
-            
 
-            // ================= PASS SKILL IDS =================
             Collection<Integer> skillIds = new ArrayList<>();
 
             if (selectedSkillIds != null && !selectedSkillIds.isEmpty()) {
                 skillIds.addAll(selectedSkillIds);
             }
 
-            // ================= API CALL =================
-            Response res = client.createJob(job, skillIds);
+            Collection<Integer> educationIds = new ArrayList<>();
+
+            if (selectedEducationIds != null
+                    && !selectedEducationIds.isEmpty()) {
+
+                educationIds.addAll(selectedEducationIds);
+            }
+
+            Response res;
+
+            if (editMode) {
+                res = client.updateJob(
+                        job,
+                        skillIds,
+                        educationIds
+                );
+            } else {
+                res = client.createJob(
+                        job,
+                        skillIds,
+                        educationIds
+                );
+            }
 
             String msg = res.readEntity(String.class);
 
-            // ================= SUCCESS =================
             if (res.getStatus() == 200) {
 
                 fc.addMessage(
@@ -809,20 +822,32 @@ public class RecruiterCDIBean implements Serializable {
                         )
                 );
 
+                boolean wasEditMode = editMode;
                 job = new Tbljob();
-                
+
                 expYears = null;
                 expMonths = null;
+
                 skillInput = "";
+
                 selectedSkillIds = new ArrayList<>();
+                selectedEducationIds = new ArrayList<>();
+
+                selectedSkillCategory = null;
+                filteredSkills = new ArrayList<>(allSkills);
+
                 selectedState = null;
                 selectedCity = null;
                 availableCities = new ArrayList<>();
 
-                return null;
+                if (wasEditMode) {
+                    return "recruiterViewJobs?faces-redirect=true";
+                } else {
+
+                    return null;
+                }
             }
 
-            // ================= ERROR HANDLING =================
             if (msg != null) {
 
                 if (msg.startsWith("compensationMax:")) {
@@ -892,15 +917,675 @@ public class RecruiterCDIBean implements Serializable {
             return null;
         }
     }
-// ================= SAVE DRAFT =================
 
-//    public String saveDraft() {
-//
-//        job.setJobStatus("Draft");
-//
-//        return saveJob();
-//    }
-    // ================= HELPER METHODS =================
+    // updateJob
+    public void updateJob() {
+
+        FacesContext fc = FacesContext.getCurrentInstance();
+
+        try {
+
+            client.setToken(loginBean.getToken());
+
+            generateJobLocation();
+
+            job.setRecruiterId(recruiter);
+
+            int years = (expYears != null) ? expYears : 0;
+            int months = (expMonths != null) ? expMonths : 0;
+
+            int totalMonths = (years * 12) + months;
+
+            job.setExperienceRequired(totalMonths);
+
+            Collection<Integer> skillIds = new ArrayList<>();
+
+            if (selectedSkillIds != null
+                    && !selectedSkillIds.isEmpty()) {
+
+                skillIds.addAll(selectedSkillIds);
+            }
+
+            Collection<Integer> educationIds = new ArrayList<>();
+
+            if (selectedEducationIds != null
+                    && !selectedEducationIds.isEmpty()) {
+
+                educationIds.addAll(selectedEducationIds);
+            }
+
+            Response res = client.updateJob(
+                    job,
+                    skillIds,
+                    educationIds
+            );
+
+            String msg = res.readEntity(String.class);
+
+            if (res.getStatus() == 200) {
+
+                fc.addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_INFO,
+                                "Success",
+                                msg
+                        )
+                );
+
+                loadViewJobsData();
+
+            } else {
+
+                fc.addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_ERROR,
+                                "Error",
+                                msg
+                        )
+                );
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            fc.addMessage(
+                    null,
+                    new FacesMessage(
+                            FacesMessage.SEVERITY_ERROR,
+                            "Error",
+                            e.getMessage()
+                    )
+            );
+        }
+    }
+
+    // loadJobForEdit
+    public void loadJobForEdit() {
+
+        FacesContext fc = FacesContext.getCurrentInstance();
+
+        try {
+            if (editJobId == null || editJobId <= 0) {
+                editMode = false;
+                return;
+            }
+
+            client.setToken(loginBean.getToken());
+
+            if (recruiter == null || recruiter.getRecruiterId() == 0) {
+                loadProfile();
+            }
+
+            Collection<Tbljob> jobs = client.getJobs(
+                    new GenericType<Collection<Tbljob>>() {
+            },
+                    String.valueOf(recruiter.getRecruiterId())
+            );
+
+            Tbljob selectedJob = null;
+
+            if (jobs != null) {
+                for (Tbljob j : jobs) {
+                    if (j != null
+                            && j.getJobId() != null
+                            && j.getJobId().equals(editJobId)) {
+                        selectedJob = j;
+                        break;
+                    }
+                }
+            }
+
+            if (selectedJob == null) {
+                editMode = false;
+                job = new Tbljob();
+
+                fc.addMessage(null, new FacesMessage(
+                        FacesMessage.SEVERITY_ERROR,
+                        "Error",
+                        "Job not found for edit"
+                ));
+                return;
+            }
+
+            editMode = true;
+            job = selectedJob;
+
+            job.setJobType(normalizeJobTypeForForm(job.getJobType()));
+            job.setWorkMode(normalizeWorkModeForForm(job.getWorkMode()));
+            job.setJobStatus(normalizeJobStatusForForm(job.getJobStatus()));
+            job.setJobCompensationType(normalizeCompensationTypeForForm(job.getJobCompensationType()));
+            job.setJobCompensationPeriod(normalizeCompensationPeriodForForm(job.getJobCompensationPeriod()));
+
+            int totalMonths = job.getExperienceRequired() != null
+                    ? job.getExperienceRequired()
+                    : 0;
+
+            expYears = totalMonths / 12;
+            expMonths = totalMonths % 12;
+
+            selectedState = job.getJobState();
+            selectedCity = job.getJobCity();
+
+            if (selectedState != null && !selectedState.trim().isEmpty()) {
+                availableCities = LocationData.getCitiesByState(selectedState);
+            } else {
+                availableCities = new ArrayList<>();
+            }
+
+            selectedSkillIds = new ArrayList<>();
+
+            try {
+                Collection<Tblskills> jobSkills
+                        = client.getJobSkills(String.valueOf(editJobId));
+
+                selectedSkillIds = new ArrayList<>();
+
+                if (jobSkills != null) {
+                    for (Tblskills skill : jobSkills) {
+                        if (skill != null && skill.getSkillId() != null) {
+                            selectedSkillIds.add(skill.getSkillId());
+                        }
+                    }
+                }
+
+                System.out.println("Loaded skill ids for job "
+                        + editJobId + ": " + selectedSkillIds);
+
+            } catch (Exception skillException) {
+                skillException.printStackTrace();
+                selectedSkillIds = new ArrayList<>();
+            }
+
+            selectedEducationIds = new ArrayList<>();
+
+            try {
+                Collection<Tbleducation> jobEducation = client.getJobEducation(String.valueOf(editJobId));
+
+                if (jobEducation != null) {
+                    for (Tbleducation education : jobEducation) {
+                        if (education != null && education.getEducationId() != null) {
+                            selectedEducationIds.add(education.getEducationId());
+                        }
+                    }
+                }
+            } catch (Exception educationException) {
+                selectedEducationIds = new ArrayList<>();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            editMode = false;
+            job = new Tbljob();
+
+            fc.addMessage(null, new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Error",
+                    "Unable to load job for edit"
+            ));
+        }
+    }
+
+    // normalizeJobTypeForForm
+    private String normalizeJobTypeForForm(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String v = value.trim().toLowerCase().replace("-", " ").replace("_", " ");
+        v = v.replaceAll("\\s+", " ");
+
+        switch (v) {
+            case "full time":
+            case "fulltime":
+                return "Full-time";
+
+            case "part time":
+            case "parttime":
+                return "Part-time";
+
+            case "internship":
+                return "Internship";
+
+            case "contract":
+                return "Contract";
+
+            default:
+                return value.trim();
+        }
+    }
+
+    // normalizeWorkModeForForm
+    private String normalizeWorkModeForForm(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String v = value.trim().toLowerCase().replace("-", " ").replace("_", " ");
+        v = v.replaceAll("\\s+", " ");
+
+        switch (v) {
+            case "remote":
+                return "Remote";
+
+            case "hybrid":
+                return "Hybrid";
+
+            case "onsite":
+            case "on site":
+                return "On-site";
+
+            default:
+                return value.trim();
+        }
+    }
+
+    // normalizeJobStatusForForm
+    private String normalizeJobStatusForForm(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String v = value.trim().toLowerCase();
+
+        switch (v) {
+            case "open":
+                return "Open";
+
+            case "closed":
+                return "Closed";
+
+            case "onhold":
+            case "on hold":
+                return "Onhold";
+
+            default:
+                return value.trim();
+        }
+    }
+
+    // normalizeCompensationTypeForForm
+    private String normalizeCompensationTypeForForm(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String v = value.trim().toLowerCase().replace("-", " ").replace("_", " ");
+        v = v.replaceAll("\\s+", " ");
+
+        switch (v) {
+            case "salary":
+                return "salary";
+
+            case "stipend":
+                return "stipend";
+
+            case "hourly":
+            case "hourly pay":
+                return "hourly";
+
+            default:
+                return v;
+        }
+    }
+
+    // normalizeCompensationPeriodForForm
+    private String normalizeCompensationPeriodForForm(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String v = value.trim().toLowerCase().replace("-", " ").replace("_", " ");
+        v = v.replaceAll("\\s+", " ");
+
+        switch (v) {
+            case "month":
+            case "monthly":
+                return "monthly";
+
+            case "year":
+            case "yearly":
+            case "annual":
+            case "annum":
+                return "yearly";
+
+            case "week":
+            case "weekly":
+                return "weekly";
+
+            case "day":
+            case "daily":
+                return "daily";
+
+            case "hour":
+            case "hourly":
+                return "hourly";
+
+            default:
+                return v;
+        }
+    }
+
+    // formatExperience
+    public String formatExperience(Integer totalMonths) {
+
+        if (totalMonths == null || totalMonths <= 0) {
+            return "Fresher";
+        }
+
+        int years = totalMonths / 12;
+        int months = totalMonths % 12;
+
+        StringBuilder result = new StringBuilder();
+
+        if (years > 0) {
+            result.append(years)
+                    .append(years == 1 ? " year" : " years");
+        }
+
+        if (months > 0) {
+            if (result.length() > 0) {
+                result.append(" ");
+            }
+
+            result.append(months)
+                    .append(months == 1 ? " month" : " months");
+        }
+
+        return result.toString();
+    }
+
+    // isJobExpired
+    public boolean isJobExpired(Tbljob job) {
+
+        if (job == null || job.getJobExpiryDate() == null) {
+            return false;
+        }
+
+        Calendar cal = Calendar.getInstance();
+
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+
+        Date today = cal.getTime();
+
+        return job.getJobExpiryDate().before(today);
+    }
+
+    // startOfToday
+    private Date startOfToday() {
+        Calendar cal = Calendar.getInstance();
+
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+
+        return cal.getTime();
+    }
+
+    // getTodayInputDate
+    public String getTodayInputDate() {
+        return new SimpleDateFormat("yyyy-MM-dd").format(startOfToday());
+    }
+
+    // formatDateInput
+    public String formatDateInput(Date date) {
+        if (date == null) {
+            return "";
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        sdf.setTimeZone(java.util.TimeZone.getTimeZone("Asia/Kolkata"));
+
+        return sdf.format(date);
+    }
+
+    // updateJobExpiryDate
+    public void updateJobExpiryDate(Tbljob selectedJob) {
+
+        try {
+
+            client.setToken(loginBean.getToken());
+
+            if (selectedJob == null || selectedJob.getJobId() == null) {
+                return;
+            }
+
+            if (recruiter == null || recruiter.getRecruiterId() == 0) {
+                loadProfile();
+            }
+
+            if (selectedJob.getJobExpiryDate() == null) {
+                FacesContext.getCurrentInstance().addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_ERROR,
+                                "Expiry date required",
+                                "Please select a valid expiry date."
+                        )
+                );
+                return;
+            }
+
+            if (selectedJob.getJobExpiryDate().before(startOfToday())) {
+                FacesContext.getCurrentInstance().addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_ERROR,
+                                "Invalid expiry date",
+                                "Expiry date cannot be in the past."
+                        )
+                );
+                return;
+            }
+
+            String expiryDate = formatDateInput(selectedJob.getJobExpiryDate());
+
+            Response res = client.updateJobExpiryDate(
+                    selectedJob.getJobId(),
+                    recruiter.getRecruiterId(),
+                    expiryDate
+            );
+
+            String msg = res.readEntity(String.class);
+
+            if (res.getStatus() == 200) {
+
+                selectedJob.setJobStatus("Open");
+                editingExpiryJobId = null;
+                recalculateViewJobStats();
+                FacesContext.getCurrentInstance().addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_INFO,
+                                "Success",
+                                msg
+                        )
+                );
+
+            } else {
+
+                FacesContext.getCurrentInstance().addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_ERROR,
+                                "Error",
+                                msg
+                        )
+                );
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            FacesContext.getCurrentInstance().addMessage(
+                    null,
+                    new FacesMessage(
+                            FacesMessage.SEVERITY_ERROR,
+                            "Error",
+                            "Unable to update expiry date."
+                    )
+            );
+        }
+    }
+
+    // recalculateViewJobStats
+    private void recalculateViewJobStats() {
+
+        totalJobs = jobList != null ? jobList.size() : 0;
+        openJobs = 0;
+        closedJobs = 0;
+        expiringJobs = 0;
+
+        Date today = startOfToday();
+
+        long sevenDays = 7L * 24 * 60 * 60 * 1000;
+
+        if (jobList == null) {
+            return;
+        }
+
+        for (Tbljob j : jobList) {
+
+            if (j == null) {
+                continue;
+            }
+
+            String status = j.getJobStatus();
+
+            if ("Open".equalsIgnoreCase(status)) {
+                openJobs++;
+
+            } else if ("Closed".equalsIgnoreCase(status)) {
+                closedJobs++;
+            }
+
+            if (j.getJobExpiryDate() != null
+                    && "Open".equalsIgnoreCase(status)) {
+
+                long diff = j.getJobExpiryDate().getTime()
+                        - today.getTime();
+
+                if (diff >= 0 && diff <= sevenDays) {
+                    expiringJobs++;
+                }
+            }
+        }
+    }
+
+    // startExpiryEdit
+    public void startExpiryEdit(Tbljob selectedJob) {
+        if (selectedJob != null) {
+            editingExpiryJobId = selectedJob.getJobId();
+        }
+    }
+
+    // cancelExpiryEdit
+    public void cancelExpiryEdit(Tbljob selectedJob) {
+        editingExpiryJobId = null;
+    }
+
+    // isEditingExpiryJob
+    public boolean isEditingExpiryJob(Tbljob selectedJob) {
+        return selectedJob != null
+                && selectedJob.getJobId() != null
+                && selectedJob.getJobId().equals(editingExpiryJobId);
+    }
+
+    // editingExpiryJob
+    public boolean editingExpiryJob(Tbljob selectedJob) {
+        return isEditingExpiryJob(selectedJob);
+    }
+
+    // toggleJobStatus
+    public void toggleJobStatus(Tbljob selectedJob) {
+
+        try {
+
+            client.setToken(loginBean.getToken());
+
+            if (selectedJob == null
+                    || selectedJob.getJobId() == null) {
+
+                return;
+            }
+
+            if (recruiter == null
+                    || recruiter.getRecruiterId() == 0) {
+
+                loadProfile();
+            }
+
+            Response res = client.toggleJobStatus(
+                    selectedJob.getJobId(),
+                    recruiter.getRecruiterId()
+            );
+
+            String msg = res.readEntity(String.class);
+
+            if (res.getStatus() == 200) {
+
+                if ("Open".equalsIgnoreCase(selectedJob.getJobStatus())) {
+
+                    selectedJob.setJobStatus("Closed");
+
+                } else if ("Closed".equalsIgnoreCase(selectedJob.getJobStatus())) {
+
+                    selectedJob.setJobStatus("Open");
+                }
+
+                recalculateViewJobStats();
+
+                FacesContext.getCurrentInstance().addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_INFO,
+                                "Success",
+                                msg
+                        )
+                );
+
+            } else {
+
+                FacesContext.getCurrentInstance().addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_ERROR,
+                                "Action required",
+                                msg
+                        )
+                );
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            FacesContext.getCurrentInstance().addMessage(
+                    null,
+                    new FacesMessage(
+                            FacesMessage.SEVERITY_ERROR,
+                            "Error",
+                            "Unable to update job status"
+                    )
+            );
+        }
+    }
+
+    // resetJobForm
+    public String resetJobForm() {
+
+        return "recruiterPostJob?faces-redirect=true";
+    }
+
+    // parseInteger
     private int parseInteger(String value) {
 
         try {
@@ -916,6 +1601,7 @@ public class RecruiterCDIBean implements Serializable {
         }
     }
 
+    // parseDouble
     private double parseDouble(String value) {
 
         try {
@@ -931,7 +1617,7 @@ public class RecruiterCDIBean implements Serializable {
         }
     }
 
-// ================= SYNC MAX COMPENSATION =================
+    // syncMaxCompensation
     public void syncMaxCompensation() {
 
         if (job.getJobCompensationMin() != null) {
@@ -942,14 +1628,13 @@ public class RecruiterCDIBean implements Serializable {
         }
     }
 
-    // ================= LOAD VIEW JOBS DATA =================
+    // loadViewJobsData
     public void loadViewJobsData() {
 
         try {
 
             client.setToken(loginBean.getToken());
 
-            // Load recruiter if not loaded
             if (recruiter == null
                     || recruiter.getRecruiterId() == 0) {
 
@@ -958,63 +1643,14 @@ public class RecruiterCDIBean implements Serializable {
 
             int rid = recruiter.getRecruiterId();
 
-            // ================= GET JOBS =================
             Collection<Tbljob> jobs = client.getJobs(new GenericType<Collection<Tbljob>>() {
             }, String.valueOf(rid));
 
-            // ================= SET JOB LIST =================
             jobList = (jobs != null)
                     ? new ArrayList<>(jobs)
                     : new ArrayList<>();
 
-            // ================= RESET STATS =================
-            totalJobs = jobList.size();
-
-            openJobs = 0;
-
-            closedJobs = 0;
-
-            expiringJobs = 0;
-
-            Date now = new Date();
-
-            long sevenDays
-                    = 7L * 24 * 60 * 60 * 1000;
-
-            // ================= CALCULATE STATS =================
-            for (Tbljob j : jobList) {
-
-                if (j == null) {
-                    continue;
-                }
-
-                String status = j.getJobStatus();
-
-                // OPEN JOBS
-                if ("Open".equalsIgnoreCase(status)) {
-
-                    openJobs++;
-
-                } // CLOSED JOBS
-                else if ("Closed".equalsIgnoreCase(status)) {
-
-                    closedJobs++;
-                }
-
-                // EXPIRING JOBS
-                if (j.getJobExpiryDate() != null
-                        && "Open".equalsIgnoreCase(status)) {
-
-                    long diff = j.getJobExpiryDate().getTime()
-                            - now.getTime();
-
-                    if (diff > 0
-                            && diff <= sevenDays) {
-
-                        expiringJobs++;
-                    }
-                }
-            }
+            recalculateViewJobStats();
 
             System.out.println("Loaded Jobs: " + jobList.size());
 
@@ -1026,6 +1662,7 @@ public class RecruiterCDIBean implements Serializable {
         }
     }
 
+    // loadSkills
     public void loadSkills() {
 
         try {
@@ -1062,7 +1699,7 @@ public class RecruiterCDIBean implements Serializable {
         }
     }
 
-// ================= LOAD SKILL CATEGORIES =================
+    // loadSkillCategories
     public void loadSkillCategories() {
 
         try {
@@ -1091,8 +1728,8 @@ public class RecruiterCDIBean implements Serializable {
             skillCategories = new ArrayList<>();
         }
     }
-// ================= LOAD SKILLS BY CATEGORY =================
 
+    // loadSkillsByCategory
     public void loadSkillsByCategory() {
 
         try {
@@ -1100,7 +1737,6 @@ public class RecruiterCDIBean implements Serializable {
             System.out.println("Selected Category: "
                     + selectedSkillCategory);
 
-            // ALL CATEGORIES
             if (selectedSkillCategory == null) {
 
                 filteredSkills = new ArrayList<>(allSkills);
@@ -1136,25 +1772,72 @@ public class RecruiterCDIBean implements Serializable {
         }
     }
 
+    // getJobEducation
+    public String getJobEducation(Integer jobId) {
 
+        try {
 
-    public String getModalActionType() {
-        return modalActionType;
+            if (jobId == null || jobId <= 0) {
+                return "";
+            }
+
+            client.setToken(loginBean.getToken());
+
+            Collection<Tbleducation> educations
+                    = client.getJobEducation(String.valueOf(jobId));
+
+            if (educations == null || educations.isEmpty()) {
+                return "No education added";
+            }
+
+            StringBuilder sb = new StringBuilder();
+
+            for (Tbleducation e : educations) {
+
+                if (sb.length() > 0) {
+                    sb.append(", ");
+                }
+
+                sb.append(e.getEducationName());
+            }
+
+            return sb.toString();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 
-    public void setModalActionType(String modalActionType) {
-        this.modalActionType = modalActionType;
+    // loadEducation
+    public void loadEducation() {
+
+        try {
+
+            client.setToken(loginBean.getToken());
+
+            Collection<Tbleducation> educations
+                    = client.getAllEducation();
+
+            educationList = (educations != null)
+                    ? new ArrayList<>(educations)
+                    : new ArrayList<>();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            educationList = new ArrayList<>();
+        }
     }
 
+    // addSkillAndOrCategory
     public void addSkillAndOrCategory() {
 
         try {
 
             FacesContext fc = FacesContext.getCurrentInstance();
 
-            // =================================================
-            // USER VALIDATION
-            // =================================================
             Integer userId = loginBean.getUserId();
 
             if (userId == null || userId <= 0) {
@@ -1171,9 +1854,6 @@ public class RecruiterCDIBean implements Serializable {
                 return;
             }
 
-            // =================================================
-            // CATEGORY VALUE
-            // =================================================
             String categoryName = null;
             if ("category".equals(modalActionType)
                     && newCategoryName != null
@@ -1181,9 +1861,6 @@ public class RecruiterCDIBean implements Serializable {
                 categoryName = newCategoryName.trim();
             }
 
-            // =================================================
-            // SKILL VALUE
-            // =================================================
             String skillNames = null;
 
             if (newSkillName != null
@@ -1192,9 +1869,6 @@ public class RecruiterCDIBean implements Serializable {
                 skillNames = newSkillName.trim();
             }
 
-            // =================================================
-            // VALIDATION FLAGS
-            // =================================================
             boolean hasCategory
                     = categoryName != null
                     && !categoryName.isEmpty();
@@ -1207,9 +1881,6 @@ public class RecruiterCDIBean implements Serializable {
                     = skillNames != null
                     && !skillNames.isEmpty();
 
-// =================================================
-// CATEGORY MODE VALIDATION
-// =================================================
             if ("category".equals(modalActionType)) {
 
                 if (!hasCategory) {
@@ -1227,12 +1898,8 @@ public class RecruiterCDIBean implements Serializable {
                 }
             }
 
-// =================================================
-// SKILL MODE VALIDATION
-// =================================================
             if ("skill".equals(modalActionType)) {
 
-                // 1. CATEGORY REQUIRED
                 if (!hasExistingCategory) {
 
                     fc.addMessage(
@@ -1247,7 +1914,6 @@ public class RecruiterCDIBean implements Serializable {
                     return;
                 }
 
-                // 2. SKILL NAME REQUIRED  ⭐ THIS WAS MISSING LOGIC
                 if (!hasSkills) {
 
                     fc.addMessage(
@@ -1263,9 +1929,6 @@ public class RecruiterCDIBean implements Serializable {
                 }
             }
 
-            // =================================================
-            // API CALL
-            // =================================================
             client.setToken(loginBean.getToken());
 
             Response res
@@ -1278,9 +1941,6 @@ public class RecruiterCDIBean implements Serializable {
 
             String msg = res.readEntity(String.class);
 
-            // =================================================
-            // SUCCESS
-            // =================================================
             if (res.getStatus() == 200) {
 
                 loadSkillCategories();
@@ -1289,9 +1949,6 @@ public class RecruiterCDIBean implements Serializable {
 
                 loadSkillsByCategory();
 
-                // =============================================
-                // CATEGORY SUCCESS
-                // =============================================
                 if (hasCategory && !hasSkills) {
 
                     fc.addMessage(
@@ -1304,10 +1961,7 @@ public class RecruiterCDIBean implements Serializable {
                     );
 
                     newCategoryName = "";
-                } // =============================================
-                // SKILL SUCCESS
-                // =============================================
-                else if (hasSkills) {
+                } else if (hasSkills) {
 
                     fc.addMessage(
                             "postJobForm:skillMessages",
@@ -1321,12 +1975,8 @@ public class RecruiterCDIBean implements Serializable {
                     newSkillName = "";
                 }
 
-            } // =================================================
-            // API ERROR
-            // =================================================
-            else {
+            } else {
 
-                // CATEGORY ERROR
                 if (hasCategory && !hasSkills) {
 
                     fc.addMessage(
@@ -1337,8 +1987,7 @@ public class RecruiterCDIBean implements Serializable {
                                     msg
                             )
                     );
-                } // SKILL ERROR
-                else {
+                } else {
 
                     fc.addMessage(
                             "postJobForm:skillMessages",
@@ -1367,6 +2016,7 @@ public class RecruiterCDIBean implements Serializable {
         }
     }
 
+    // getJobSkills
     public String getJobSkills(Entity.Tbljob job) {
 
         try {
@@ -1403,8 +2053,80 @@ public class RecruiterCDIBean implements Serializable {
             return "No skills added";
         }
     }
-// ================= FORMAT JOB DATE =================
 
+    private static final NumberFormat inrFormat
+            = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
+
+    static {
+        inrFormat.setMaximumFractionDigits(0);
+    }
+
+    // getFormattedCompensation
+    public String getFormattedCompensation(Entity.Tbljob j) {
+
+        if (j == null) {
+            return "Not disclosed";
+        }
+
+        BigDecimal min = j.getJobCompensationMin();
+        BigDecimal max = j.getJobCompensationMax();
+        String period = j.getJobCompensationPeriod();
+        String type = j.getJobCompensationType();
+
+        if (min == null && max == null) {
+            return "Not disclosed";
+        }
+
+        StringBuilder result = new StringBuilder();
+
+        if (min != null && max != null) {
+
+            if (min.compareTo(max) == 0) {
+                result.append(inrFormat.format(min));
+            } else {
+                result.append(inrFormat.format(min))
+                        .append(" - ")
+                        .append(inrFormat.format(max));
+            }
+
+        } else if (min != null) {
+
+            result.append("From ").append(inrFormat.format(min));
+
+        } else {
+
+            result.append("Up to ").append(inrFormat.format(max));
+        }
+
+        if (period != null && !period.trim().isEmpty()) {
+
+            switch (period.trim().toLowerCase()) {
+
+                case "year":
+                case "yearly":
+                case "annual":
+                case "annum":
+                    result.append(" / year");
+                    break;
+
+                case "month":
+                case "monthly":
+                    result.append(" / month");
+                    break;
+
+                default:
+                    result.append(" / ").append(period.trim());
+            }
+        }
+
+        if (type != null && !type.trim().isEmpty()) {
+            result.append(" (").append(type).append(")");
+        }
+
+        return result.toString();
+    }
+
+    // formatJobDate
     public String formatJobDate(Object dateObj) {
         try {
             if (dateObj == null) {
@@ -1432,303 +2154,443 @@ public class RecruiterCDIBean implements Serializable {
         }
     }
 
-    // ================= GETTERS & SETTERS =================
+    // getRecruiter
     public Tblrecruiters getRecruiter() {
         return recruiter;
     }
 
+    // setRecruiter
     public void setRecruiter(Tblrecruiters recruiter) {
         this.recruiter = recruiter;
     }
 
+    // getRecruiterId
     public int getRecruiterId() {
         return recruiterId;
     }
 
+    // setRecruiterId
     public void setRecruiterId(int recruiterId) {
         this.recruiterId = recruiterId;
     }
 
+    // getTodayInterviews
     public int getTodayInterviews() {
         return todayInterviews;
     }
 
+    // setTodayInterviews
     public void setTodayInterviews(int todayInterviews) {
         this.todayInterviews = todayInterviews;
     }
 
+    // getNewApplicants
     public int getNewApplicants() {
         return newApplicants;
     }
 
+    // setNewApplicants
     public void setNewApplicants(int newApplicants) {
         this.newApplicants = newApplicants;
     }
 
+    // getShortlistedCandidates
     public int getShortlistedCandidates() {
         return shortlistedCandidates;
     }
 
+    // setShortlistedCandidates
     public void setShortlistedCandidates(int shortlistedCandidates) {
         this.shortlistedCandidates = shortlistedCandidates;
     }
 
+    // getHiringRate
     public double getHiringRate() {
         return hiringRate;
     }
 
+    // setHiringRate
     public void setHiringRate(double hiringRate) {
         this.hiringRate = hiringRate;
     }
 
+    // getActiveJobs
     public int getActiveJobs() {
         return activeJobs;
     }
 
+    // setActiveJobs
     public void setActiveJobs(int activeJobs) {
         this.activeJobs = activeJobs;
     }
 
+    // getTotalApplicants
     public int getTotalApplicants() {
         return totalApplicants;
     }
 
+    // setTotalApplicants
     public void setTotalApplicants(int totalApplicants) {
         this.totalApplicants = totalApplicants;
     }
 
+    // getUpcomingInterviews
     public int getUpcomingInterviews() {
         return upcomingInterviews;
     }
 
+    // setUpcomingInterviews
     public void setUpcomingInterviews(int upcomingInterviews) {
         this.upcomingInterviews = upcomingInterviews;
     }
 
+    // getAvgTimeToHire
     public int getAvgTimeToHire() {
         return avgTimeToHire;
     }
 
+    // setAvgTimeToHire
     public void setAvgTimeToHire(int avgTimeToHire) {
         this.avgTimeToHire = avgTimeToHire;
     }
 
+    // getTopCandidateslist
     public List<Tblscreeningscore> getTopCandidateslist() {
         return topCandidateslist;
     }
 
+    // setTopCandidateslist
     public void setTopCandidateslist(List<Tblscreeningscore> topCandidateslist) {
         this.topCandidateslist = topCandidateslist;
     }
 
+    // getInterviewList
     public List<Tblinterview> getInterviewList() {
         return interviewList;
     }
 
+    // setInterviewList
     public void setInterviewList(List<Tblinterview> interviewList) {
         this.interviewList = interviewList;
     }
 
+    // getRecentActivities
     public List<Tblnotification> getRecentActivities() {
         return recentActivities;
     }
 
+    // setRecentActivities
     public void setRecentActivities(List<Tblnotification> recentActivities) {
         this.recentActivities = recentActivities;
     }
 
+    // getJob
     public Tbljob getJob() {
         return job;
     }
 
+    // setJob
     public void setJob(Tbljob job) {
         this.job = job;
     }
 
+    // getSkillInput
     public String getSkillInput() {
         return skillInput;
     }
 
+    // setSkillInput
     public void setSkillInput(String skillInput) {
         this.skillInput = skillInput;
     }
 
+    // getAvailableStates
     public List<String> getAvailableStates() {
         return availableStates;
     }
 
+    // setAvailableStates
     public void setAvailableStates(List<String> availableStates) {
         this.availableStates = availableStates;
     }
 
+    // getAvailableCities
     public List<String> getAvailableCities() {
         return availableCities;
     }
 
+    // setAvailableCities
     public void setAvailableCities(List<String> availableCities) {
         this.availableCities = availableCities;
     }
 
+    // getSelectedState
     public String getSelectedState() {
         return selectedState;
     }
 
+    // setSelectedState
     public void setSelectedState(String selectedState) {
         this.selectedState = selectedState;
     }
 
+    // getSelectedCity
     public String getSelectedCity() {
         return selectedCity;
     }
 
+    // setSelectedCity
     public void setSelectedCity(String selectedCity) {
         this.selectedCity = selectedCity;
     }
 
+    // getJobList
     public List<Tbljob> getJobList() {
         return jobList;
     }
 
+    // setJobList
     public void setJobList(List<Tbljob> jobList) {
         this.jobList = jobList;
     }
 
+    // getTotalJobs
     public int getTotalJobs() {
         return totalJobs;
     }
 
+    // setTotalJobs
     public void setTotalJobs(int totalJobs) {
         this.totalJobs = totalJobs;
     }
 
+    // getOpenJobs
     public int getOpenJobs() {
         return openJobs;
     }
 
+    // setOpenJobs
     public void setOpenJobs(int openJobs) {
         this.openJobs = openJobs;
     }
 
+    // getClosedJobs
     public int getClosedJobs() {
         return closedJobs;
     }
 
+    // setClosedJobs
     public void setClosedJobs(int closedJobs) {
         this.closedJobs = closedJobs;
     }
 
+    // getExpiringJobs
     public int getExpiringJobs() {
         return expiringJobs;
     }
 
+    // setExpiringJobs
     public void setExpiringJobs(int expiringJobs) {
         this.expiringJobs = expiringJobs;
     }
 
+    // getAllSkills
     public List<Tblskills> getAllSkills() {
         return allSkills;
     }
 
+    // setAllSkills
     public void setAllSkills(List<Tblskills> allSkills) {
         this.allSkills = allSkills;
     }
 
+    // getSelectedSkillIds
     public List<Integer> getSelectedSkillIds() {
         return selectedSkillIds;
     }
 
+    // setSelectedSkillIds
     public void setSelectedSkillIds(List<Integer> selectedSkillIds) {
         this.selectedSkillIds = selectedSkillIds;
     }
 
+    // getFilteredSkills
     public List<Tblskills> getFilteredSkills() {
         return filteredSkills;
     }
 
+    // setFilteredSkills
     public void setFilteredSkills(List<Tblskills> filteredSkills) {
         this.filteredSkills = filteredSkills;
     }
 
+    // getSkillCategories
     public List<Tblskillcategory> getSkillCategories() {
         return skillCategories;
     }
 
+    // setSkillCategories
     public void setSkillCategories(List<Tblskillcategory> skillCategories) {
         this.skillCategories = skillCategories;
     }
 
+    // getSelectedSkillCategory
     public Integer getSelectedSkillCategory() {
         return selectedSkillCategory;
     }
 
+    // setSelectedSkillCategory
     public void setSelectedSkillCategory(Integer selectedSkillCategory) {
         this.selectedSkillCategory = selectedSkillCategory;
     }
 
+    // getNewCategoryName
     public String getNewCategoryName() {
         return newCategoryName;
     }
 
+    // setNewCategoryName
     public void setNewCategoryName(String newCategoryName) {
         this.newCategoryName = newCategoryName;
     }
 
+    // getNewSkillName
     public String getNewSkillName() {
         return newSkillName;
     }
 
+    // setNewSkillName
     public void setNewSkillName(String newSkillName) {
         this.newSkillName = newSkillName;
     }
 
+    // getExpYears
     public Integer getExpYears() {
         return expYears;
     }
 
+    // setExpYears
     public void setExpYears(Integer expYears) {
         this.expYears = expYears;
     }
 
+    // getExpMonths
     public Integer getExpMonths() {
         return expMonths;
     }
 
+    // setExpMonths
     public void setExpMonths(Integer expMonths) {
         this.expMonths = expMonths;
     }
 
+    // getYearList
     public List<Integer> getYearList() {
         return yearList;
     }
 
+    // setYearList
     public void setYearList(List<Integer> yearList) {
         this.yearList = yearList;
     }
 
+    // getMonthList
     public List<Integer> getMonthList() {
         return monthList;
     }
 
+    // setMonthList
     public void setMonthList(List<Integer> monthList) {
         this.monthList = monthList;
     }
 
-        public String getSkillActionType() {
+    // getSkillActionType
+    public String getSkillActionType() {
         return skillActionType;
     }
 
+    // setSkillActionType
     public void setSkillActionType(String skillActionType) {
         this.skillActionType = skillActionType;
     }
-    
+
+    // getEducationList
+    public List<Tbleducation> getEducationList() {
+        return educationList;
+    }
+
+    // setEducationList
+    public void setEducationList(List<Tbleducation> educationList) {
+        this.educationList = educationList;
+    }
+
+    // getModalActionType
+    public String getModalActionType() {
+        return modalActionType;
+    }
+
+    // setModalActionType
+    public void setModalActionType(String modalActionType) {
+        this.modalActionType = modalActionType;
+    }
+
+    // getSelectedEducationIds
+    public List<Integer> getSelectedEducationIds() {
+        return selectedEducationIds;
+    }
+
+    // setSelectedEducationIds
+    public void setSelectedEducationIds(List<Integer> selectedEducationIds) {
+        this.selectedEducationIds = selectedEducationIds;
+    }
+
+    // getJobEducationList
+    public List<Tbleducation> getJobEducationList() {
+        return jobEducationList;
+    }
+
+    // setJobEducationList
+    public void setJobEducationList(List<Tbleducation> jobEducationList) {
+        this.jobEducationList = jobEducationList;
+    }
+
+    // getEditJobId
+    public Integer getEditJobId() {
+        return editJobId;
+    }
+
+    // setEditJobId
+    public void setEditJobId(Integer editJobId) {
+        this.editJobId = editJobId;
+    }
+
+    // isEditMode
+    public boolean isEditMode() {
+        return editMode;
+    }
+
+    // setEditMode
+    public void setEditMode(boolean editMode) {
+        this.editMode = editMode;
+    }
+
+    // getEditingExpiryJobId
+    public Integer getEditingExpiryJobId() {
+        return editingExpiryJobId;
+    }
+
+    // setEditingExpiryJobId
+    public void setEditingExpiryJobId(Integer editingExpiryJobId) {
+        this.editingExpiryJobId = editingExpiryJobId;
+    }
+
+    // validateCompensation
     public void validateCompensation(FacesContext context, UIComponent component, Object value) {
 
-        // value = MAX compensation field value
         if (value == null) {
             return;
         }
 
-        // MIN compensation from job object
         if (job == null || job.getJobCompensationMin() == null) {
             return;
         }
@@ -1736,7 +2598,6 @@ public class RecruiterCDIBean implements Serializable {
         BigDecimal max = (BigDecimal) value;
         BigDecimal min = job.getJobCompensationMin();
 
-        // VALIDATION
         if (max.compareTo(min) < 0) {
 
             throw new ValidatorException(

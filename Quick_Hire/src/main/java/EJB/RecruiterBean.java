@@ -4,11 +4,9 @@
  */
 package EJB;
 
-import Entity.Tbljobskillweightage;
 import Entity.*;
 import Validation.RecruiterValidator;
 import jakarta.annotation.security.DeclareRoles;
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
@@ -17,10 +15,10 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.security.enterprise.identitystore.Pbkdf2PasswordHash;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import util.EmailServiceLocal;
 
 /**
@@ -88,99 +86,9 @@ public class RecruiterBean implements RecruiterBeanLocal {
 //            return null;
 //        }
 //    }
-
     // ================= JOB MANAGEMENT =================
-//    @Override
-//    public void createJob(Tbljob job) {
-//
-//        try {
-//
-//            // ================= VALIDATION =================
-//            RecruiterValidator.validateJob(job);
-//
-//            // ================= SET POSTED DATE =================
-//            job.setJobPostedDate(new Date());
-//
-//            // ================= FETCH RECRUITER =================
-//            Tblrecruiters recruiter
-//                    = em.find(
-//                            Tblrecruiters.class,
-//                            job.getRecruiterId()
-//                                    .getRecruiterId()
-//                    );
-//
-//            if (recruiter == null) {
-//
-//                throw new RuntimeException(
-//                        "Recruiter not found"
-//                );
-//            }
-//
-//            // ================= SET RECRUITER =================
-//            job.setRecruiterId(recruiter);
-//
-//            // ================= SAVE JOB =================
-//            em.persist(job);
-//
-//            // ================= SAVE ACTIVITY =================
-//            Tblnotification activity
-//                    = new Tblnotification();
-//
-//            activity.setUserId(
-//                    recruiter.getUserId()
-//            );
-//
-//            activity.setMessage(
-//                    "New job posted: "
-//                    + job.getJobTitle()
-//            );
-//
-//            activity.setCreatedDate(
-//                    new Date()
-//            );
-//
-//            activity.setNotificationStatus(
-//                    "Read"
-//            );
-//
-//            em.persist(activity);
-//
-//            // ================= SEND EMAIL =================
-//            Tblusers recruiterUser
-//                    = recruiter.getUserId();
-//
-//            if (recruiterUser != null) {
-//
-//                String email
-//                        = recruiterUser.getUserEmail();
-//
-//                String subject
-//                        = "Job Posted Successfully";
-//
-//                String message
-//                        = "Your job has been posted successfully.\n\n"
-//                        + "Job Title: "
-//                        + job.getJobTitle()
-//                        + "\n"
-//                        + "Location: "
-//                        + job.getJobLocation();
-//
-//                emailService.sendEmail(
-//                        email,
-//                        subject,
-//                        message
-//                );
-//            }
-//
-//        } catch (Exception e) {
-//
-//            e.printStackTrace();
-//
-//            throw e;
-//        }
-//    }
     @Override
-    public void createJob(Tbljob job, Collection<Integer> skillIds) {
+    public void createJob(Tbljob job, Collection<Integer> skillIds, Collection<Integer> educationIds) {
 
         try {
 
@@ -215,31 +123,70 @@ public class RecruiterBean implements RecruiterBeanLocal {
 
             job.setTblskillsCollection(managedSkills);
 
+            // ================= EDUCATION =================
+            Collection<Tbleducation> managedEducation
+                    = new ArrayList<>();
+
+            if (educationIds != null && !educationIds.isEmpty()) {
+
+                for (Integer educationId : educationIds) {
+
+                    Tbleducation education
+                            = em.getReference(
+                                    Tbleducation.class,
+                                    educationId
+                            );
+
+                    managedEducation.add(
+                            education
+                    );
+                }
+            }
+
+            job.setTbleducationCollection(
+                    managedEducation
+            );
+
             // ================= PERSIST JOB  =================
             em.persist(job);
 
             // ================= SAVE ACTIVITY =================
-            Tblnotification activity
-                    = new Tblnotification();
+//            Tblnotification activity
+//                    = new Tblnotification();
+//
+//            activity.setUserId(
+//                    recruiter.getUserId()
+//            );
+//
+//            activity.setMessage(
+//                    "New job posted: "
+//                    + job.getJobTitle()
+//            );
+//
+//            activity.setCreatedDate(
+//                    new Date()
+//            );
+//
+//            activity.setNotificationStatus(
+//                    "Read"
+//            );
+            // ================= SAVE ACTIVITY =================
+            Tblnotification notification = new Tblnotification();
 
-            activity.setUserId(
-                    recruiter.getUserId()
+            notification.setSenderUserId(recruiter.getUserId());
+            notification.setReceiverUserId(recruiter.getUserId());
+
+            notification.setNotificationTitle("Job Posted");
+            notification.setNotificationMessage(
+                    "New job posted: " + job.getJobTitle()
             );
 
-            activity.setMessage(
-                    "New job posted: "
-                    + job.getJobTitle()
-            );
+            notification.setNotificationType("JOB_POSTED");
 
-            activity.setCreatedDate(
-                    new Date()
-            );
-
-            activity.setNotificationStatus(
-                    "Read"
-            );
-
-            em.persist(activity);
+            notification.setIsRead(false);
+            notification.setCreatedDate(new Date());
+            em.persist(notification);
+//            em.persist(activity);
 
             // ================= SEND EMAIL =================
             Tblusers recruiterUser
@@ -276,65 +223,347 @@ public class RecruiterBean implements RecruiterBeanLocal {
         }
     }
 
+    @Override
+    public void updateJob(Tbljob job, Collection<Integer> skillIds, Collection<Integer> educationIds) {
 
+        try {
+            if (job == null || job.getJobId() == null) {
+                throw new RuntimeException("Job Not Found for Update");
+            }
+            RecruiterValidator.validateJob(job);
 
-//    @Override
-//    public void updateJob(Tbljob job) {
-//        try {
-//            RecruiterValidator.validateJob(job);
-//
-//            Tbljob existingJob = em.find(Tbljob.class, job.getJobId());
-//
-//            if (existingJob != null) {
-//
-//                // Update ONLY if value is provided (NOT NULL)
-//                if (job.getJobTitle() != null) {
-//                    existingJob.setJobTitle(job.getJobTitle());
-//                }
-//
-//                if (job.getJobDescription() != null) {
-//                    existingJob.setJobDescription(job.getJobDescription());
-//                }
-//
-//                if (job.getJobLocation() != null) {
-//                    existingJob.setJobLocation(job.getJobLocation());
-//                }
-//
-//                if (job.getJobStatus() != null) {
-//                    existingJob.setJobStatus(job.getJobStatus());
-//                }
-//
-//                if (job.getJobType() != null) {
-//                    existingJob.setJobType(job.getJobType());
-//                }
-//
-//                if (job.getExperienceRequired() != null) {
-//                    existingJob.setExperienceRequired(job.getExperienceRequired());
-//                }
-//
-//                if (job.getJobCompensationType() != null) {
-//                    existingJob.setJobCompensationType(job.getJobCompensationType());
-//                }
-//
-//                if (job.getJobExpiryDate() != null) {
-//                    existingJob.setJobExpiryDate(job.getJobExpiryDate());
-//                }
-//
-//                job.setJobPostedDate(existingJob.getJobPostedDate());
-//
-//                // recruiter update (important)
-//                if (job.getRecruiterId() != null) {
-//                    Tblrecruiters r = em.find(Tblrecruiters.class, job.getRecruiterId().getRecruiterId());
-//                    existingJob.setRecruiterId(r);
-//                }
-//                em.merge(existingJob);
-//            }
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
+            Tbljob existingJob = em.find(Tbljob.class, job.getJobId());
+
+            if (existingJob == null) {
+                throw new RuntimeException("Job not found");
+            }
+
+            if (job.getRecruiterId() == null
+                    || job.getRecruiterId().getRecruiterId() == null
+                    || existingJob.getRecruiterId() == null
+                    || !existingJob.getRecruiterId().getRecruiterId()
+                            .equals(job.getRecruiterId().getRecruiterId())) {
+
+                throw new RuntimeException("You are not allowed to edit this job");
+            }
+
+            existingJob.setJobTitle(job.getJobTitle());
+            existingJob.setJobDescription(job.getJobDescription());
+            existingJob.setJobLocation(job.getJobLocation());
+            existingJob.setWorkMode(job.getWorkMode());
+            existingJob.setJobCity(job.getJobCity());
+            existingJob.setJobState(job.getJobState());
+            existingJob.setExperienceRequired(job.getExperienceRequired());
+            existingJob.setJobType(job.getJobType());
+            existingJob.setJobCompensationType(job.getJobCompensationType());
+            existingJob.setJobCompensationMin(job.getJobCompensationMin());
+            existingJob.setJobCompensationMax(job.getJobCompensationMax());
+            existingJob.setJobCompensationPeriod(job.getJobCompensationPeriod());
+            existingJob.setJobVacancies(job.getJobVacancies());
+            existingJob.setJobStatus(job.getJobStatus());
+            existingJob.setJobExpiryDate(job.getJobExpiryDate());
+            if (existingJob.getJobExpiryDate() != null
+                    && existingJob.getJobExpiryDate().before(startOfToday())) {
+
+                existingJob.setJobStatus("Closed");
+            }
+            Collection<Tblskills> managedSkills = new ArrayList<>();
+
+            if (skillIds != null) {
+
+                for (Integer skillId : skillIds) {
+
+                    if (skillId == null) {
+                        continue;
+                    }
+
+                    Tblskills skill = em.find(Tblskills.class, skillId);
+
+                    if (skill == null) {
+                        throw new RuntimeException(
+                                "Selected skill not found: " + skillId
+                        );
+                    }
+
+                    managedSkills.add(skill);
+                }
+
+                existingJob.setTblskillsCollection(managedSkills);
+            }
+
+// ================= EDUCATION =================
+            Collection<Tbleducation> managedEducation = new ArrayList<>();
+
+            if (educationIds != null) {
+
+                for (Integer educationId : educationIds) {
+
+                    if (educationId == null) {
+                        continue;
+                    }
+
+                    Tbleducation education
+                            = em.find(
+                                    Tbleducation.class,
+                                    educationId
+                            );
+
+                    if (education == null) {
+                        throw new RuntimeException(
+                                "Selected education not found: "
+                                + educationId
+                        );
+                    }
+
+                    managedEducation.add(education);
+                }
+
+                existingJob.setTbleducationCollection(
+                        managedEducation
+                );
+            }
+
+// ================= SAVE =================
+            em.merge(existingJob);
+            em.flush();
+
+// ================= NOTIFICATION =================
+            Tblusers recruiterUser
+                    = existingJob.getRecruiterId().getUserId();
+
+            Tblnotification notification
+                    = new Tblnotification();
+
+            notification.setSenderUserId(
+                    recruiterUser
+            );
+
+            notification.setReceiverUserId(
+                    recruiterUser
+            );
+
+            notification.setNotificationTitle(
+                    "Job Updated"
+            );
+
+            notification.setNotificationMessage(
+                    "Job updated: "
+                    + existingJob.getJobTitle()
+            );
+
+            notification.setNotificationType(
+                    "JOB_UPDATED"
+            );
+
+            notification.setIsRead(
+                    false
+            );
+
+            notification.setCreatedDate(
+                    new Date()
+            );
+
+            em.persist(notification);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    @Override
+    public void toggleJobStatus(int jobId, int recruiterId) {
+
+        try {
+
+            Tbljob job = em.createQuery(
+                    "SELECT j FROM Tbljob j "
+                    + "WHERE j.jobId = :jobId "
+                    + "AND j.recruiterId.recruiterId = :recruiterId",
+                    Tbljob.class
+            )
+                    .setParameter("jobId", jobId)
+                    .setParameter("recruiterId", recruiterId)
+                    .getSingleResult();
+
+            String oldStatus = job.getJobStatus();
+            String newStatus;
+
+            if (job.getJobExpiryDate() == null) {
+
+                throw new RuntimeException(
+                        "Please update the expiry date before changing this job status."
+                );
+            }
+
+            if (job.getJobExpiryDate().before(startOfToday())) {
+
+                throw new RuntimeException(
+                        "This job has expired. Please update the expiry date before changing its status."
+                );
+            }
+
+            if ("Closed".equalsIgnoreCase(oldStatus)) {
+
+                newStatus = "Open";
+
+            } else if ("Open".equalsIgnoreCase(oldStatus)) {
+
+                newStatus = "Closed";
+
+            } else {
+
+                throw new RuntimeException(
+                        "Only Open and Closed jobs can be changed."
+                );
+            }
+
+            job.setJobStatus(newStatus);
+            em.merge(job);
+
+            Tblusers recruiterUser
+                    = job.getRecruiterId().getUserId();
+
+            Tblnotification notification
+                    = new Tblnotification();
+
+            notification.setSenderUserId(recruiterUser);
+            notification.setReceiverUserId(recruiterUser);
+
+            notification.setNotificationTitle(
+                    "Job Status Updated"
+            );
+
+            notification.setNotificationMessage(
+                    "Job status changed from "
+                    + oldStatus
+                    + " to "
+                    + newStatus
+                    + ": "
+                    + job.getJobTitle()
+            );
+
+            notification.setNotificationType(
+                    "JOB_STATUS"
+            );
+
+            notification.setIsRead(false);
+
+            notification.setCreatedDate(
+                    new Date()
+            );
+
+            em.persist(notification);
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    @Override
+    public void updateJobExpiryDate(int jobId, int recruiterId, Date expiryDate) {
+
+        try {
+
+            if (expiryDate == null) {
+                throw new RuntimeException("Please select a valid expiry date.");
+            }
+
+            if (expiryDate.before(startOfToday())) {
+                throw new RuntimeException("Expiry date cannot be in the past.");
+            }
+
+            Tbljob job = em.createQuery(
+                    "SELECT j FROM Tbljob j "
+                    + "WHERE j.jobId = :jobId "
+                    + "AND j.recruiterId.recruiterId = :recruiterId",
+                    Tbljob.class
+            )
+                    .setParameter("jobId", jobId)
+                    .setParameter("recruiterId", recruiterId)
+                    .getSingleResult();
+
+            job.setJobExpiryDate(expiryDate);
+
+            job.setJobStatus("Open");
+
+            em.merge(job);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    @Override
+    public void closeExpiredJobs() {
+
+        try {
+
+            Collection<Tbljob> expiredJobs
+                    = em.createQuery(
+                            "SELECT j FROM Tbljob j "
+                            + "WHERE j.jobStatus = 'Open' "
+                            + "AND j.jobExpiryDate < :today",
+                            Tbljob.class
+                    )
+                            .setParameter("today", startOfToday())
+                            .getResultList();
+
+            for (Tbljob job : expiredJobs) {
+
+                job.setJobStatus("Closed");
+                em.merge(job);
+
+                Tblusers recruiterUser
+                        = job.getRecruiterId().getUserId();
+
+                Tblnotification notification
+                        = new Tblnotification();
+
+                notification.setSenderUserId(recruiterUser);
+                notification.setReceiverUserId(recruiterUser);
+
+                notification.setNotificationTitle(
+                        "Job Auto Closed"
+                );
+
+                notification.setNotificationMessage(
+                        "Job auto-closed after expiry: "
+                        + job.getJobTitle()
+                );
+
+                notification.setNotificationType(
+                        "JOB_STATUS"
+                );
+
+                notification.setIsRead(false);
+
+                notification.setCreatedDate(
+                        new Date()
+                );
+
+                em.persist(notification);
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    private Date startOfToday() {
+        Calendar calendar = Calendar.getInstance();
+
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        return calendar.getTime();
+    }
 //
 //    @Override
 //    public void deleteJob(int jobId, int recruiterId) {
@@ -382,7 +611,8 @@ public class RecruiterBean implements RecruiterBeanLocal {
 //        }
 //    }
 //
-////single,multiple,all job delete logic:
+
+    ////single,multiple,all job delete logic:
 ////@Override
 ////public void deleteJob(Integer jobId, Collection<Integer> jobIds, int recruiterId) {
 ////    try {
@@ -488,26 +718,12 @@ public class RecruiterBean implements RecruiterBeanLocal {
 ////        throw e;
 ////    }
 ////
-    /// @param userId}
-    /// @return 
-//    @Override
-//    public void updateJobStatus(int jobId, String status) {
-//        try {
-//            Tbljob job = em.find(Tbljob.class, jobId);
-//            if (job != null) {
-//                job.setJobStatus(status);
-//                em.merge(job);
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
+
     @Override
     public Collection<Tbljob> getJobs(int recruiterId) {
 
         try {
-
+            closeExpiredJobs();
             return em.createNamedQuery(
                     "Tbljob.findByRecruiter",
                     Tbljob.class
@@ -524,305 +740,34 @@ public class RecruiterBean implements RecruiterBeanLocal {
     }
 //
     // ================= JOB SKILLS ===========================================================================
-@Override
-public Collection<Tblskills> getAllSkills(Integer userId) {
 
-    try {
+    @Override
+    public Collection<Tblskills> getAllSkills(Integer userId) {
 
-        return em.createQuery(
-                "SELECT s FROM Tblskills s "
-                + "WHERE ("
-                + "s.skillStatus = 'APPROVED' "
-                + "OR "
-                + "(s.skillStatus = 'PENDING' "
-                + "AND s.createdByUserId = :userId)"
-                + ") "
-                + "ORDER BY s.skillName",
-                Tblskills.class
-        )
-                .setParameter("userId", userId)
-                .getResultList();
+        try {
 
-    } catch (Exception e) {
+            return em.createQuery(
+                    "SELECT s FROM Tblskills s "
+                    + "WHERE ("
+                    + "s.skillStatus = 'APPROVED' "
+                    + "OR "
+                    + "(s.skillStatus = 'PENDING' "
+                    + "AND s.createdByUserId = :userId)"
+                    + ") "
+                    + "ORDER BY s.skillName",
+                    Tblskills.class
+            )
+                    .setParameter("userId", userId)
+                    .getResultList();
 
-        e.printStackTrace();
+        } catch (Exception e) {
 
-        return new ArrayList<>();
-    }
-}
+            e.printStackTrace();
 
-   // ================= SKILL CATEGORIES =================
-@Override
-public Collection<Tblskillcategory> getSkillCategories(Integer recruiterUserId) {
-
-    try {
-
-        return em.createQuery(
-                "SELECT c FROM Tblskillcategory c "
-                + "WHERE ("
-                + "c.categoryStatus = 'APPROVED' "
-                + "OR "
-                + "(c.categoryStatus = 'PENDING' "
-                + "AND c.createdByUserId = :userId)"
-                + ") "
-                + "ORDER BY c.categoryName",
-                Tblskillcategory.class
-        )
-                .setParameter("userId", recruiterUserId)
-                .getResultList();
-
-    } catch (Exception e) {
-
-        e.printStackTrace();
-
-        return new ArrayList<>();
-    }
-}
-
-// ================= SKILLS BY CATEGORY =================
-@Override
-public Collection<Tblskills> getSkillsByCategory(Integer categoryId,Integer userId) {
-
-    try {
-
-        return em.createQuery(
-                "SELECT s FROM Tblskills s "
-                + "WHERE s.categoryId.categoryId = :categoryId "
-                + "AND ("
-                + "s.skillStatus = 'APPROVED' "
-                + "OR "
-                + "(s.skillStatus = 'PENDING' "
-                + "AND s.createdByUserId = :userId)"
-                + ") "
-                + "ORDER BY s.skillName",
-                Tblskills.class
-        )
-        .setParameter("categoryId", categoryId)
-        .setParameter("userId", userId)
-        .getResultList();
-
-    } catch (Exception e) {
-
-        e.printStackTrace();
-
-        return new ArrayList<>();
-    }
-}
-
-
-@Override
-public void addSkillAndOrCategory(String categoryName,Collection<String> skillNames,Integer existingCategoryId,Integer recruiterUserId){
-    try{
-        Tblskillcategory category = null;
-        
-        Tblusers recruiterUser = em.find(Tblusers.class, recruiterUserId);
-        
-         if (recruiterUser == null) {
-
-            throw new RuntimeException(
-                    "Recruiter user not found"
-            );
+            return new ArrayList<>();
         }
-        // =====================================================
-        // CREATE NEW CATEGORY
-        // =====================================================
-        
-        if(categoryName != null && !categoryName.trim().isEmpty()) 
-        {
-         
-            String trimmedCategory = categoryName.trim();
-            
-            // CHECK CATEGORY DUPLICATE
-            Long catagoryCount = em.createQuery("SELECT COUNT(c) FROM Tblskillcategory c  WHERE LOWER(TRIM(c.categoryName)) = :name",Long.class)
-                                                .setParameter("name", trimmedCategory.toLowerCase())
-                                                .getSingleResult();
-            
-            
-            if(catagoryCount > 0)
-            {
-                throw new RuntimeException(
-                        "This Category alredy exists."
-                );
-            }
-            
-            // CREATE CATEGORY
-            category = new Tblskillcategory();
-            
-            category.setCategoryName(trimmedCategory);
-            category.setCategoryStatus("PENDING");
-            category.setCreatedByUserId(recruiterUserId);
-            category.setCreatedDate(new Date());
-            
-            em.persist(category);
-            em.flush();
-            
-             //NOTIFICATION FOR CATEGORY
-            Tblnotification categoryNotification = new Tblnotification();
-            
-            categoryNotification.setUserId(recruiterUser);
-            categoryNotification.setMessage("New Category pending for approval:"+ trimmedCategory);
-            categoryNotification.setCreatedDate(new Date());
-            categoryNotification.setNotificationStatus("Unread");
-            categoryNotification.setNotificationType("Important");
-            
-            em.persist(categoryNotification);
-        }
-        // =====================================================
-        // USE EXISTING CATEGORY
-        // =====================================================
-        if(category == null && existingCategoryId != null && existingCategoryId > 0)
-        {
-            category = em.find(Tblskillcategory.class, existingCategoryId);
-            
-            if(category == null)
-            {
-                throw new RuntimeException("Selected category not found");
-            }
-        }
-        
-        
-         // =====================================================
-        // CATEGORY REQUIRED FOR SKILLS
-        // =====================================================
-        if ((skillNames != null
-                && !skillNames.isEmpty())
-                && category == null) {
-
-            throw new RuntimeException(
-                    "Please select category"
-            );
-        }
-        
-        // =====================================================
-        // ADD SKILLS
-        // =====================================================
-        if(skillNames != null && !skillNames.isEmpty())
-        {
-            for(String skillName :skillNames)
-            {
-                if(skillName == null || skillName.trim().isEmpty())
-                {
-                    continue;
-                }
-                
-                String trimmedSkill = skillName.trim();
-              
-                // GLOBAL SKILL DUPLICATE CHECK
-                
-                Long skillCount = em.createQuery("SELECT COUNT(S) FROM Tblskills s WHERE LOWER(TRIM(s.skillName)) = :name",Long.class)
-                                  .setParameter("name", trimmedSkill.toLowerCase())
-                                  .getSingleResult();
-                
-                if(skillCount > 0)
-                {
-                    throw new RuntimeException("This skill alredy exists:"+ trimmedSkill);
-                }
-                
-                // =============================================
-                // CREATE SKILL
-                // =============================================
-                
-                Tblskills skill = new Tblskills();
-                
-                skill.setSkillName(trimmedSkill);
-                skill.setCategoryId(category);
-                skill.setSkillStatus("PENDING");
-                skill.setCreatedByUserId(recruiterUserId);
-                skill.setCreatedDate(new Date());
-                
-                em.persist(skill);
-                
-                //NOTIFICATION FOR SKILL
-                
-                Tblnotification skillNotification = new Tblnotification();
-                
-                skillNotification.setUserId(recruiterUser);
-                skillNotification.setMessage("New skill pending for approval: "+ trimmedSkill);
-                skillNotification.setCreatedDate(new Date());
-                skillNotification.setNotificationStatus("Unread");
-                skillNotification.setNotificationType("Important");
-                
-                em.persist(skillNotification);
-            }
-        }
-        em.flush();
-        
-    }catch(Exception e)
-    {
-        e.printStackTrace();
-        throw e;
     }
-}
 
-
-// ================= JOB Education =============================================================================
-@Override
-public Collection<Tbleducation> getAllEducation()
-{
-    try{
-
-        return em.createNamedQuery("Tbleducation.findAll", Tbleducation.class).getResultList();
-
-    }catch(Exception e)
-    {
-        e.printStackTrace();
-
-        return new ArrayList<>();
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-//    @Override
-//    public void addSkillToJob(int jobId, int skillId) {
-//        try {
-//            Tbljob job = em.find(Tbljob.class, jobId);
-//            Tblskills skill = em.find(Tblskills.class, skillId);
-//
-//            if (job == null || skill == null) {
-//                return;
-//            }
-//
-//            if (job.getTblskillsCollection() == null) {
-//                job.setTblskillsCollection(new ArrayList<>());
-//            }
-//
-//            // prevent duplicate
-//            if (!job.getTblskillsCollection().contains(skill)) {
-//                job.getTblskillsCollection().add(skill);
-//            }
-//
-//            em.merge(job);
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    @Override
-//    public void removeSkillFromJob(int jobId, int skillId) {
-//        try {
-//            Tbljob job = em.find(Tbljob.class, jobId);
-//            Tblskills skill = em.find(Tblskills.class, skillId);
-//
-//            if (job != null && skill != null) {
-//                job.getTblskillsCollection().remove(skill);
-//                em.merge(job);
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
     @Override
     public Collection<Tblskills> getJobSkills(int jobId) {
         try {
@@ -833,98 +778,506 @@ public Collection<Tbleducation> getAllEducation()
             return null;
         }
     }
+
+    // ================= SKILL CATEGORIES =================
+    @Override
+    public Collection<Tblskillcategory> getSkillCategories(Integer recruiterUserId) {
+
+        try {
+
+            return em.createQuery(
+                    "SELECT c FROM Tblskillcategory c "
+                    + "WHERE ("
+                    + "c.categoryStatus = 'APPROVED' "
+                    + "OR "
+                    + "(c.categoryStatus = 'PENDING' "
+                    + "AND c.createdByUserId = :userId)"
+                    + ") "
+                    + "ORDER BY c.categoryName",
+                    Tblskillcategory.class
+            )
+                    .setParameter("userId", recruiterUserId)
+                    .getResultList();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return new ArrayList<>();
+        }
+    }
+
+// ================= SKILLS BY CATEGORY =================
+    @Override
+    public Collection<Tblskills> getSkillsByCategory(Integer categoryId, Integer userId) {
+
+        try {
+
+            return em.createQuery(
+                    "SELECT s FROM Tblskills s "
+                    + "WHERE s.categoryId.categoryId = :categoryId "
+                    + "AND ("
+                    + "s.skillStatus = 'APPROVED' "
+                    + "OR "
+                    + "(s.skillStatus = 'PENDING' "
+                    + "AND s.createdByUserId = :userId)"
+                    + ") "
+                    + "ORDER BY s.skillName",
+                    Tblskills.class
+            )
+                    .setParameter("categoryId", categoryId)
+                    .setParameter("userId", userId)
+                    .getResultList();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public void addSkillAndOrCategory(String categoryName, Collection<String> skillNames, Integer existingCategoryId, Integer recruiterUserId) {
+        try {
+            Tblskillcategory category = null;
+
+            Tblusers recruiterUser = em.find(Tblusers.class, recruiterUserId);
+
+            if (recruiterUser == null) {
+
+                throw new RuntimeException(
+                        "Recruiter user not found"
+                );
+            }
+            // =====================================================
+            // CREATE NEW CATEGORY
+            // =====================================================
+
+            if (categoryName != null && !categoryName.trim().isEmpty()) {
+
+                String trimmedCategory = categoryName.trim();
+
+                // CHECK CATEGORY DUPLICATE
+                Long catagoryCount = em.createQuery("SELECT COUNT(c) FROM Tblskillcategory c  WHERE LOWER(TRIM(c.categoryName)) = :name", Long.class)
+                        .setParameter("name", trimmedCategory.toLowerCase())
+                        .getSingleResult();
+
+                if (catagoryCount > 0) {
+                    throw new RuntimeException(
+                            "This Category alredy exists."
+                    );
+                }
+
+                // CREATE CATEGORY
+                category = new Tblskillcategory();
+
+                category.setCategoryName(trimmedCategory);
+                category.setCategoryStatus("PENDING");
+                category.setCreatedByUserId(recruiterUserId);
+                category.setCreatedDate(new Date());
+
+                em.persist(category);
+                em.flush();
+
+                //NOTIFICATION FOR CATEGORY
+//                Tblnotification categoryNotification = new Tblnotification();
 //
-//    @Override
-//    public void saveJobSkillWeightage(int jobId, Map<Integer, Integer> skillWeightMap) {
-//        try {
-//            Tbljob job = em.find(Tbljob.class, jobId);
+//                categoryNotification.setUserId(recruiterUser);
+//                categoryNotification.setMessage("New Category pending for approval:" + trimmedCategory);
+//                categoryNotification.setCreatedDate(new Date());
+//                categoryNotification.setNotificationStatus("Unread");
+//                categoryNotification.setNotificationType("Important");
 //
-//            if (job == null) {
-//                throw new RuntimeException("Job not found");
-//            }
+//                em.persist(categoryNotification);
+//                
+                // NOTIFICATION FOR CATEGORY
+                Tblnotification categoryNotification = new Tblnotification();
+
+                categoryNotification.setSenderUserId(recruiterUser);
+                categoryNotification.setReceiverUserId(recruiterUser);
+
+                categoryNotification.setNotificationTitle(
+                        "Category Approval Request"
+                );
+
+                categoryNotification.setNotificationMessage(
+                        "New category pending approval: "
+                        + trimmedCategory
+                );
+
+                categoryNotification.setNotificationType(
+                        "CATEGORY_REQUEST"
+                );
+
+                categoryNotification.setIsRead(false);
+
+                categoryNotification.setCreatedDate(
+                        new Date()
+                );
+
+                em.persist(categoryNotification);
+            }
+            // =====================================================
+            // USE EXISTING CATEGORY
+            // =====================================================
+            if (category == null && existingCategoryId != null && existingCategoryId > 0) {
+                category = em.find(Tblskillcategory.class, existingCategoryId);
+
+                if (category == null) {
+                    throw new RuntimeException("Selected category not found");
+                }
+            }
+
+            // =====================================================
+            // CATEGORY REQUIRED FOR SKILLS
+            // =====================================================
+            if ((skillNames != null
+                    && !skillNames.isEmpty())
+                    && category == null) {
+
+                throw new RuntimeException(
+                        "Please select category"
+                );
+            }
+
+            // =====================================================
+            // ADD SKILLS
+            // =====================================================
+            if (skillNames != null && !skillNames.isEmpty()) {
+                for (String skillName : skillNames) {
+                    if (skillName == null || skillName.trim().isEmpty()) {
+                        continue;
+                    }
+
+                    String trimmedSkill = skillName.trim();
+
+                    // GLOBAL SKILL DUPLICATE CHECK
+                    Long skillCount = em.createQuery("SELECT COUNT(S) FROM Tblskills s WHERE LOWER(TRIM(s.skillName)) = :name", Long.class)
+                            .setParameter("name", trimmedSkill.toLowerCase())
+                            .getSingleResult();
+
+                    if (skillCount > 0) {
+                        throw new RuntimeException("This skill alredy exists:" + trimmedSkill);
+                    }
+
+                    // =============================================
+                    // CREATE SKILL
+                    // =============================================
+                    Tblskills skill = new Tblskills();
+
+                    skill.setSkillName(trimmedSkill);
+                    skill.setCategoryId(category);
+                    skill.setSkillStatus("PENDING");
+                    skill.setCreatedByUserId(recruiterUserId);
+                    skill.setCreatedDate(new Date());
+
+                    em.persist(skill);
+
+//                    //NOTIFICATION FOR SKILL
+//                    Tblnotification skillNotification = new Tblnotification();
 //
-//            for (Map.Entry<Integer, Integer> entry : skillWeightMap.entrySet()) {
+//                    skillNotification.setUserId(recruiterUser);
+//                    skillNotification.setMessage("New skill pending for approval: " + trimmedSkill);
+//                    skillNotification.setCreatedDate(new Date());
+//                    skillNotification.setNotificationStatus("Unread");
+//                    skillNotification.setNotificationType("Important");
 //
-//                Integer skillId = entry.getKey();
-//                Integer weight = entry.getValue();
-//
-//                Tblskills skill = em.find(Tblskills.class, skillId);
-//
-//                if (skill == null) {
-//                    continue;
-//                }
-//
-//                // check if mapping already exists
-//                Tbljobskillweightage existing = null;
-//
-//                try {
-//                    existing = em.createQuery(
-//                            "SELECT j FROM Tbljobskillweightage j WHERE j.jobId.jobId = :jobId AND j.skillId.skillId = :skillId",
-//                            Tbljobskillweightage.class)
-//                            .setParameter("jobId", jobId)
-//                            .setParameter("skillId", skillId)
-//                            .getSingleResult();
-//                } catch (Exception e) {
-//                    existing = null;
-//                }
-//
-//                if (existing != null) {
-//                    // UPDATE
-//                    existing.setSkillWeightage(weight);
-//                    em.merge(existing);
-//                } else {
-//                    // INSERT
-//                    Tbljobskillweightage jw = new Tbljobskillweightage();
-//                    jw.setJobId(job);
-//                    jw.setSkillId(skill);
-//                    jw.setSkillWeightage(weight);
-//
-//                    em.persist(jw);
-//                }
-//            }
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            throw e;
-//        }
-//    }
-//
-//    @Override
-//    public Collection<Tbljobskillweightage> getJobSkillWeightage(int jobId) {
-//
-//        return em.createQuery(
-//                "SELECT j FROM Tbljobskillweightage j WHERE j.jobId.jobId = :jobId",
-//                Tbljobskillweightage.class
-//        )
-//                .setParameter("jobId", jobId)
-//                .getResultList();
-//    }
-//
-//    @Override
-//    public void updateJobSkillWeightage(
-//            int jobId,
-//            int skillId,
-//            int weightage
-//    ) {
-//        try {
-//
-//            Tbljobskillweightage jw = em.createQuery(
-//                    "SELECT j FROM Tbljobskillweightage j WHERE j.jobId.jobId = :jobId AND j.skillId.skillId = :skillId",
-//                    Tbljobskillweightage.class
-//            )
-//                    .setParameter("jobId", jobId)
-//                    .setParameter("skillId", skillId)
-//                    .getSingleResult();
-//
-//            jw.setSkillWeightage(weightage);
-//
-//            em.merge(jw);
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
+//                    em.persist(skillNotification);
+                    Tblnotification skillNotification = new Tblnotification();
+
+                    skillNotification.setSenderUserId(recruiterUser);
+                    skillNotification.setReceiverUserId(recruiterUser);
+
+                    skillNotification.setNotificationTitle(
+                            "Skill Approval Request"
+                    );
+
+                    skillNotification.setNotificationMessage(
+                            "New skill pending approval: "
+                            + trimmedSkill
+                    );
+
+                    skillNotification.setNotificationType(
+                            "SKILL_REQUEST"
+                    );
+
+                    skillNotification.setIsRead(false);
+
+                    skillNotification.setCreatedDate(
+                            new Date()
+                    );
+
+                    em.persist(skillNotification);
+                }
+            }
+            em.flush();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+// ================= JOB Education =============================================================================
+    @Override
+    public Collection<Tbleducation> getAllEducation() {
+        try {
+
+            return em.createNamedQuery("Tbleducation.findAll", Tbleducation.class).getResultList();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public Collection<Tbleducation> getJobEducation(int jobId) {
+        try {
+            Tbljob job = em.find(Tbljob.class, jobId);
+            return (job != null) ? job.getTbleducationCollection() : null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    // ================= CANDIDATE MANAGEMENT =================
+    @Override
+    public Collection<Tblapplication> getRecruiterApplications(int recruiterId) {
+
+        try {
+
+            return em.createQuery(
+                    "SELECT a FROM Tblapplication a "
+                    + "WHERE a.jobId.recruiterId.recruiterId = :rid "
+                    + "ORDER BY a.applicationAppliedDate DESC",
+                    Tblapplication.class
+            )
+                    .setParameter("rid", recruiterId)
+                    .getResultList();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public double calculateAndSaveScreeningScore(int applicationId) {
+
+        try {
+
+            Tblapplication app = em.find(Tblapplication.class, applicationId);
+
+            if (app == null) {
+                return 0;
+            }
+
+            int candidateId = app.getCandidateId().getCandidateId();
+            int jobId = app.getJobId().getJobId();
+
+            // ==================================================
+            // 1. JOB SKILLS
+            // ==================================================
+            List<Integer> jobSkills = em.createQuery(
+                    "SELECT js.skillId.skillId FROM TblJobSkills js WHERE js.jobId.jobId = :jobId",
+                    Integer.class
+            )
+                    .setParameter("jobId", jobId)
+                    .getResultList();
+
+            // ==================================================
+            // 2. CANDIDATE SKILLS
+            // ==================================================
+            List<Integer> candidateSkills = em.createQuery(
+                    "SELECT cs.skillId.skillId FROM TblCandidateSkills cs WHERE cs.candidateId.candidateId = :cid",
+                    Integer.class
+            )
+                    .setParameter("cid", candidateId)
+                    .getResultList();
+
+            // =========================
+            // SKILL SCORE (0–50)
+            // =========================
+            double skillScore = 0;
+
+            if (!jobSkills.isEmpty()) {
+
+                long matched = jobSkills.stream()
+                        .filter(candidateSkills::contains)
+                        .count();
+
+                double matchRatio = (double) matched / jobSkills.size();
+
+                skillScore = matchRatio * 50;
+            }
+
+            // ==================================================
+            // 3. EXPERIENCE SCORE (0–30)
+            // ==================================================
+            int candidateExp = app.getCandidateId().getCandidateExperience();
+            int requiredExp = app.getJobId().getExperienceRequired();
+
+            double expScore;
+
+            if (requiredExp > 0) {
+
+                double ratio = (double) candidateExp / requiredExp;
+
+                if (ratio >= 1.2) {
+                    expScore = 30;
+                } else if (ratio >= 1.0) {
+                    expScore = 27;
+                } else if (ratio >= 0.8) {
+                    expScore = 22;
+                } else if (ratio >= 0.5) {
+                    expScore = 15;
+                } else {
+                    expScore = 8;
+                }
+
+            } else {
+                expScore = 20; // neutral score if no requirement
+            }
+
+            // ==================================================
+            // 4. EDUCATION SCORE (0–20)
+            // ==================================================
+            double eduScore = 0;
+
+            List<Integer> jobEduList = em.createQuery(
+                    "SELECT je.educationId.educationId FROM TblJobEducation je WHERE je.jobId.jobId = :jobId",
+                    Integer.class
+            )
+                    .setParameter("jobId", jobId)
+                    .getResultList();
+
+            List<String> candidateEduList = em.createQuery(
+                    "SELECT ce.educationName FROM TblCandidateEducation ce WHERE ce.candidateId.candidateId = :cid",
+                    String.class
+            )
+                    .setParameter("cid", candidateId)
+                    .getResultList();
+
+            if (!jobEduList.isEmpty()) {
+
+                List<String> jobEduNames = em.createQuery(
+                        "SELECT e.educationName FROM TblEducation e WHERE e.educationId IN :ids",
+                        String.class
+                )
+                        .setParameter("ids", jobEduList)
+                        .getResultList();
+
+                long matchCount = jobEduNames.stream()
+                        .filter(candidateEduList::contains)
+                        .count();
+
+                double eduRatio = (double) matchCount / jobEduNames.size();
+
+                eduScore = eduRatio * 20;
+
+            } else {
+                eduScore = 10; // neutral when no requirement
+            }
+
+            // ==================================================
+            // 5. FINAL SCORE (0–100)
+            // ==================================================
+            double finalScore = skillScore + expScore + eduScore;
+
+            finalScore = Math.min(100, finalScore);
+
+            // ==================================================
+            // 6. SAVE SCORE
+            // ==================================================
+            Tblscreeningscore score = new Tblscreeningscore();
+
+            score.setApplicationId(app);
+            score.setMatchingScore(BigDecimal.valueOf(finalScore));
+            score.setScreeningLevel(
+                    finalScore >= 80 ? "EXCELLENT"
+                            : finalScore >= 65 ? "HIGH"
+                                    : finalScore >= 45 ? "MEDIUM"
+                                            : "LOW"
+            );
+            score.setScoreDate(new Date());
+
+            em.persist(score);
+
+            return finalScore;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    @Override
+    public BigDecimal getScreeningScore(int applicationId) {
+
+        try {
+
+            return em.createQuery(
+                    "SELECT s.matchingScore FROM Tblscreeningscore s "
+                    + "WHERE s.applicationId.applicationId = :aid "
+                    + "ORDER BY s.scoreDate DESC",
+                    BigDecimal.class
+            )
+                    .setParameter("aid", applicationId)
+                    .setMaxResults(1)
+                    .getSingleResult();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return BigDecimal.ZERO;
+        }
+    }
+
+    @Override
+    public String getScreeningLevel(int applicationId) {
+
+        try {
+
+            return em.createQuery(
+                    "SELECT s.screeningLevel FROM Tblscreeningscore s "
+                    + "WHERE s.applicationId.applicationId = :aid "
+                    + "ORDER BY s.scoreDate DESC",
+                    String.class
+            )
+                    .setParameter("aid", applicationId)
+                    .setMaxResults(1)
+                    .getSingleResult();
+
+        } catch (Exception e) {
+            return "NOT_SCORED";
+        }
+    }
+
+    @Override
+    public Collection<Tblapplication> getApplicationsByStatus(int recruiterId, String status) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public Collection<Tblapplication> searchRecruiterCandidates(int recruiterId, String keyword) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public Tblapplication getApplicationDetails(int applicationId, int recruiterId) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public void updateApplicationStatus(int applicationId, int recruiterId, String newStatus) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
 //    // ================= APPLICATION =================
 //    @Override
 //    public Collection<Tblapplication> getApplications(int jobId) {
@@ -1286,7 +1639,6 @@ public Collection<Tbleducation> getAllEducation()
 //            return null;
 //        }
 //    }
-
     @Override
     public long getTodayInterviewsCount(int recruiterId) {
 
@@ -1378,7 +1730,7 @@ public Collection<Tbleducation> getAllEducation()
 
     @Override
     public long getActiveJobsCount(int recruiterId) {
-
+        closeExpiredJobs();
         try {
 
             return em.createQuery(
@@ -1510,7 +1862,7 @@ public Collection<Tbleducation> getAllEducation()
 
             return em.createQuery(
                     "SELECT n FROM Tblnotification n "
-                    + "WHERE n.userId.userId = :uid "
+                    + "WHERE n.receiverUserId.userId = :uid "
                     + "ORDER BY n.createdDate DESC",
                     Tblnotification.class)
                     .setParameter("uid", userId)
@@ -1524,4 +1876,5 @@ public Collection<Tbleducation> getAllEducation()
             return new ArrayList<>();
         }
     }
+
 }

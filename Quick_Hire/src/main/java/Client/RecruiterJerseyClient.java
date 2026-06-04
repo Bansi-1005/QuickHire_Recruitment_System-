@@ -4,6 +4,8 @@
  */
 package Client;
 
+import Entity.Tblapplication;
+import Entity.Tbleducation;
 import Entity.Tbljob;
 import Entity.Tblskillcategory;
 import Entity.Tblskills;
@@ -14,6 +16,7 @@ import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.math.BigDecimal;
 import java.util.Collection;
 
 /**
@@ -73,7 +76,6 @@ public class RecruiterJerseyClient {
 //    public Response updateJob(Object requestEntity) throws ClientErrorException {
 //        return webTarget.path("updateJob").request(jakarta.ws.rs.core.MediaType.APPLICATION_JSON).put(jakarta.ws.rs.client.Entity.entity(requestEntity, jakarta.ws.rs.core.MediaType.APPLICATION_JSON), Response.class);
 //    }
-
     public <T> T filterCandidates(Class<T> responseType, String jobId, String score) throws ClientErrorException {
         WebTarget resource = webTarget;
         if (jobId != null) {
@@ -97,31 +99,191 @@ public class RecruiterJerseyClient {
                 .get(responseType);
     }
 
-    public Response createJob(Tbljob requestEntity, Collection<Integer> skillIds)
+    public Response createJob(
+            Tbljob requestEntity,
+            Collection<Integer> skillIds,
+            Collection<Integer> educationIds
+    )
             throws ClientErrorException {
 
         String skillParam = "";
 
-        if (skillIds != null && !skillIds.isEmpty()) {
-            StringBuilder sb = new StringBuilder();
+        if (skillIds != null
+                && !skillIds.isEmpty()) {
+
+            StringBuilder sb
+                    = new StringBuilder();
+
             for (Integer id : skillIds) {
+
                 if (sb.length() > 0) {
                     sb.append(",");
                 }
+
                 sb.append(id);
             }
+
             skillParam = sb.toString();
+        }
+
+        String educationParam = "";
+
+        if (educationIds != null
+                && !educationIds.isEmpty()) {
+
+            StringBuilder sb
+                    = new StringBuilder();
+
+            for (Integer id : educationIds) {
+
+                if (sb.length() > 0) {
+                    sb.append(",");
+                }
+
+                sb.append(id);
+            }
+
+            educationParam = sb.toString();
         }
 
         return webTarget
                 .path("createJob")
-                .queryParam("skillIds", skillParam)
+                .queryParam(
+                        "skillIds",
+                        skillParam
+                )
+                .queryParam(
+                        "educationIds",
+                        educationParam
+                )
                 .request(MediaType.TEXT_PLAIN)
-                .header("Authorization", "Bearer " + token)
+                .header(
+                        "Authorization",
+                        "Bearer " + token
+                )
                 .post(
-                        Entity.entity(requestEntity, MediaType.APPLICATION_JSON),
+                        Entity.entity(
+                                requestEntity,
+                                MediaType.APPLICATION_JSON
+                        ),
                         Response.class
                 );
+    }
+
+    public Response updateJob(
+            Tbljob requestEntity,
+            Collection<Integer> skillIds,
+            Collection<Integer> educationIds
+    ) throws ClientErrorException {
+
+        String skillParam = "";
+
+        if (skillIds != null && !skillIds.isEmpty()) {
+
+            StringBuilder sb = new StringBuilder();
+
+            for (Integer id : skillIds) {
+
+                if (sb.length() > 0) {
+                    sb.append(",");
+                }
+
+                sb.append(id);
+            }
+
+            skillParam = sb.toString();
+        }
+
+        String educationParam = "";
+
+        if (educationIds != null && !educationIds.isEmpty()) {
+
+            StringBuilder sb = new StringBuilder();
+
+            for (Integer id : educationIds) {
+
+                if (sb.length() > 0) {
+                    sb.append(",");
+                }
+
+                sb.append(id);
+            }
+
+            educationParam = sb.toString();
+        }
+
+        return webTarget
+                .path("updateJob")
+                .queryParam(
+                        "skillIds",
+                        skillParam
+                )
+                .queryParam(
+                        "educationIds",
+                        educationParam
+                )
+                .request(MediaType.TEXT_PLAIN)
+                .header(
+                        "Authorization",
+                        "Bearer " + token
+                )
+                .put(
+                        Entity.entity(
+                                requestEntity,
+                                MediaType.APPLICATION_JSON
+                        ),
+                        Response.class
+                );
+    }
+
+    public Response toggleJobStatus(
+            Integer jobId,
+            Integer recruiterId
+    ) throws ClientErrorException {
+
+        WebTarget resource = webTarget
+                .path("toggleJobStatus");
+
+        if (jobId != null) {
+            resource = resource.queryParam(
+                    "jobId",
+                    jobId
+            );
+        }
+
+        if (recruiterId != null) {
+            resource = resource.queryParam(
+                    "recruiterId",
+                    recruiterId
+            );
+        }
+
+        return resource
+                .request(MediaType.TEXT_PLAIN)
+                .header(
+                        "Authorization",
+                        "Bearer " + token
+                )
+                .put(
+                        Entity.text("")
+                );
+    }
+
+    public Response updateJobExpiryDate(
+            Integer jobId,
+            Integer recruiterId,
+            String expiryDate) {
+
+        WebTarget resource = webTarget
+                .path("updateJobExpiryDate")
+                .queryParam("jobId", jobId)
+                .queryParam("recruiterId", recruiterId)
+                .queryParam("expiryDate", expiryDate);
+
+        return resource
+                .request(MediaType.TEXT_PLAIN)
+                .header("Authorization", "Bearer " + token)
+                .put(Entity.text(""));
     }
 
 //    public Response sendNotification(Object requestEntity) throws ClientErrorException {
@@ -131,7 +293,6 @@ public class RecruiterJerseyClient {
 //    public Response deleteJob() throws ClientErrorException {
 //        return webTarget.path("deleteJob").request().delete(Response.class);
 //    }
-
 //    public <T> T getJobs(Class<T> responseType, String recruiterId) throws ClientErrorException {
 //        WebTarget resource = webTarget;
 //        if (recruiterId != null) {
@@ -179,7 +340,6 @@ public class RecruiterJerseyClient {
 //    public Response updateApplicationStatus() throws ClientErrorException {
 //        return webTarget.path("updateApplicationStatus").request().put(null, Response.class);
 //    }
-
 //    public Response updateInterview(Object requestEntity) throws ClientErrorException {
 //        return webTarget.path("updateInterview").request(jakarta.ws.rs.core.MediaType.APPLICATION_JSON).put(jakarta.ws.rs.client.Entity.entity(requestEntity, jakarta.ws.rs.core.MediaType.APPLICATION_JSON), Response.class);
 //    }
@@ -200,7 +360,6 @@ public class RecruiterJerseyClient {
 //    public Response scheduleInterview(Object requestEntity) throws ClientErrorException {
 //        return webTarget.path("scheduleInterview").request(jakarta.ws.rs.core.MediaType.APPLICATION_JSON).post(jakarta.ws.rs.client.Entity.entity(requestEntity, jakarta.ws.rs.core.MediaType.APPLICATION_JSON), Response.class);
 //    }
-
 //    public <T> T getJobSkills(Class<T> responseType, String jobId) throws ClientErrorException {
 //        WebTarget resource = webTarget;
 //        if (jobId != null) {
@@ -209,7 +368,6 @@ public class RecruiterJerseyClient {
 //        resource = resource.path("getJobSkills");
 //        return resource.request(jakarta.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
 //    }
-
     public Collection<Tblskills> getJobSkills(String jobId)
             throws ClientErrorException {
 
@@ -257,145 +415,234 @@ public class RecruiterJerseyClient {
                 });
     }
 
-   public Collection<Tblskillcategory> getSkillCategories(Integer userId)
-        throws ClientErrorException {
+    public Collection<Tblskillcategory> getSkillCategories(Integer userId)
+            throws ClientErrorException {
 
-    WebTarget resource = webTarget
-            .path("getSkillCategories");
+        WebTarget resource = webTarget
+                .path("getSkillCategories");
 
-    if (userId != null) {
+        if (userId != null) {
 
-        resource = resource.queryParam(
-                "userId",
-                userId
-        );
+            resource = resource.queryParam(
+                    "userId",
+                    userId
+            );
+        }
+
+        return resource
+                .request(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + token)
+                .get(new GenericType<Collection<Tblskillcategory>>() {
+                });
     }
 
-    return resource
-            .request(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + token)
-            .get(new GenericType<Collection<Tblskillcategory>>() {
-            });
-}
+    public Collection<Tblskills> getSkillsByCategory(
+            Integer categoryId,
+            Integer userId)
+            throws ClientErrorException {
 
-   public Collection<Tblskills> getSkillsByCategory(
-        Integer categoryId,
-        Integer userId)
-        throws ClientErrorException {
+        WebTarget resource = webTarget
+                .path("getSkillsByCategory");
 
-    WebTarget resource = webTarget
-            .path("getSkillsByCategory");
+        if (categoryId != null) {
 
-    if (categoryId != null) {
+            resource = resource.queryParam(
+                    "categoryId",
+                    categoryId
+            );
+        }
 
-        resource = resource.queryParam(
-                "categoryId",
-                categoryId
-        );
+        if (userId != null) {
+
+            resource = resource.queryParam(
+                    "userId",
+                    userId
+            );
+        }
+
+        return resource
+                .request(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + token)
+                .get(new GenericType<Collection<Tblskills>>() {
+                });
     }
 
-    if (userId != null) {
+    public Response addSkillAndOrCategory(
+            String categoryName,
+            String skillNames,
+            Integer existingCategoryId,
+            Integer userId
+    ) {
 
-        resource = resource.queryParam(
-                "userId",
-                userId
-        );
+        WebTarget resource = webTarget
+                .path("addSkillAndOrCategory");
+
+        // CATEGORY NAME
+        if (categoryName != null
+                && !categoryName.trim().isEmpty()) {
+
+            resource = resource.queryParam(
+                    "categoryName",
+                    categoryName.trim()
+            );
+        }
+
+        // SKILL NAMES
+        if (skillNames != null
+                && !skillNames.trim().isEmpty()) {
+
+            resource = resource.queryParam(
+                    "skillNames",
+                    skillNames.trim()
+            );
+        }
+
+        // EXISTING CATEGORY
+        if (existingCategoryId != null
+                && existingCategoryId > 0) {
+
+            resource = resource.queryParam(
+                    "existingCategoryId",
+                    existingCategoryId
+            );
+        }
+
+        // USER ID
+        if (userId != null
+                && userId > 0) {
+
+            resource = resource.queryParam(
+                    "userId",
+                    userId
+            );
+        }
+
+        return resource
+                .request(MediaType.TEXT_PLAIN)
+                .header(
+                        "Authorization",
+                        "Bearer " + token
+                )
+                .post(null);
     }
 
-    return resource
-            .request(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + token)
-            .get(new GenericType<Collection<Tblskills>>() {
-            });
-}
-   
-public Response addSkillAndOrCategory(
-        String categoryName,
-        String skillNames,
-        Integer existingCategoryId,
-        Integer userId
-) {
+//==============Job Education ====================
+    public Collection<Tbleducation> getAllEducation()
+            throws ClientErrorException {
 
-    WebTarget resource = webTarget
-            .path("addSkillAndOrCategory");
-
-    // CATEGORY NAME
-    if (categoryName != null
-            && !categoryName.trim().isEmpty()) {
-
-        resource = resource.queryParam(
-                "categoryName",
-                categoryName.trim()
-        );
+        return webTarget
+                .path("getAllEducation")
+                .request(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + token)
+                .get(new GenericType<Collection<Tbleducation>>() {
+                });
     }
 
-    // SKILL NAMES
-    if (skillNames != null
-            && !skillNames.trim().isEmpty()) {
+    public Collection<Tbleducation> getJobEducation(String jobId)
+            throws ClientErrorException {
 
-        resource = resource.queryParam(
-                "skillNames",
-                skillNames.trim()
-        );
+        WebTarget resource = webTarget
+                .path("getJobEducation");
+
+        if (jobId != null && !jobId.isEmpty()) {
+            resource = resource.queryParam("jobId", jobId);
+        }
+
+        return resource
+                .request(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + token)
+                .get(new GenericType<Collection<Tbleducation>>() {
+                });
     }
 
-    // EXISTING CATEGORY
-    if (existingCategoryId != null
-            && existingCategoryId > 0) {
+    //==============CANDIDATE MANAGEMENT ====================
+    public Collection<Tblapplication> getRecruiterApplications(
+            Integer recruiterId)
+            throws ClientErrorException {
 
-        resource = resource.queryParam(
-                "existingCategoryId",
-                existingCategoryId
-        );
+        WebTarget resource = webTarget
+                .path("getRecruiterApplications");
+
+        // ================= QUERY PARAM =================
+        if (recruiterId != null && recruiterId > 0) {
+
+            resource = resource.queryParam(
+                    "recruiterId",
+                    recruiterId
+            );
+        }
+
+        // ================= API CALL =================
+        return resource
+                .request(MediaType.APPLICATION_JSON)
+                .header(
+                        "Authorization",
+                        "Bearer " + token
+                )
+                .get(new GenericType<Collection<Tblapplication>>() {
+                });
     }
 
-    // USER ID
-    if (userId != null
-            && userId > 0) {
+    public Response generateScreeningScore(
+            Integer applicationId)
+            throws ClientErrorException {
 
-        resource = resource.queryParam(
-                "userId",
-                userId
-        );
+        WebTarget resource = webTarget
+                .path("generateScreeningScore");
+
+        if (applicationId != null
+                && applicationId > 0) {
+
+            resource = resource.queryParam(
+                    "applicationId",
+                    applicationId
+            );
+        }
+
+        return resource
+                .request(MediaType.TEXT_PLAIN)
+                .header(
+                        "Authorization",
+                        "Bearer " + token
+                )
+                .post(
+                        Entity.text("")
+                );
     }
 
-    return resource
-            .request(MediaType.TEXT_PLAIN)
-            .header(
-                    "Authorization",
-                    "Bearer " + token
-            )
-            .post(null);
-}
+    public BigDecimal getScreeningScore(
+            Integer applicationId)
+            throws ClientErrorException {
 
-//    public Response addSkillToJob() throws ClientErrorException {
-//        return webTarget.path("addSkillToJob").request().post(null, Response.class);
-//    }
-//
-//    public Response removeSkillFromJob() throws ClientErrorException {
-//        return webTarget.path("removeSkillFromJob").request().delete(Response.class);
-//    }
-//
-//    public Response generateScore() throws ClientErrorException {
-//        return webTarget.path("generateScore").request().post(null, Response.class);
-//    }
-//
-//    public <T> T getScore(Class<T> responseType, String applicationId) throws ClientErrorException {
-//        WebTarget resource = webTarget;
-//        if (applicationId != null) {
-//            resource = resource.queryParam("applicationId", applicationId);
-//        }
-//        resource = resource.path("getScore");
-//        return resource.request(jakarta.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
-//    }
-//
-//    public Response updateFeedback() throws ClientErrorException {
-//        return webTarget.path("updateFeedback").request().put(null, Response.class);
-//    }
+        WebTarget resource = webTarget
+                .path("getScreeningScore");
 
-    public void close() {
-        client.close();
+        if (applicationId != null
+                && applicationId > 0) {
+
+            resource = resource.queryParam(
+                    "applicationId",
+                    applicationId
+            );
+        }
+
+        return resource
+                .request(MediaType.APPLICATION_JSON)
+                .header(
+                        "Authorization",
+                        "Bearer " + token
+                )
+                .get(BigDecimal.class);
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     public String getTodayInterviews(String recruiterId) {
 
@@ -534,4 +781,9 @@ public Response addSkillAndOrCategory(
             return null;
         }
     }
+
+    public void close() {
+        client.close();
+    }
+
 }

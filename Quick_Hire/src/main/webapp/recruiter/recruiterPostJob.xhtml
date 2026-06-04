@@ -10,9 +10,13 @@
 
         <f:metadata>
             <f:viewAction action="#{loginBean.checkLogin}" />
+             <f:viewParam name="jobId"
+                 value="#{recruiterCDIBean.editJobId}" />
+
             <f:viewAction action="#{recruiterCDIBean.loadProfile}" />
             <f:viewAction action="#{recruiterCDIBean.initLocationData}" />
             <f:viewAction action="#{recruiterCDIBean.initializeJobForm}" />
+
         </f:metadata>
 
         <h:head>
@@ -37,10 +41,12 @@
                                            styleClass="menu-link" />
 
                             <h:commandLink value="📋 Job Postings"
-                                           action="recruiterPostJob?faces-redirect=true"
                                            styleClass="menu-link active" />
+                              <h:commandLink value="📋 View Jobs"
+                                           action="recruiterViewJobs?faces-redirect=true"
+                                           styleClass="menu-link"/>
 
-                            <h:commandLink value="👥 Applicants" styleClass="menu-link" />
+                            <h:commandLink value="👥 Applicants" action="recruiterApplicants?faces-redirect=true" styleClass="menu-link" />
                             <h:commandLink value="📅 Interviews" styleClass="menu-link" />
                             <h:commandLink value="📊 Reports" styleClass="menu-link" />
                             <h:commandLink value="⚙ Settings" styleClass="menu-link" />
@@ -61,7 +67,7 @@
                         <section class="postjob-hero">
                             <div class="postjob-hero-content">
                                 <div class="postjob-page-tag">Recruiter Workspace</div>
-                                <h1>Create New Job</h1>
+                                <h1>#{recruiterCDIBean.editMode ? 'Edit Job' : 'Create New Job'}</h1>
                                 <p>
                                     Publish a detailed opening with job role, experience, salary range,
                                     vacancies, expiry date, and required skills.
@@ -635,6 +641,88 @@
                                             </div>
                                         </div>
                                     </div>
+                                    
+                                    
+                                    
+                                   <!-- EDUCATION -->
+                                    <div class="postjob-form-section postjob-education-section">
+                                        <div class="postjob-form-section-head">
+                                            <h3>Education</h3>
+                                            <p>Select one or more education qualifications for this job.</p>
+                                        </div>
+
+                                        <h:panelGroup id="educationSection" layout="block" styleClass="postjob-form-group full">
+                                            <div class="postjob-education-grid">
+
+                                                <!-- LEFT : CHECKBOX LIST -->
+                                                <div class="postjob-education-card">
+                                                    <div class="postjob-education-card-head">
+                                                        <h4>Education Options</h4>
+                                                        <span class="postjob-education-card-pill">Check Multiple</span>
+                                                    </div>
+
+                                                    <div class="postjob-form-group">
+                                                        <div class="postjob-education-checkbox-wrap">
+                                                            <h:selectManyCheckbox id="educationSelect"
+                                                                                  value="#{recruiterCDIBean.selectedEducationIds}"
+                                                                                  converter="jakarta.faces.Integer"
+                                                                                  layout="pageDirection"
+                                                                                  styleClass="postjob-education-checkbox-list">
+
+                                                                <f:selectItems value="#{recruiterCDIBean.educationList}"
+                                                                               var="edu"
+                                                                               itemLabel="#{edu.educationName}"
+                                                                               itemValue="#{edu.educationId}" />
+
+                                                                <f:ajax event="change"
+                                                                        execute="@this"
+                                                                        render="educationSelectedBox educationMessage educationCountBox"
+                                                                        onevent="handleEducationSelectionChange" />
+                                                            </h:selectManyCheckbox>
+                                                        </div>
+
+                                                        <h:message id="educationMessage"
+                                                                   for="educationSelect"
+                                                                   styleClass="postjob-field-error" />
+                                                    </div>
+                                                </div>
+
+                                                <!-- RIGHT : SELECTED EDUCATION DISPLAY -->
+                                                <h:panelGroup id="educationSelectedBox" layout="block" styleClass="postjob-education-card">
+                                                    <div class="postjob-education-card-head">
+                                                        <h4>Selected Education</h4>
+                                                        <h:panelGroup id="educationCountBox" layout="block">
+                                                            <span class="postjob-education-count-badge">
+                                                                #{empty recruiterCDIBean.selectedEducationIds ? 0 : recruiterCDIBean.selectedEducationIds.size()} Selected
+                                                            </span>
+                                                        </h:panelGroup>
+                                                    </div>
+
+                                                    <div class="postjob-education-display-box">
+                                                        <ui:fragment rendered="#{empty recruiterCDIBean.selectedEducationIds}">
+                                                            <div class="postjob-education-empty">
+                                                                No education selected yet.
+                                                            </div>
+                                                        </ui:fragment>
+
+                                                        <ui:fragment rendered="#{not empty recruiterCDIBean.selectedEducationIds}">
+                                                            <div class="postjob-education-selected-list">
+                                                                <ui:repeat value="#{recruiterCDIBean.educationList}" var="edu">
+                                                                    <ui:fragment rendered="#{recruiterCDIBean.selectedEducationIds.contains(edu.educationId)}">
+                                                                        <div class="postjob-education-selected-item is-selected">
+                                                                            <span class="postjob-education-dot"></span>
+                                                                            <span class="postjob-education-selected-text">#{edu.educationName}</span>
+                                                                        </div>
+                                                                    </ui:fragment>
+                                                                </ui:repeat>
+                                                            </div>
+                                                        </ui:fragment>
+                                                    </div>
+                                                </h:panelGroup>
+
+                                            </div>
+                                        </h:panelGroup>
+                                    </div>
 
                                     <!-- Required Skills -->
                                     <div class="postjob-form-section postjob-skills-section">
@@ -677,6 +765,7 @@
                                                     <div style="display:none;">
                                                         <h:selectManyListbox id="skills"
                                                                              value="#{recruiterCDIBean.selectedSkillIds}"
+                                                                             converter="jakarta.faces.Integer"
                                                                              styleClass="postjob-hidden-skills-listbox"
                                                                              size="10"
                                                                              required="true"
@@ -966,9 +1055,9 @@
 
                                     <!-- BUTTONS -->
                                     <div class="postjob-form-actions">
-                                        <h:commandButton value="Publish Job"
-                                                         action="#{recruiterCDIBean.saveJob}"
-                                                         styleClass="postjob-btn postjob-btn-primary">
+                                    <h:commandButton value="#{recruiterCDIBean.editMode ? 'Update Job' : 'Publish Job'}"
+                                                     action="#{recruiterCDIBean.saveJob}"
+                                                     styleClass="postjob-btn postjob-btn-primary">
 
 
                                             <f:ajax execute="@form"
@@ -986,6 +1075,10 @@
                                                     vacanciesMessage
                                                     expiryDateMessage
                                                     descriptionMessage
+                                                    educationSection
+                                                    educationSelectedBox
+                                                    educationMessage
+                                                    educationCountBox
                                                     skillsMessage
                                                     messages
                                                     globalMessageBox
@@ -993,6 +1086,10 @@
                                                     allSkillsJsonWrapper"
                                                     onevent="handleValidationGlobalMessage" />
                                         </h:commandButton>
+                                       <h:commandButton value="Reset"
+                                                        action="#{recruiterCDIBean.resetJobForm}"
+                                                        immediate="true"
+                                                        styleClass="postjob-btn postjob-btn-primary"/>
 
                                         <h:commandButton value="Back to Dashboard"
                                                          action="recruiterDashboard?faces-redirect=true"

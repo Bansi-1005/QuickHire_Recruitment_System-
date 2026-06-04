@@ -405,7 +405,6 @@ function renderMoreSkillSuggestions() {
         return;
     }
 
-    // REMOVE OLD LOAD MORE BUTTON
     var oldLoadMore = document.getElementById('loadMoreSkillsBtn');
 
     if (oldLoadMore) {
@@ -721,6 +720,21 @@ function initSkillsAutocompleteUi() {
         window.persistedSelectedSkills = [];
     }
 
+    // ================= EDIT MODE BOOT =================
+    
+    if (window.persistedSelectedSkills.length === 0) {
+        var listbox = getHiddenSkillsListbox();
+        if (listbox) {
+            for (var i = 0; i < listbox.options.length; i++) {
+                if (listbox.options[i].selected) {
+                    window.persistedSelectedSkills.push(
+                        String(listbox.options[i].value)
+                    );
+                }
+            }
+        }
+    }
+
     syncPersistedSkillsToListbox();
 
     updateSelectedSkillUi();
@@ -908,7 +922,29 @@ setTimeout(function () {
 }, 100);
 }
 }
+function handleEducationSelectionChange(data) {
+    if (data.status === 'success') {
+        setTimeout(function () {
+            var checkboxList = document.querySelectorAll('#postJobForm\\:educationSelect input[type="checkbox"]');
+            var labels = document.querySelectorAll('#postJobForm\\:educationSelect label');
 
+            checkboxList.forEach(function (cb, index) {
+                if (labels[index]) {
+                    if (cb.checked) {
+                        labels[index].classList.add('selected');
+                    } else {
+                        labels[index].classList.remove('selected');
+                    }
+                }
+            });
+
+            var msg = document.getElementById('postJobForm:educationMessage');
+            if (msg) {
+                msg.style.display = msg.textContent.trim() ? 'block' : 'none';
+            }
+        }, 100);
+    }
+}
 function escapeHtml(value) {
     if (value === null || value === undefined) {
         return '';
@@ -953,3 +989,7 @@ if (window.jsf && jsf.ajax) {
         }
     });
 }
+
+
+
+

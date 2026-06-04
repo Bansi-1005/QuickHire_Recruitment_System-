@@ -772,6 +772,336 @@ AUTOCOMPLETE SKILLS UI
 }
 
 /* =========================
+   EDUCATION MULTISELECT
+========================= */
+
+.postjob-education-section {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.postjob-education-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    width: 100%;
+    align-items: start;
+    box-sizing: border-box;
+}
+
+/* =========================
+   CARD
+========================= */
+
+.postjob-education-card {
+    background: #ffffff;
+    border: 1px solid #d9e8eb;
+    border-radius: 18px;
+    padding: 14px;
+    box-sizing: border-box;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+}
+
+.postjob-education-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.postjob-education-card-head h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #234;
+}
+
+.postjob-education-card-pill {
+    padding: 5px 12px;
+    border-radius: 30px;
+    background: #e6f7f8;
+    border: 1px solid #cfe9eb;
+    color: #24606a;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.postjob-form-group {
+    margin: 0;
+}
+
+.postjob-form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #2d4356;
+}
+
+/* =========================
+   LEFT BOX
+========================= */
+
+.postjob-education-checkbox-wrap {
+    height: 125px;              /* shows approx 3 items */
+    max-height: 125px;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding: 10px;
+
+    border-radius: 12px;
+
+    background: #eef9fb;
+    border: 1px solid #d9edf0;
+
+    box-sizing: border-box;
+}
+
+/* =========================
+   JSF CHECKBOX TABLE
+========================= */
+
+.postjob-education-checkbox-list {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.postjob-education-checkbox-list tbody,
+.postjob-education-checkbox-list tr,
+.postjob-education-checkbox-list td {
+    display: block;
+    width: 100%;
+}
+
+.postjob-education-checkbox-list tr {
+    margin-bottom: 6px;
+}
+
+.postjob-education-checkbox-list td {
+    padding: 0;
+}
+
+.postjob-education-checkbox-list input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+    accent-color: #1d7f8c;
+    vertical-align: middle;
+}
+
+.postjob-education-checkbox-list label {
+    display: inline-block;
+    width: calc(100% - 28px);
+
+    padding: 8px 10px;
+
+    background: #ffffff;
+
+    border: 1px solid #d9edf0;
+    border-radius: 8px;
+
+    font-size: 15px;
+    font-weight: 600;
+    color: #2d4356;
+
+    line-height: 1.3;
+
+    box-sizing: border-box;
+    cursor: pointer;
+
+    transition: all .2s ease;
+}
+
+.postjob-education-checkbox-list label:hover {
+    background: #e5f6f8;
+    border-color: #bfe3e7;
+}
+
+/* =========================
+   RIGHT BOX
+========================= */
+
+.postjob-education-display-box {
+    height: 125px;            /* SAME as left */
+    min-height: 125px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding: 10px;
+
+    border-radius: 12px;
+
+    background: #eef9fb;
+    border: 1px solid #d9edf0;
+
+    box-sizing: border-box;
+}
+
+.postjob-education-empty {
+    min-height: 95px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+
+    color: #7c8ea1;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* =========================
+   SELECTED EDUCATION LIST
+========================= */
+
+.postjob-education-selected-list {
+    display: grid;
+
+    /* TWO ITEMS PER ROW */
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 8px;
+}
+
+.postjob-education-selected-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 8px 10px;
+
+    background: #ffffff;
+
+    border: 1px solid #d9edf0;
+    border-radius: 8px;
+
+    min-width: 0;
+}
+
+.postjob-education-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+
+    background: #1d7f8c;
+
+    flex-shrink: 0;
+}
+
+.postjob-education-selected-text {
+    font-size: 15px;
+    font-weight: 600;
+
+    color: #2d4356;
+
+    line-height: 1.3;
+
+    word-break: break-word;
+}
+
+.postjob-education-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 6px 12px;
+
+    border-radius: 999px;
+
+    background: #1d7f8c;
+    color: #ffffff;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* =========================
+   ERROR
+========================= */
+
+.postjob-field-error {
+    display: block;
+    margin-top: 5px;
+
+    color: #dc3545;
+    font-size: 13px;
+}
+
+.postjob-hint-text {
+    display: block;
+    margin-top: 6px;
+
+    color: #7c8ea1;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+/* =========================
+   SCROLLBAR
+========================= */
+
+.postjob-education-checkbox-wrap::-webkit-scrollbar,
+.postjob-education-display-box::-webkit-scrollbar {
+    width: 6px;
+}
+
+.postjob-education-checkbox-wrap::-webkit-scrollbar-thumb,
+.postjob-education-display-box::-webkit-scrollbar-thumb {
+    background: #b7c9db;
+    border-radius: 999px;
+}
+
+.postjob-education-checkbox-wrap::-webkit-scrollbar-track,
+.postjob-education-display-box::-webkit-scrollbar-track {
+    background: #eef4f9;
+}
+
+.postjob-education-checkbox-wrap,
+.postjob-education-display-box {
+    scrollbar-width: thin;
+    scrollbar-color: #b7c9db #eef4f9;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 991px) {
+
+    .postjob-education-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .postjob-education-card-head {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .postjob-education-selected-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .postjob-education-checkbox-list label {
+        font-size: 12px;
+    }
+
+    .postjob-education-selected-text {
+        font-size: 12px;
+    }
+}
+/* =========================
 WORK MODE
 ========================= */
 
@@ -1791,3 +2121,20 @@ RESPONSIVE
         width:100%;
     }
 }
+
+@media (max-width: 991px) {
+    .postjob-education-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .postjob-education-card {
+        height: auto;
+        min-height: 240px;
+    }
+    
+    .postjob-education-checkbox-wrap,
+    .postjob-education-display-box {
+        height: 180px;
+    }
+}
+
