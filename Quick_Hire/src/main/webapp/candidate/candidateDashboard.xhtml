@@ -259,15 +259,42 @@
                 </h:panelGroup>
 
                 <ui:repeat value="#{candidateCDIBean.notificationList}" var="noti">
-                    <div class="notification-item">
+
+                    <div class="notification-item #{noti.isRead ? 'read' : 'unread'}">
+
                         <div class="notification-icon">
                             <i class="fa-solid fa-bell"></i>
                         </div>
+
                         <div class="notification-content">
-                            <h4>#{noti.notificationType}</h4>
-                            <p>#{noti.message}</p>
+
+                            <h4>
+                                #{empty noti.notificationTitle
+                                    ? noti.notificationType
+                                    : noti.notificationTitle}
+                            </h4>
+
+                            <p>#{noti.notificationMessage}</p>
+
+                            <small class="notification-meta">
+                                #{noti.notificationType}
+                                •
+                                <h:outputText value="#{noti.createdDate}">
+                                    <f:convertDateTime
+                                        pattern="dd MMM yyyy hh:mm a"/>
+                                </h:outputText>
+                            </small>
+
                         </div>
+
+                        <div class="notification-status">
+                            <span class="#{noti.isRead ? 'read-dot' : 'unread-dot'}">
+                                #{noti.isRead ? 'Read' : 'Unread'}
+                            </span>
+                        </div>
+
                     </div>
+
                 </ui:repeat>
             </section>
 
@@ -283,7 +310,8 @@
     </div>
 </h:panelGroup>
 
-<ui:include src="/candidate/updateProfile.xhtml"/>
+<!-- COMMON FOOTER -->
+<ui:include src="/common/footer.xhtml"/>
 
 </h:body>
 </html>

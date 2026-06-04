@@ -48,26 +48,35 @@
 
                     <h:form id="searchForm" styleClass="search-box-form">
                         <div class="search-box">
-                            <h:inputText value="#{candidateCDIBean.searchTitle}" styleClass="search-input" pt:placeholder="Job Title">
-                                <f:ajax event="keyup" delay="500" listener="#{candidateCDIBean.searchJobs}" render="jobsPanel"/>
-                            </h:inputText>
+                            <h:inputText value="#{candidateCDIBean.searchTitle}"
+                                styleClass="search-input"
+                                pt:placeholder="Job Title"/>
 
-                            <h:inputText value="#{candidateCDIBean.searchSkill}" styleClass="search-input" pt:placeholder="Skill">
-                                <f:ajax event="keyup" delay="500" listener="#{candidateCDIBean.searchJobs}" render="jobsPanel"/>
-                            </h:inputText>
+                            <!-- Skill Dropdown -->
+                            <h:selectOneMenu id="skillList"
+                                            value="#{candidateCDIBean.searchSkillId}"
+                                            styleClass="search-dropdown">
 
-                            <h:inputText value="#{candidateCDIBean.searchLocation}" styleClass="search-input" pt:placeholder="Location">
-                                <f:ajax event="keyup" delay="500" listener="#{candidateCDIBean.searchJobs}" render="jobsPanel"/>
-                            </h:inputText>
+                                <f:selectItem itemLabel="Select Skill"
+                                              itemValue="#{null}" />
+
+                                <f:selectItems value="#{candidateCDIBean.allSkills}"
+                                               var="skill"
+                                               itemValue="#{skill.skillId}"
+                                               itemLabel="#{skill.skillName}" />
+                            </h:selectOneMenu>
+
+                            <h:inputText value="#{candidateCDIBean.searchLocation}"
+                                styleClass="search-input"
+                                pt:placeholder="Location"/>
 
                             <h:selectOneMenu value="#{candidateCDIBean.searchJobType}" styleClass="search-dropdown">
                                 <f:selectItem itemLabel="All Job Types" itemValue=""/>
                                 <f:selectItems value="#{candidateCDIBean.jobTypeList}"/>
-                                <f:ajax listener="#{candidateCDIBean.searchJobs}" render="jobsPanel"/>
                             </h:selectOneMenu>
-
-                            <h:commandButton value="Search" action="#{candidateCDIBean.searchJobs}" styleClass="btn-main">
-                                <f:ajax execute="@form" render="jobsPanel"/>
+                            
+                            <h:commandButton value="Apply filters" action="#{candidateCDIBean.searchJobs}" styleClass="btn-main">
+                                <f:ajax execute="@form" render="@form jobsPanel messages"/>
                             </h:commandButton>
 
                             <h:commandButton value="Reset" action="#{candidateCDIBean.resetSearch}" styleClass="btn-reset">
@@ -266,6 +275,9 @@
             </h:form>
         </div>
     </div>
+
+    <!-- COMMON FOOTER -->
+    <ui:include src="/common/footer.xhtml"/>
 
     <script>
         function openResumeModal(jobId) {

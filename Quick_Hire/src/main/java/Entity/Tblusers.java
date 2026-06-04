@@ -92,9 +92,13 @@ public class Tblusers implements Serializable {
     private Tblrolemaster roleId;
     @OneToMany(mappedBy = "userId")
     private Collection<Tblrecruiters> tblrecruitersCollection;
-    @OneToMany(mappedBy = "userId")
-    private Collection<Tblnotification> tblnotificationCollection;
+    
+    @OneToMany(mappedBy = "receiverUserId")
+    private Collection<Tblnotification> receivedNotifications;
 
+    @OneToMany(mappedBy = "senderUserId")
+    private Collection<Tblnotification> sentNotifications;
+    
     public Tblusers() {
     }
 
@@ -156,15 +160,25 @@ public class Tblusers implements Serializable {
     }
 
     @XmlTransient
+    @JsonbTransient 
+    public Collection<Tblnotification> getReceivedNotifications() {
+        return receivedNotifications;
+    }
+
+    public void setReceivedNotifications(Collection<Tblnotification> receivedNotifications) {
+        this.receivedNotifications = receivedNotifications;
+    }
+
+    @XmlTransient
     @JsonbTransient
-    public Collection<Tblnotification> getTblnotificationCollection() {
-        return tblnotificationCollection;
+    public Collection<Tblnotification> getSentNotifications() {
+        return sentNotifications;
     }
 
-    public void setTblnotificationCollection(Collection<Tblnotification> tblnotificationCollection) {
-        this.tblnotificationCollection = tblnotificationCollection;
+    public void setSentNotifications(Collection<Tblnotification> sentNotifications) {
+        this.sentNotifications = sentNotifications;
     }
-
+    
     @Override
     public int hashCode() {
         int hash = 0;

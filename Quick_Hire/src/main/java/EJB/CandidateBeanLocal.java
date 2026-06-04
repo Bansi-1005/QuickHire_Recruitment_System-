@@ -33,8 +33,9 @@ public interface CandidateBeanLocal {
 //    String getCandidateResume(int candidateId);
 
     // ---------- Candidate Skills ----------
+    Collection<Tblskills> getAllSkills();
     Collection<Tblskillcategory> getAllSkillCategories();
-Collection<Tblskills> getSkillsByCategory(int categoryId);
+    Collection<Tblskills> getSkillsByCategory(int categoryId);
     
     void addSkillToCandidate(int candidateId, int skillId);
 //    void updateSkillToCandidate(int candidateId, Collection<Integer> skillIds);
@@ -66,14 +67,13 @@ Collection<Tblskills> getSkillsByCategory(int categoryId);
     public void updateApplicationStatus(int applicationId, String status);
 
     // SCREENING
-    Tblscreeningscore getScreeningScore(int applicationId);
 
     // INTERVIEW
     Collection<Tblinterview> getCandidateInterviews(int applicationId);
 
     // NOTIFICATION
-    Collection<Tblnotification> getCandidateNotifications(int userId);
-    
-    
-  
+    Collection<Tblnotification> getCandidateNotifications(int userId); 
+    public Collection<Tblnotification> getUnreadNotifications(int userId);
+    public void markNotificationAsRead(int notificationId);
+
 }

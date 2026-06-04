@@ -5,11 +5,7 @@
 package com.mycompany.quick_hire.resources;
 
 import EJB.CandidateBeanLocal;
-import Entity.Tblapplication;
-import Entity.Tblcandidateeducation;
-import Entity.Tblcandidates;
-import Entity.Tblscreeningscore;
-import Entity.Tblskills;
+import Entity.*;
 import jakarta.ejb.EJB;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -22,7 +18,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -260,6 +255,31 @@ public class CandidateResource {
 //    }
 
     // ================= SKILLS =================
+    @GET
+    @Path("/getAllSkills")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllSkills() {
+
+        try {
+
+            Collection<Tblskills> skills = ejb.getAllSkills();
+
+            return Response
+                    .status(Response.Status.OK)
+                    .entity(skills)
+                    .build();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return Response
+                    .status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Failed to load skills")
+                    .build();
+        }
+    }
+    
     
     @GET
     @Path("getAllSkillCategories")
@@ -648,24 +668,24 @@ public class CandidateResource {
     }
 
 
-    // ================= SCREENING =================
-    @GET
-    @Path("getScreeningScore")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getScreeningScore(@QueryParam("applicationId") int applicationId) {
-        try {
-            Tblscreeningscore score = ejb.getScreeningScore(applicationId);
-
-            if (score == null) {
-                return Response.status(404).entity("Score not found").build();
-            }
-
-            return Response.ok(score).build();
-
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
+//    // ================= SCREENING =================
+//    @GET
+//    @Path("getScreeningScore")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response getScreeningScore(@QueryParam("applicationId") int applicationId) {
+//        try {
+//            Tblscreeningscore score = ejb.getScreeningScore(applicationId);
+//
+//            if (score == null) {
+//                return Response.status(404).entity("Score not found").build();
+//            }
+//
+//            return Response.ok(score).build();
+//
+//        } catch (Exception e) {
+//            return Response.status(500).entity(e.getMessage()).build();
+//        }
+//    }
 
     // ================= INTERVIEW =================
     @GET
@@ -681,16 +701,65 @@ public class CandidateResource {
     }
 
     // ================= NOTIFICATION =================
+
     @GET
     @Path("getCandidateNotifications")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getCandidateNotifications(@QueryParam("userId") int userId) {
+    public Response getCandidateNotifications(
+            @QueryParam("userId") int userId) {
+
         try {
-            return Response.ok(ejb.getCandidateNotifications(userId)).build();
+
+            return Response.ok(
+                    ejb.getCandidateNotifications(userId)
+            ).build();
 
         } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build();
         }
     }
 
+    @GET
+    @Path("getUnreadNotifications")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUnreadNotifications(
+            @QueryParam("userId") int userId) {
+
+        try {
+
+            return Response.ok(
+                    ejb.getUnreadNotifications(userId)
+            ).build();
+
+        } catch (Exception e) {
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
+    @PUT
+    @Path("markNotificationAsRead")
+    public Response markNotificationAsRead(
+            @QueryParam("notificationId") int notificationId) {
+
+        try {
+
+            ejb.markNotificationAsRead(notificationId);
+
+            return Response.ok("Notification marked as read")
+                    .build();
+
+        } catch (Exception e) {
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+    
 }

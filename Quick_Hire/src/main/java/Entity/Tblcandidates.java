@@ -224,6 +224,14 @@ public class Tblcandidates implements Serializable {
     public void setTblsavedjobsCollection(Collection<Tblsavedjobs> tblsavedjobsCollection) {
         this.tblsavedjobsCollection = tblsavedjobsCollection;
     }
+    @XmlTransient
+    @JsonbTransient
+    public Collection<Tblcandidateeducation> getTblcandidateeducationCollection() {
+        return tblcandidateeducationCollection;
+    }
+    public void setTblcandidateeducationCollection(Collection<Tblcandidateeducation> tblcandidateeducationCollection) {
+        this.tblcandidateeducationCollection = tblcandidateeducationCollection;
+    }
 
     public String getCandidatePhone() {
         return candidatePhone;
@@ -263,16 +271,6 @@ public class Tblcandidates implements Serializable {
 
     public void setCandidateState(String candidateState) {
         this.candidateState = candidateState;
-    }
-
-    @XmlTransient
-    @JsonbTransient
-    public Collection<Tblcandidateeducation> getTblcandidateeducationCollection() {
-        return tblcandidateeducationCollection;
-    }
-
-    public void setTblcandidateeducationCollection(Collection<Tblcandidateeducation> tblcandidateeducationCollection) {
-        this.tblcandidateeducationCollection = tblcandidateeducationCollection;
     }
     
 }

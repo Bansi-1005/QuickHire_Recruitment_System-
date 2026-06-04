@@ -6,6 +6,7 @@ package Entity;
 
 import jakarta.json.bind.annotation.JsonbTransient;
 import jakarta.persistence.Basic;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -127,13 +128,6 @@ public class Tblresume implements Serializable {
         return "Entity.Tblresume[ resumeId=" + resumeId + " ]";
     }
 
-    public String getResumeFile() {
-        return resumeFile;
-    }
-
-    public void setResumeFile(String resumeFile) {
-        this.resumeFile = resumeFile;
-    }
 
     @XmlTransient
     @JsonbTransient
@@ -143,6 +137,14 @@ public class Tblresume implements Serializable {
 
     public void setTblapplicationCollection(Collection<Tblapplication> tblapplicationCollection) {
         this.tblapplicationCollection = tblapplicationCollection;
+    }
+
+    public String getResumeFile() {
+        return resumeFile;
+    }
+
+    public void setResumeFile(String resumeFile) {
+        this.resumeFile = resumeFile;
     }
     
 }

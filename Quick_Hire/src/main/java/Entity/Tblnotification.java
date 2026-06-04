@@ -11,6 +11,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
@@ -33,26 +34,38 @@ import java.util.Date;
 @NamedQueries({
     @NamedQuery(name = "Tblnotification.findAll", query = "SELECT t FROM Tblnotification t"),
     @NamedQuery(name = "Tblnotification.findByNotificationId", query = "SELECT t FROM Tblnotification t WHERE t.notificationId = :notificationId"),
-    @NamedQuery(name = "Tblnotification.findByMessage", query = "SELECT t FROM Tblnotification t WHERE t.message = :message"),
     @NamedQuery(name = "Tblnotification.findByCreatedDate", query = "SELECT t FROM Tblnotification t WHERE t.createdDate = :createdDate"),
-    @NamedQuery(name = "Tblnotification.findByNotificationStatus", query = "SELECT t FROM Tblnotification t WHERE t.notificationStatus = :notificationStatus"),
     
-    @NamedQuery(name = "Tblnotification.findByUser", query = "SELECT t FROM Tblnotification t WHERE t.userId.userId = :userId ORDER BY t.createdDate DESC")
+    @NamedQuery(name = "Tblnotification.findByReceiver", query = "SELECT t FROM Tblnotification t WHERE t.receiverUserId.userId = :userId ORDER BY t.createdDate DESC"),
+    @NamedQuery(name = "Tblnotification.findUnreadByReceiver", query = "SELECT t FROM Tblnotification t WHERE t.receiverUserId.userId = :userId AND t.isRead = false ORDER BY t.createdDate DESC")
 })
 public class Tblnotification implements Serializable {
 
-    @Size(max = 500)
-    @Column(name = "message")
-    private String message;
-    @Column(name = "createdDate")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdDate;
-    @Size(max = 50)
-    @Column(name = "notificationStatus")
-    private String notificationStatus;
+    @Size(max = 200)
+    @Column(name = "notificationTitle")
+    private String notificationTitle;
+    @Lob
+    @Size(max = 65535)
+    @Column(name = "notificationMessage")
+    private String notificationMessage;
     @Size(max = 50)
     @Column(name = "notificationType")
     private String notificationType;
+    @Column(name = "isRead")
+    private Boolean isRead;
+    @Column(name = "readDate")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date readDate;
+    @JoinColumn(name = "senderUserId", referencedColumnName = "userId")
+    @ManyToOne
+    private Tblusers senderUserId;
+    @JoinColumn(name = "receiverUserId", referencedColumnName = "userId")
+    @ManyToOne(optional = false)
+    private Tblusers receiverUserId;
+
+    @Column(name = "createdDate")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdDate;
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -60,9 +73,7 @@ public class Tblnotification implements Serializable {
     @Basic(optional = false)
     @Column(name = "notificationId")
     private Integer notificationId;
-    @JoinColumn(name = "userId", referencedColumnName = "userId")
-    @ManyToOne
-    private Tblusers userId;
+
 
     public Tblnotification() {
     }
@@ -82,15 +93,6 @@ public class Tblnotification implements Serializable {
 
     public void setNotificationId(Integer notificationId) {
         this.notificationId = notificationId;
-    }
-
-
-    public Tblusers getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Tblusers userId) {
-        this.userId = userId;
     }
 
     @Override
@@ -118,13 +120,6 @@ public class Tblnotification implements Serializable {
         return "Entity.Tblnotification[ notificationId=" + notificationId + " ]";
     }
 
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
 
     public Date getCreatedDate() {
         return createdDate;
@@ -134,12 +129,53 @@ public class Tblnotification implements Serializable {
         this.createdDate = createdDate;
     }
 
-    public String getNotificationStatus() {
-        return notificationStatus;
+
+    public Boolean getIsRead() {
+        return isRead;
     }
 
-    public void setNotificationStatus(String notificationStatus) {
-        this.notificationStatus = notificationStatus;
+    public void setIsRead(Boolean isRead) {
+        this.isRead = isRead;
+    }
+
+    public Date getReadDate() {
+        return readDate;
+    }
+
+    public void setReadDate(Date readDate) {
+        this.readDate = readDate;
+    }
+
+    public Tblusers getSenderUserId() {
+        return senderUserId;
+    }
+
+    public void setSenderUserId(Tblusers senderUserId) {
+        this.senderUserId = senderUserId;
+    }
+
+    public Tblusers getReceiverUserId() {
+        return receiverUserId;
+    }
+
+    public void setReceiverUserId(Tblusers receiverUserId) {
+        this.receiverUserId = receiverUserId;
+    }
+
+    public String getNotificationTitle() {
+        return notificationTitle;
+    }
+
+    public void setNotificationTitle(String notificationTitle) {
+        this.notificationTitle = notificationTitle;
+    }
+
+    public String getNotificationMessage() {
+        return notificationMessage;
+    }
+
+    public void setNotificationMessage(String notificationMessage) {
+        this.notificationMessage = notificationMessage;
     }
 
     public String getNotificationType() {

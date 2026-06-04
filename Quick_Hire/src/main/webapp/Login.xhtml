@@ -6,6 +6,10 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
+<f:metadata>
+    <f:viewAction action="#{loginBean.autoLogin}" />
+</f:metadata>
+    
 <h:head>
     <title>Login - QuickHire</title>
 
@@ -345,10 +349,6 @@
 </h:head>
 
 <h:body>
-    
-    <f:metadata>
-        <f:viewAction action="#{loginBean.autoLogin}" />
-    </f:metadata>
 
     <div class="container">
 

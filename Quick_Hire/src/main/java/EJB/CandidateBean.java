@@ -15,9 +15,8 @@ import jakarta.security.enterprise.identitystore.Pbkdf2PasswordHash;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import util.EmailServiceLocal;
+
 
 /**
  *
@@ -248,6 +247,19 @@ public class CandidateBean implements CandidateBeanLocal {
 //    }
 
     // ================= SKILLS =================
+    
+    @Override
+    public Collection<Tblskills> getAllSkills() {
+
+        try {
+
+            return em.createNamedQuery("Tblskills.findAll", Tblskills.class).getResultList();
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
     
     @Override
     public Collection<Tblskillcategory> getAllSkillCategories() {
@@ -556,7 +568,7 @@ public class CandidateBean implements CandidateBeanLocal {
 
             em.persist(application);
             em.flush();
-
+            
             Tblrecruiters recruiter = job.getRecruiterId();
 
             if (recruiter != null
@@ -568,24 +580,25 @@ public class CandidateBean implements CandidateBeanLocal {
                 Tblusers candidateUser =
                         candidate.getUserId();
 
-                Tblnotification notification =
-                        new Tblnotification();
+                // notification 
+                Tblnotification notification = new Tblnotification();
 
-                notification.setUserId(recruiterUser);
+                notification.setSenderUserId(candidateUser);
 
-                notification.setMessage(
+                notification.setReceiverUserId(recruiterUser);
+
+                notification.setNotificationTitle("New Job Application");
+
+                notification.setNotificationMessage(
                         candidateUser.getUserName()
                         + " applied for "
                         + job.getJobTitle());
 
-                notification.setNotificationType(
-                        "Application");
+                notification.setNotificationType("JOB_APPLIED");
 
-                notification.setNotificationStatus(
-                        "Unread");
+                notification.setIsRead(false);
 
-                notification.setCreatedDate(
-                        new Date());
+                notification.setCreatedDate(new Date());
 
                 em.persist(notification);
 
@@ -697,17 +710,7 @@ public class CandidateBean implements CandidateBeanLocal {
         }
     }
 
-    // ================= SCREENING =================
-    @Override
-    public Tblscreeningscore getScreeningScore(int applicationId) {
-        try {
-            return em.createNamedQuery("Tblscreeningscore.findByApplication", Tblscreeningscore.class)
-                    .setParameter("applicationId", applicationId)
-                    .getSingleResult();
-        } catch (Exception e) {
-            return null;
-        }
-    }
+  
 
     // ================= INTERVIEW =================
     @Override
@@ -725,15 +728,41 @@ public class CandidateBean implements CandidateBeanLocal {
     @Override
     public Collection<Tblnotification> getCandidateNotifications(int userId) {
          try {
-            return em.createNamedQuery("Tblnotification.findByUser", Tblnotification.class)
+            return em.createNamedQuery("Tblnotification.findByReceiver", Tblnotification.class)
                     .setParameter("userId", userId)
                     .getResultList();
         } catch (Exception e) {
             return new ArrayList<>();
         }
     }
+    
+    @Override
+    public Collection<Tblnotification> getUnreadNotifications(int userId) {
+
+        return em.createNamedQuery(
+                "Tblnotification.findUnreadByReceiver",
+                Tblnotification.class)
+                .setParameter("userId", userId)
+                .getResultList();
+    }
+    
+    @Override
+    public void markNotificationAsRead(int notificationId) {
+
+        Tblnotification notification =
+                em.find(Tblnotification.class, notificationId);
+
+        if (notification != null) {
+
+            notification.setIsRead(true);
+
+            notification.setReadDate(new Date());
+
+            em.merge(notification);
+        }
+    }
 }
     
     
     
-   
+ 

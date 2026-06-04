@@ -10,7 +10,9 @@ import jakarta.annotation.PostConstruct;
 import jakarta.inject.Named;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
+import jakarta.faces.validator.ValidatorException;
 import jakarta.ws.rs.core.Response;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpSession;
@@ -27,6 +29,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +52,7 @@ public class CandidateCDIBean implements Serializable {
     // ================= JOBS =================
     private String searchTitle;
     private String searchLocation;
-    private String searchSkill;
+    private Integer searchSkillId;
     private String searchJobType;
     
     private Collection<Tbljob> allJobs = new ArrayList<>();
@@ -65,8 +69,10 @@ public class CandidateCDIBean implements Serializable {
 
     // ================= NOTIFICATIONS =================
     private Collection<Tblnotification> notificationList = new ArrayList<>();
+    private Collection<Tblnotification> unreadNotificationList = new ArrayList<>();
     
     // ================= SKILLS =================
+    private Collection<Tblskills> allSkills = new ArrayList<>();
     private Integer selectedSkillId;
     private Collection<Tblskills> candidateSkills = new ArrayList<>(); 
     private Integer selectedCategoryId;
@@ -95,6 +101,7 @@ public class CandidateCDIBean implements Serializable {
         loadJobs();
         loadJobTypes();
         loadAllCategories();
+        loadAllSkills(); 
         loadUserData();
         generateRecommendedJobs();
     }
@@ -105,6 +112,7 @@ public class CandidateCDIBean implements Serializable {
         loadJobs();
         loadJobTypes();
         loadAllCategories();
+        loadAllSkills(); 
         generateRecommendedJobs();
     }
     
@@ -156,7 +164,7 @@ public class CandidateCDIBean implements Serializable {
             }
 
             loadNotifications(userId);
-                     
+            loadUnreadNotifications(userId);
             generateRecommendedJobs(); 
         }
     }
@@ -694,6 +702,7 @@ public class CandidateCDIBean implements Serializable {
     }
 
     // ------- SEARCH JOB ---------
+  
     public void searchJobs() {
 
         try {
@@ -701,7 +710,7 @@ public class CandidateCDIBean implements Serializable {
             // LOAD ALL IF EMPTY
             if ((searchTitle == null || searchTitle.trim().isEmpty())
                     && (searchLocation == null || searchLocation.trim().isEmpty())
-                    && (searchSkill == null || searchSkill.trim().isEmpty())
+                    && (searchSkillId == null )
                     && (searchJobType == null || searchJobType.trim().isEmpty())) {
 
                 jobList = new ArrayList<>(allJobs);
@@ -714,7 +723,7 @@ public class CandidateCDIBean implements Serializable {
 
                 boolean matchTitle = true;
                 boolean matchLocation = true;
-                boolean matchSkill = true;
+                boolean matchSkillId = true;
                 boolean matchType = true;
 
                 // TITLE
@@ -745,30 +754,29 @@ public class CandidateCDIBean implements Serializable {
                             && job.getJobType()
                                     .equalsIgnoreCase(searchJobType);
                 }
+                
 
                 // SKILL
-                if (searchSkill != null && !searchSkill.trim().isEmpty()) {
+                if (searchSkillId != null) {
 
-                    matchSkill = false;
+                    matchSkillId = false;
 
                     if (job.getTblskillsCollection() != null) {
 
                         for (Tblskills skill : job.getTblskillsCollection()) {
 
-                            if (skill.getSkillName() != null
-                                    && skill.getSkillName()
-                                            .toLowerCase()
-                                            .contains(searchSkill.toLowerCase())) {
+                            if (skill.getSkillId() != null && skill.getSkillId().equals(searchSkillId)) {
 
-                                matchSkill = true;
+                                matchSkillId = true;
                                 break;
                             }
                         }
                     }
                 }
+                
 
                 // FINAL MATCH
-                if (matchTitle && matchLocation && matchSkill && matchType) {
+                if (matchTitle && matchLocation && matchSkillId && matchType) {
 
                     filteredJobs.add(job);
                 }
@@ -780,13 +788,13 @@ public class CandidateCDIBean implements Serializable {
             e.printStackTrace();
         }
     }
-    
+        
     // -------- RESET ---------
     public void resetSearch() {
 
         searchTitle = "";
         searchLocation = "";
-        searchSkill = "";
+        searchSkillId = null;
         searchJobType = "";
 
         jobList = new ArrayList<>(allJobs);
@@ -926,8 +934,7 @@ public class CandidateCDIBean implements Serializable {
         return score;
     }
     
-    
-    
+
     
     
     
@@ -1144,6 +1151,23 @@ public class CandidateCDIBean implements Serializable {
     
     
     // ================= SKILL METHODS =========================
+    public void loadAllSkills() {
+
+        try {
+
+            WebTarget target = getClient()
+                    .target(BASE_URL + "/getAllSkills");
+
+            allSkills = target
+                    .request(MediaType.APPLICATION_JSON)
+                    .get(new GenericType<Collection<Tblskills>>() {});
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            allSkills = new ArrayList<>();
+        }
+    }
     
     // -------- LOAD CANDIDATE SKILLS ---------
     
@@ -1554,14 +1578,23 @@ public class CandidateCDIBean implements Serializable {
     
     // -------- LOAD NOTIFICATIONS -------
     public void loadNotifications(int userId) {
+
         try {
-            WebTarget target = getClient().target(BASE_URL + "/getCandidateNotifications")
+
+            WebTarget target = getClient()
+                    .target(BASE_URL + "/getCandidateNotifications")
                     .queryParam("userId", userId);
 
-            notificationList = target.request(MediaType.APPLICATION_JSON)
-                    .get(new GenericType<Collection<Tblnotification>>() {});
+            notificationList = target
+                    .request(MediaType.APPLICATION_JSON)
+                    .get(new GenericType<
+                            Collection<Tblnotification>>() {});
+
         } catch (Exception e) {
+
             e.printStackTrace();
+
+            notificationList = new ArrayList<>();
         }
     }
 
@@ -1572,14 +1605,117 @@ public class CandidateCDIBean implements Serializable {
                 .toList();
     }
     
-    
-   
-    
+    public void loadUnreadNotifications(int userId) {
 
+        try {
+
+            WebTarget target = getClient()
+                    .target(BASE_URL + "/getUnreadNotifications")
+                    .queryParam("userId", userId);
+
+            unreadNotificationList = target
+                    .request(MediaType.APPLICATION_JSON)
+                    .get(new GenericType<
+                            Collection<Tblnotification>>() {});
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            unreadNotificationList = new ArrayList<>();
+        }
+    }
+    
+    public int getUnreadNotificationCount() {
+
+        return unreadNotificationList != null
+                ? unreadNotificationList.size()
+                : 0;
+    }
+
+    public void markNotificationAsRead(int notificationId) {
+
+        try {
+
+            Response response = getClient()
+                    .target(BASE_URL + "/markNotificationAsRead")
+                    .queryParam(
+                            "notificationId",
+                            notificationId)
+                    .request()
+                    .put(
+                            jakarta.ws.rs.client.Entity.text("")
+                    );
+
+            if (response.getStatus() == 200) {
+
+                int userId = getLoggedInCandidateId();
+
+                loadNotifications(userId);
+                loadUnreadNotifications(userId);
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
     
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+//    // ================= Validation =================
+    
+    public void validateStartYear(FacesContext context,
+                              UIComponent component,
+                              Object value) {
+
+        Integer startYear = (Integer) value;
+
+        if (selectedEducation.getEndYear() != null
+                && startYear > selectedEducation.getEndYear()) {
+
+            throw new ValidatorException(
+                new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Start Year cannot be greater than End Year",
+                    null
+                )
+            );
+        }
+    }
+    
+    public void validateEndYear(FacesContext context,
+                            UIComponent component,
+                            Object value) {
+
+        Integer endYear = (Integer) value;
+
+        if(selectedEducation.getStartYear() != null
+                && endYear < selectedEducation.getStartYear()) {
+
+            throw new ValidatorException(
+                new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "End Year cannot be less than Start Year",
+                    null
+                )
+            );
+        }
+    }
     
     // ================= GETTERS & SETTERS =================
 
@@ -1638,13 +1774,13 @@ public class CandidateCDIBean implements Serializable {
     public void setSearchLocation(String searchLocation) {
         this.searchLocation = searchLocation;
     }
-
-    public String getSearchSkill() {
-        return searchSkill;
+    
+    public Integer getSearchSkillId() {
+        return searchSkillId;
     }
 
-    public void setSearchSkill(String searchSkill) {
-        this.searchSkill = searchSkill;
+    public void setSearchSkillId(Integer searchSkillId) {
+        this.searchSkillId = searchSkillId;
     }
 
     public String getSearchJobType() {
@@ -1727,6 +1863,22 @@ public class CandidateCDIBean implements Serializable {
         this.notificationList = notificationList;
     }
     
+    public Collection<Tblnotification> getUnreadNotificationList() {
+        return unreadNotificationList;
+    }
+
+    public void setUnreadNotificationList(Collection<Tblnotification> unreadNotificationList) {
+        this.unreadNotificationList = unreadNotificationList;
+    }
+
+    public Collection<Tblskills> getAllSkills() {
+        return allSkills;
+    }
+
+    public void setAllSkills(Collection<Tblskills> allSkills) {
+        this.allSkills = allSkills;
+    }
+    
     public Integer getSelectedSkillId() {
         return selectedSkillId;
     }
@@ -1790,8 +1942,6 @@ public class CandidateCDIBean implements Serializable {
     public void setEditEducationId(Integer editEducationId) {
         this.editEducationId = editEducationId;
     }
-
-    
     
     public Collection<Tblinterview> getInterviewList() {
         return interviewList;
@@ -1800,5 +1950,4 @@ public class CandidateCDIBean implements Serializable {
     public void setInterviewList(Collection<Tblinterview> interviewList) {
         this.interviewList = interviewList;
     }
-    
 }

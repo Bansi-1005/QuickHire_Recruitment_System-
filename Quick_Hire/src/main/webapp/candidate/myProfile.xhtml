@@ -148,22 +148,30 @@
                                             value="#{candidateCDIBean.candidateObj.userId.userName}"
                                             styleClass="form-input"
                                             required="true"
-                                            requiredMessage="Full Name is required">
+                                            requiredMessage="Full Name is required"
+                                            validator="candidateValidator">
 
-                                    <f:validateLength minimum="2" maximum="100"/>
-
+                                    <f:attribute name="type" value="fullName"/>
+                                    <f:ajax event="keyup" execute="@this" render="userNameMsg"/>
                                 </h:inputText>
-                                <h:message for="userName" styleClass="field-error"/>
+                                <h:message id="userNameMsg" for="userName" styleClass="field-error"/>
                             </div>
 
                             <!-- Email -->
                             <div class="form-group">
                                 <label for="userEmail">Email Address <span class="required">*</span></label>
-                                <h:inputText id="userEmail" value="#{candidateCDIBean.candidateObj.userId.userEmail}"
-                                             styleClass="form-input" required="true" 
-                                             requiredMessage="Email is required" readonly="readonly"/>
-                                <h:message for="userEmail" styleClass="field-error"/>
-                                <small class="field-hint">Email cannot be changed</small>
+                                <h:inputText id="userEmail" 
+                                             value="#{candidateCDIBean.candidateObj.userId.userEmail}"
+                                             styleClass="form-input" 
+                                             required="true" 
+                                             requiredMessage="Email is required" 
+                                             validatorMessage="Please enter a valid email address"
+                                             readonly="readonly">
+                                    
+                                    <f:validateRegex pattern="^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"/>
+                                    <f:ajax event="keyup" execute="@this" render="emailMsg"/>
+                                </h:inputText>
+                                <h:message id="emailMsg" for="userEmail" styleClass="field-error"/>
                             </div>
 
                             <!-- Phone -->
@@ -174,13 +182,13 @@
                                             styleClass="form-input"
                                             required="true"
                                             requiredMessage="Phone Number is required"
-                                            validatorMessage="Enter valid 10-digit mobile number">
+                                            validator="candidateValidator">
+                                    <f:attribute name="type" value="phone"/>
 
-                                    <f:validateRegex pattern="[6-9][0-9]{9}"/>
-
+                                    <f:ajax event="keyup" execute="@this" render="phoneMsg"/>
                                 </h:inputText>
 
-                                <h:message for="candidatePhone" styleClass="field-error"/>
+                                <h:message id="phoneMsg" for="candidatePhone" styleClass="field-error"/>
                             </div>
 
                             <!-- Date of Birth -->
@@ -189,32 +197,34 @@
                                 <h:inputText id="candidateDOB"
                                             value="#{candidateCDIBean.candidateObj.candidateDOB}"
                                             pt:type="date"
-                                            styleClass="form-input">
+                                            styleClass="form-input"
+                                            validator="candidateValidator"
+                                            converterMessage="Please select a valid date">
 
+                                    <f:attribute name="type" value="dob"/>
                                     <f:convertDateTime pattern="yyyy-MM-dd"/>
 
+                                    <f:ajax event="change" execute="@this" render="DOBMsg"/>
                                 </h:inputText>
-                                <h:message for="candidateDOB" styleClass="field-error"/>
+                                <h:message id="DOBMsg" for="candidateDOB" styleClass="field-error"/>
                             </div>
 
                             <!-- Gender -->
                             <div class="form-group">
                                 <label for="candidateGender">Gender <span class="required">*</span></label>
-                                <h:selectOneMenu id="candidateGender"
+                                <h:selectOneRadio id="candidateGender"
                                                 value="#{candidateCDIBean.candidateObj.candidateGender}"
-                                                styleClass="form-select"
-                                                required="true">
-
-                                    <f:selectItem itemLabel="-- Select Gender --"
-                                                  itemValue=""
-                                                  noSelectionOption="true"/>
+                                                required="true"
+                                                requiredMessage="Please select gender"
+                                                styleClass="gender-radio">
 
                                     <f:selectItem itemLabel="Male" itemValue="Male"/>
                                     <f:selectItem itemLabel="Female" itemValue="Female"/>
                                     <f:selectItem itemLabel="Other" itemValue="Other"/>
 
-                                </h:selectOneMenu>
-                                <h:message for="candidateGender" styleClass="field-error"/>
+                                    <f:ajax event="change" execute="@this" render="genderMsg"/>
+                                </h:selectOneRadio>
+                                <h:message id="genderMsg" for="candidateGender" styleClass="field-error"/>
                             </div>
 
                             <!-- Experience -->
@@ -225,12 +235,13 @@
                                             pt:type="number"
                                             pt:min="0"
                                             pt:max="50"
-                                            styleClass="form-input">
+                                            styleClass="form-input"
+                                            validatorMessage="Experience must be between 0 and 50 years">
 
                                     <f:validateLongRange minimum="0" maximum="50"/>
-
+                                    <f:ajax event="keyup" execute="@this" render="experienceMsg"/>
                                 </h:inputText>
-                                <h:message for="candidateExperience" styleClass="field-error"/>
+                                <h:message id="experienceMsg" for="candidateExperience" styleClass="field-error"/>
                             </div>
 
                             <!-- City -->
@@ -238,24 +249,45 @@
                                 <label for="candidateCity">City <span class="required">*</span></label>
                                 <h:inputText id="candidateCity" value="#{candidateCDIBean.candidateObj.candidateCity}" 
                                              styleClass="form-input" required="true" 
-                                             requiredMessage="City is required"/>
-                                <h:message for="candidateCity" styleClass="field-error"/>
+                                             requiredMessage="City is required"
+                                             validator="candidateValidator">
+                                    
+                                    <f:attribute name="type" value="city"/>
+                                    <f:ajax event="keyup" execute="@this" render="cityMsg"/>
+                                </h:inputText>
+                                <h:message id="cityMsg" for="candidateCity" styleClass="field-error"/>
                             </div>
 
                             <!-- State -->
                             <div class="form-group">
                                 <label for="candidateState">State <span class="required">*</span></label>
-                                <h:inputText id="candidateState" value="#{candidateCDIBean.candidateObj.candidateState}" 
-                                             styleClass="form-input" required="true" 
-                                             requiredMessage="State is required"/>
-                                <h:message for="candidateState" styleClass="field-error"/>
+                                <h:inputText id="candidateState" 
+                                             value="#{candidateCDIBean.candidateObj.candidateState}" 
+                                             styleClass="form-input" 
+                                             required="true" 
+                                             requiredMessage="State is required"
+                                             validator="candidateValidator">
+                                    
+                                    
+                                    <f:attribute name="type" value="state"/>
+                                    <f:ajax event="keyup" execute="@this" render="stateMsg"/>  
+                                </h:inputText>
+                                <h:message id="stateMsg" for="candidateState" styleClass="field-error"/>
                             </div>
 
                             <!-- Area -->
                             <div class="form-group">
                                 <label for="candidateArea">Area/Locality</label>
-                                <h:inputText id="candidateArea" value="#{candidateCDIBean.candidateObj.candidateArea}" 
-                                             styleClass="form-input"/>
+                                <h:inputText id="candidateArea" 
+                                             value="#{candidateCDIBean.candidateObj.candidateArea}" 
+                                             styleClass="form-input"
+                                             validatorMessage="Area cannot exceed 100 characters">
+                                    
+                                    <f:validateLength maximum="100"/>
+                                    <f:ajax event="keyup" execute="@this" render="areaMsg"/>
+                                    
+                                </h:inputText>
+                                <h:message id="areaMsg" for="candidateArea" styleClass="field-error"/>
                             </div>
                         </div>
 
@@ -428,8 +460,16 @@
                                         <h:inputText value="#{candidateCDIBean.selectedEducation.educationName}"
                                                      id="educationName"
                                                      styleClass="form-input"
-                                                     pt:placeholder="e.g. B.Tech, MCA, Diploma, B.Com"/>
-                                        <h:message for="educationName" styleClass="field-error"/>
+                                                     pt:placeholder="e.g. B.Tech, MCA, Diploma, B.Com"
+                                                     required="true"
+                                                     requiredMessage="Degree is required"
+                                                     validator="candidateValidator">
+                                            
+                                            <f:attribute name="type" value="educationName"/>
+                                            <f:ajax event="keyup" execute="@this" render="educationNameMsg"/>
+                                            
+                                        </h:inputText>
+                                        <h:message id="educationNameMsg" for="educationName" styleClass="field-error"/>
                                     </div>
                                 </div>
 
@@ -442,8 +482,16 @@
                                         <h:inputText value="#{candidateCDIBean.selectedEducation.instituteName}"
                                                      id="instituteName"
                                                      styleClass="form-input"
-                                                     pt:placeholder="e.g. Gujarat University, GTU, IIT Bombay"/>
-                                        <h:message for="instituteName" styleClass="field-error"/>
+                                                     pt:placeholder="e.g. Gujarat University, GTU, IIT Bombay"
+                                                     required="true"
+                                                    requiredMessage="Institute name is required"
+                                                    validator="candidateValidator">
+                                            
+                                            <f:attribute name="type" value="institute"/>
+                                            <f:ajax event="keyup" execute="@this" render="instituteMsg"/>
+                                        
+                                        </h:inputText>
+                                        <h:message id="instituteMsg" for="instituteName" styleClass="field-error"/>
                                     </div>
                                 </div>
 
@@ -454,8 +502,14 @@
                                         <h:inputText value="#{candidateCDIBean.selectedEducation.specialization}"
                                                      id="specialization"
                                                      styleClass="form-input"
-                                                     pt:placeholder="e.g. Computer Science, IT, Electronics"/>
-                                        <h:message for="specialization" styleClass="field-error"/>
+                                                     pt:placeholder="e.g. Computer Science, IT, Electronics"
+                                                     validator="candidateValidator">
+                                            
+                                            <f:attribute name="type" value="specialization"/>
+                                            <f:ajax event="keyup" execute="@this" render="specializationMsg"/>
+                                            
+                                        </h:inputText>
+                                        <h:message id="specializationMsg" for="specialization" styleClass="field-error"/>
                                     </div>
                                 </div>
 
@@ -467,10 +521,15 @@
                                                      id="startYear"
                                                      styleClass="form-input"
                                                      pt:placeholder="2018"
-                                                     pt:type="number">
-                                            <f:validateLongRange minimum="1980" maximum="2030"/>
+                                                     pt:type="number"
+                                                     validatorMessage="Please enter a valid year between 1900 and 2100"
+                                                     validator="#{candidateCDIBean.validateStartYear}">
+                                             
+                                            <f:validateLongRange minimum="1900" maximum="2100"/>
+                                            <f:ajax event="change" execute="@this" render="startYearMsg"/>
+                                            
                                         </h:inputText>
-                                        <h:message for="startYear" styleClass="field-error"/>
+                                        <h:message id="startYearMsg" for="startYear" styleClass="field-error"/>
                                     </div>
                                 </div>
 
@@ -481,10 +540,15 @@
                                                      id="endYear"
                                                      styleClass="form-input"
                                                      pt:placeholder="2022"
-                                                     pt:type="number">
-                                            <f:validateLongRange minimum="1980" maximum="2035"/>
+                                                     pt:type="number"
+                                                     validatorMessage="Please enter a valid year between 1900 and 2100"
+                                                     validator="#{candidateCDIBean.validateEndYear}">
+
+                                            <f:validateLongRange minimum="1900" maximum="2100"/>
+                                            <f:ajax event="change" execute="@this" render="endYearMsg"/>
+                                            
                                         </h:inputText>
-                                        <h:message for="endYear" styleClass="field-error"/>
+                                        <h:message id="endYearMsg" for="endYear" styleClass="field-error"/>
                                     </div>
                                 </div>
 
@@ -497,10 +561,14 @@
                                                      styleClass="form-input"
                                                      pt:placeholder="e.g. 78.50"
                                                      pt:type="number"
-                                                     pt:step="0.01">
-                                            <f:validateDoubleRange minimum="0.0" maximum="100.0"/>
+                                                     pt:step="0.01"
+                                                     validator="candidateValidator">
+
+                                            <f:attribute name="type" value="percentage"/>
+                                            <f:ajax event="change" execute="@this" render="percentageMsg"/>
+                                            
                                         </h:inputText>
-                                        <h:message for="percentage" styleClass="field-error"/>
+                                        <h:message id="percentageMsg" for="percentage" styleClass="field-error"/>
                                     </div>
                                 </div>
 
@@ -512,10 +580,14 @@
                                                      styleClass="form-input"
                                                      pt:placeholder="e.g. 8.2"
                                                      pt:type="number"
-                                                     pt:step="0.01">
-                                            <f:validateDoubleRange minimum="0.0" maximum="10.0"/>
+                                                     pt:step="0.01"
+                                                     validator="candidateValidator">
+
+                                            <f:attribute name="type" value="cgpa"/>
+                                            <f:ajax event="change" execute="@this" render="cgpaMsg"/>
+                                            
                                         </h:inputText>
-                                        <h:message for="cgpa" styleClass="field-error"/>
+                                        <h:message id="cgpaMsg" for="cgpa" styleClass="field-error"/>
                                     </div>
                                 </div>
 
@@ -526,8 +598,14 @@
                                         <h:inputText value="#{candidateCDIBean.selectedEducation.grade}"
                                                      id="grade"
                                                      styleClass="form-input"
-                                                     pt:placeholder="A / B / First Class / Distinction"/>
-                                        <h:message for="grade" styleClass="field-error"/>
+                                                     pt:placeholder="A / B / First Class / Distinction"
+                                                     validator="candidateValidator">
+                                            
+                                            <f:attribute name="type" value="grade"/>
+                                            <f:ajax event="keyup" execute="@this" render="gradeMsg"/>
+                                            
+                                        </h:inputText>
+                                        <h:message id="gradeMsg" for="grade" styleClass="field-error"/>
                                     </div>
                                 </div>
 
@@ -539,8 +617,14 @@
                                                          id="educationDescription"
                                                          styleClass="form-textarea"
                                                          pt:placeholder="Add details about your education, achievements, projects, or relevant coursework..."
-                                                         rows="3"/>
-                                        <h:message for="educationDescription" styleClass="field-error"/>
+                                                         rows="3"
+                                                         validatorMessage="Description cannot exceed 1000 characters">
+                                            
+                                            <f:validateLength maximum="1000"/>
+                                            <f:ajax event="keyup" execute="@this" render="descriptionMsg"/>
+                                            
+                                        </h:inputTextarea>
+                                        <h:message id="descriptionMsg" for="educationDescription" styleClass="field-error"/>
                                     </div>
                                 </div>
                             </div>
