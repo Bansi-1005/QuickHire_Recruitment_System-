@@ -29,8 +29,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -924,42 +922,8 @@ public class CandidateCDIBean implements Serializable {
                 .toList();
     }
     
-    private int getJobScore(Tbljob job) {
 
-        int score = 0;
-
-        Integer experience = candidateObj.getCandidateExperience();
-
-        if (experience != null && job.getExperienceRequired() != null) {
-            if (experience >= job.getExperienceRequired()) {
-                score += 30;
-            }
-        }
-
-        int skillMatchCount = 0;
-
-        if (job.getTblskillsCollection() != null && candidateSkills != null) {
-
-            for (Tblskills jobSkill : job.getTblskillsCollection()) {
-                for (Tblskills candSkill : candidateSkills) {
-
-                    if (jobSkill.getSkillName() != null
-                            && candSkill.getSkillName() != null
-                            && jobSkill.getSkillName().equalsIgnoreCase(candSkill.getSkillName())) {
-
-                        skillMatchCount++;
-                        break;
-                    }
-                }
-            }
-        }
-
-        score += skillMatchCount * 10;
-
-        return score;
-    }
     
-
     
     
     
@@ -997,19 +961,6 @@ public class CandidateCDIBean implements Serializable {
                 .toList();
     }
     
-    private String getApplicationStatusAPI(int applicationId) {
-        try {
-            WebTarget target = getClient()
-                    .target(BASE_URL + "/getApplicationStatus")
-                    .queryParam("applicationId", applicationId);
-
-            return target.request(MediaType.APPLICATION_JSON)
-                    .get(String.class);
-
-        } catch (Exception e) {
-            return "Unknown";
-        }
-    }
     
     
     public String getApplicationStatus(int applicationId) {
