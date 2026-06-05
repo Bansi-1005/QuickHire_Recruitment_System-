@@ -52,6 +52,7 @@ public interface CandidateBeanLocal {
             
     // JOBS
     Collection<Tbljob> getAllJobs();
+    public Tbljob getJobByJobId(Integer jobId);
 //    Collection<Tbljob> searchJobsByLocation(String location);
 //    Collection<Tbljob> searchJobsBySkill(String skill);
 
@@ -74,6 +75,9 @@ public interface CandidateBeanLocal {
     // NOTIFICATION
     Collection<Tblnotification> getCandidateNotifications(int userId); 
     public Collection<Tblnotification> getUnreadNotifications(int userId);
+    public Collection<Tblnotification> getApplicationNotifications(int userId);
+    public Collection<Tblnotification> getInterviewNotifications(int userId);
+    public Collection<Tblnotification> getProfileNotifications(int userId);
     public void markNotificationAsRead(int notificationId);
 
 }

@@ -48,8 +48,13 @@ public class CandidateCDIBean implements Serializable {
     private Part resumeFile;
     private Collection<Tblresume> resumeList = new ArrayList<>();
     private Part profilePhoto;
+    
+    private Integer experienceYears;
+    private Integer experienceMonths;
+
         
     // ================= JOBS =================
+    private Tbljob selectedJob;
     private String searchTitle;
     private String searchLocation;
     private Integer searchSkillId;
@@ -68,8 +73,9 @@ public class CandidateCDIBean implements Serializable {
     private Map<Integer, String> applicationStatusMap = new HashMap<>();
 
     // ================= NOTIFICATIONS =================
-    private Collection<Tblnotification> notificationList = new ArrayList<>();
-    private Collection<Tblnotification> unreadNotificationList = new ArrayList<>();
+    private List<Tblnotification> notificationList = new ArrayList<>();
+    private String notificationFilter = "ALL";
+    
     
     // ================= SKILLS =================
     private Collection<Tblskills> allSkills = new ArrayList<>();
@@ -163,8 +169,7 @@ public class CandidateCDIBean implements Serializable {
                 loadEducation(); 
             }
 
-            loadNotifications(userId);
-            loadUnreadNotifications(userId);
+            notificationList = loadAllNotifications(userId);
             generateRecommendedJobs(); 
         }
     }
@@ -188,6 +193,23 @@ public class CandidateCDIBean implements Serializable {
             if (c != null) {
                 this.candidateObj = c;
                 this.candidateId = c.getCandidateId();
+                
+                 // Convert DB months → Years + Months
+
+                if (c.getCandidateExperience() != null) {
+
+                    experienceYears =
+                            c.getCandidateExperience() / 12;
+
+                    experienceMonths =
+                            c.getCandidateExperience() % 12;
+
+                } else {
+
+                    experienceYears = 0;
+                    experienceMonths = 0;
+                }
+                
                 System.out.println("Candidate ID = " + candidateId);
             }
 
@@ -201,57 +223,17 @@ public class CandidateCDIBean implements Serializable {
     public void updateProfile() {
 
         try {
+            int years =
+                experienceYears == null ? 0 : experienceYears;
 
-//            // ================= PROFILE PHOTO FOLDER =================
-//            String basePath = "D:/QuickHireUploads/";
-//            String profilePhotoPath = basePath + "profilephotos/";
-//
-//            Files.createDirectories(Paths.get(profilePhotoPath));
-//
-//            // ================= PROFILE PHOTO =================
-//            if (profilePhoto != null && profilePhoto.getSize() > 0) {
-//
-//                String photoName = Paths.get(
-//                        profilePhoto.getSubmittedFileName()
-//                ).getFileName().toString();
-//
-//                String lowerPhoto = photoName.toLowerCase();
-//
-//                // VALIDATION
-//                if (!(lowerPhoto.endsWith(".png")
-//                        || lowerPhoto.endsWith(".jpg")
-//                        || lowerPhoto.endsWith(".jpeg"))) {
-//
-//                    FacesContext.getCurrentInstance().addMessage(
-//                            null,
-//                            new FacesMessage(
-//                                    FacesMessage.SEVERITY_ERROR,
-//                                    "Invalid Photo",
-//                                    "Only PNG/JPG/JPEG allowed"
-//                            )
-//                    );
-//                    return;
-//                }
-//
-//                // UNIQUE FILE NAME
-//                String uniquePhotoName =
-//                        System.currentTimeMillis() + "_PHOTO_" + photoName;
-//
-//                // SAVE FILE
-//                InputStream photoInput = profilePhoto.getInputStream();
-//
-//                Files.copy(
-//                        photoInput,
-//                        Paths.get(profilePhotoPath + uniquePhotoName),
-//                        StandardCopyOption.REPLACE_EXISTING
-//                );
-//
-//                // SAVE INTO USER TABLE
-//                if (candidateObj.getUserId() != null) {
-//                    candidateObj.getUserId().setProfilePhoto(uniquePhotoName);
-//                }                
-//            }
+            int months =
+                    experienceMonths == null ? 0 : experienceMonths;
 
+            int totalMonths =
+                    (years * 12) + months;
+
+            candidateObj.setCandidateExperience(totalMonths);
+            
             // ================= API CALL =================
             WebTarget target = getClient()
                     .target(BASE_URL + "/updateCandidateProfile");
@@ -305,6 +287,34 @@ public class CandidateCDIBean implements Serializable {
                             )
                     );
         }
+    }
+    
+    
+    public String getFormattedExperience() {
+
+        if (candidateObj == null
+                || candidateObj.getCandidateExperience() == null) {
+
+            return "0 Months";
+        }
+
+        int totalMonths =
+                candidateObj.getCandidateExperience();
+
+        int years = totalMonths / 12;
+        int months = totalMonths % 12;
+
+        if (years > 0 && months > 0) {
+
+            return years + " Years " + months + " Months";
+        }
+
+        if (years > 0) {
+
+            return years + " Years";
+        }
+
+        return months + " Months";
     }
     
     public void uploadProfilePhoto() {
@@ -527,7 +537,7 @@ public class CandidateCDIBean implements Serializable {
     }
     
     
-    
+
     
     
     
@@ -677,7 +687,22 @@ public class CandidateCDIBean implements Serializable {
         }
     }
     
+    public void loadJobDetails(Integer jobId) {
+        try {
+
+            WebTarget target = getClient().target(
+                    BASE_URL + "/getJobByJobId/" + jobId);
+
+            selectedJob = target.request(MediaType.APPLICATION_JSON)
+                                .get(Tbljob.class);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     // ---------- LOAD JOB TYPES -----------
+    
     public void loadJobTypes() {
 
         try {
@@ -1073,9 +1098,10 @@ public class CandidateCDIBean implements Serializable {
                                 result));
 
                 loadUserData();
-
+                
                 selectedJobId = null;
                 selectedResumeId = null;
+                selectedJob = null;
 
             } else if (response.getStatus() == 409) {
 
@@ -1576,94 +1602,187 @@ public class CandidateCDIBean implements Serializable {
     
     // ================= NOTIFICATION METHODS ==================
     
-    // -------- LOAD NOTIFICATIONS -------
-    public void loadNotifications(int userId) {
+    public void loadNotificationsPage() {
 
-        try {
+        int userId = getLoggedInCandidateId();
 
-            WebTarget target = getClient()
-                    .target(BASE_URL + "/getCandidateNotifications")
-                    .queryParam("userId", userId);
-
-            notificationList = target
-                    .request(MediaType.APPLICATION_JSON)
-                    .get(new GenericType<
-                            Collection<Tblnotification>>() {});
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
+        if (userId == 0) {
             notificationList = new ArrayList<>();
+            notificationFilter = "ALL";
+            return;
+        }
+
+        notificationList = loadAllNotifications(userId);
+        notificationFilter = "ALL";
+    }
+
+    public List<Tblnotification> loadAllNotifications(int userId) {
+        try {
+            return getClient()
+                    .target(BASE_URL + "/getCandidateNotifications")
+                    .queryParam("userId", userId)
+                    .request(MediaType.APPLICATION_JSON)
+                    .get(new GenericType<List<Tblnotification>>() {});
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
         }
     }
-
-    public List<Tblnotification> getRecentNotifications() {
-
-        return notificationList.stream()
-                .limit(5)
-                .toList();
-    }
     
-    public void loadUnreadNotifications(int userId) {
+
+    public List<Tblnotification> loadUnreadNotifications(int userId) {
 
         try {
-
-            WebTarget target = getClient()
+            return getClient()
                     .target(BASE_URL + "/getUnreadNotifications")
-                    .queryParam("userId", userId);
-
-            unreadNotificationList = target
+                    .queryParam("userId", userId)
                     .request(MediaType.APPLICATION_JSON)
-                    .get(new GenericType<
-                            Collection<Tblnotification>>() {});
-
+                    .get(new GenericType<List<Tblnotification>>() {});
         } catch (Exception e) {
-
             e.printStackTrace();
-
-            unreadNotificationList = new ArrayList<>();
+            return new ArrayList<>();
         }
     }
     
-    public int getUnreadNotificationCount() {
+    
+    public List<Tblnotification> loadApplicationNotifications(int userId) {
 
-        return unreadNotificationList != null
-                ? unreadNotificationList.size()
-                : 0;
+        try {
+            return getClient()
+                    .target(BASE_URL + "/getApplicationNotifications")
+                    .queryParam("userId", userId)
+                    .request(MediaType.APPLICATION_JSON)
+                    .get(new GenericType<List<Tblnotification>>() {});
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
+    
+    public List<Tblnotification> loadInterviewNotifications(int userId) {
+
+        try {
+            return getClient()
+                    .target(BASE_URL + "/getInterviewNotifications")
+                    .queryParam("userId", userId)
+                    .request(MediaType.APPLICATION_JSON)
+                    .get(new GenericType<List<Tblnotification>>() {});
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    public List<Tblnotification> loadProfileNotifications(int userId) {
+
+        try {
+            return getClient()
+                    .target(BASE_URL + "/getProfileNotifications")
+                    .queryParam("userId", userId)
+                    .request(MediaType.APPLICATION_JSON)
+                    .get(new GenericType<List<Tblnotification>>() {});
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+    
+    public void applyFilter(String filter) {
+
+        int userId = getLoggedInCandidateId();
+        if (userId == 0) return;
+
+        notificationFilter = filter;
+
+        switch (filter.toUpperCase()) {
+
+            case "ALL":
+                notificationList = loadAllNotifications(userId);
+                break;
+
+            case "UNREAD":
+                notificationList = loadUnreadNotifications(userId);
+                break;
+
+            case "APPLICATION":
+                notificationList = loadApplicationNotifications(userId);
+                break;
+
+            case "INTERVIEW":
+                notificationList = loadInterviewNotifications(userId);
+                break;
+
+            case "PROFILE":
+                notificationList = loadProfileNotifications(userId);
+                break;
+
+            default:
+                notificationList = loadAllNotifications(userId);
+        }
+    }
+    
 
     public void markNotificationAsRead(int notificationId) {
 
         try {
-
             Response response = getClient()
                     .target(BASE_URL + "/markNotificationAsRead")
-                    .queryParam(
-                            "notificationId",
-                            notificationId)
+                    .queryParam("notificationId", notificationId)
                     .request()
-                    .put(
-                            jakarta.ws.rs.client.Entity.text("")
-                    );
+                    .put(jakarta.ws.rs.client.Entity.text(""));
 
             if (response.getStatus() == 200) {
 
                 int userId = getLoggedInCandidateId();
 
-                loadNotifications(userId);
-                loadUnreadNotifications(userId);
+                notificationList = loadAllNotifications(userId);
             }
 
         } catch (Exception e) {
-
             e.printStackTrace();
         }
     }
+
+
+    public List<Tblnotification> getRecentNotifications() {
+        if (notificationList == null) return new ArrayList<>();
+        return notificationList.stream().limit(5).toList();
+    }
     
+    public int getUnreadNotificationCount() {
+        if (notificationList == null) return 0;
+
+        return (int) notificationList.stream()
+                .filter(n -> n != null && !n.getIsRead())
+                .count();
+    }
     
+    public String getNormalizedType(Tblnotification n) {
+        if (n == null || n.getNotificationType() == null) {
+            return "UNKNOWN";
+        }
+        return n.getNotificationType().toUpperCase();
+    }
     
-    
+    public String getNotificationBadge(Tblnotification n) {
+
+        if (n == null || n.getNotificationType() == null) {
+            return "alert";
+        }
+
+        String type = n.getNotificationType().toUpperCase();
+
+        if (type.contains("APPLICATION")) return "application";
+        if (type.contains("INTERVIEW")) return "interview";
+        if (type.contains("PROFILE")) return "profile";
+        if (type.contains("MESSAGE")) return "message";
+
+        return "alert";
+    }
+
+   
+
+
     
     
     
@@ -1757,6 +1876,32 @@ public class CandidateCDIBean implements Serializable {
 
     public void setProfilePhoto(Part profilePhoto) {
         this.profilePhoto = profilePhoto;
+    }
+    
+    public Integer getExperienceYears() {
+        return experienceYears;
+    }
+
+    public void setExperienceYears(Integer experienceYears) {
+        this.experienceYears = experienceYears;
+    }
+
+    public Integer getExperienceMonths() {
+        return experienceMonths;
+    }
+
+    public void setExperienceMonths(Integer experienceMonths) {
+        this.experienceMonths = experienceMonths;
+    }
+    
+    public Tbljob getSelectedJob()
+    {
+        return selectedJob;
+    }
+
+    public void setSelectedJob(Tbljob selectedJob)
+    {
+        this.selectedJob = selectedJob;
     }
     
     public String getSearchTitle() {
@@ -1854,23 +1999,7 @@ public class CandidateCDIBean implements Serializable {
     public void setApplicationStatusMap(Map<Integer, String> applicationStatusMap) {
         this.applicationStatusMap = applicationStatusMap;
     }
-
-    public Collection<Tblnotification> getNotificationList() {
-        return notificationList;
-    }
-
-    public void setNotificationList(Collection<Tblnotification> notificationList) {
-        this.notificationList = notificationList;
-    }
     
-    public Collection<Tblnotification> getUnreadNotificationList() {
-        return unreadNotificationList;
-    }
-
-    public void setUnreadNotificationList(Collection<Tblnotification> unreadNotificationList) {
-        this.unreadNotificationList = unreadNotificationList;
-    }
-
     public Collection<Tblskills> getAllSkills() {
         return allSkills;
     }
@@ -1949,5 +2078,21 @@ public class CandidateCDIBean implements Serializable {
 
     public void setInterviewList(Collection<Tblinterview> interviewList) {
         this.interviewList = interviewList;
+    }
+    
+     public List<Tblnotification> getNotificationList() {
+        return notificationList;
+    }
+
+    public void setNotificationList(List<Tblnotification> notificationList) {
+        this.notificationList = notificationList;
+    }
+
+    public String getNotificationFilter() {
+        return notificationFilter;
+    }
+
+    public void setNotificationFilter(String notificationFilter) {
+        this.notificationFilter = notificationFilter;
     }
 }

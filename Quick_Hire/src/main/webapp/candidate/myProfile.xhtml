@@ -228,20 +228,41 @@
                             </div>
 
                             <!-- Experience -->
+                            
                             <div class="form-group">
-                                <label for="candidateExperience">Total Experience (Years)</label>
-                                <h:inputText id="candidateExperience"
-                                            value="#{candidateCDIBean.candidateObj.candidateExperience}"
-                                            pt:type="number"
-                                            pt:min="0"
-                                            pt:max="50"
-                                            styleClass="form-input"
-                                            validatorMessage="Experience must be between 0 and 50 years">
+                                <label>Experience (Years)</label>
+
+                                <h:inputText
+                                    id="experienceYear"
+                                    value="#{candidateCDIBean.experienceYears}"
+                                    pt:type="number"
+                                    pt:min="0"
+                                    pt:max="50"
+                                    styleClass="form-input"
+                                    validatorMessage="Please enter experience years between 0 and 50">
 
                                     <f:validateLongRange minimum="0" maximum="50"/>
-                                    <f:ajax event="keyup" execute="@this" render="experienceMsg"/>
+                                    <f:ajax event="keyup" execute="@this" render="experienceYearMsg"/>
                                 </h:inputText>
-                                <h:message id="experienceMsg" for="candidateExperience" styleClass="field-error"/>
+                                <h:message id="experienceYearMsg" for="candidateExperienceYear" styleClass="field-error"/>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Experience (Months)</label>
+
+                                <h:inputText
+                                    id="experienceMonth"
+                                    value="#{candidateCDIBean.experienceMonths}"
+                                    pt:type="number"
+                                    pt:min="0"
+                                    pt:max="11"
+                                    styleClass="form-input"
+                                    validatorMessage="Please enter experience months between 0 and 11">
+
+                                    <f:validateLongRange minimum="0" maximum="11"/>
+                                    <f:ajax event="keyup" execute="@this" render="experienceMonthMsg"/>
+                                </h:inputText>
+                                <h:message id="experienceMonthMsg" for="experienceMonthMsg" styleClass="field-error"/>
                             </div>
 
                             <!-- City -->

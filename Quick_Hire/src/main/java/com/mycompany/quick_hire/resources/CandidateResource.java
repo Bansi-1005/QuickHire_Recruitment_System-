@@ -524,6 +524,23 @@ public class CandidateResource {
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
+    
+    @GET
+    @Path("/getJobByJobId/{jobId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getJobByJobId(@PathParam("jobId") Integer jobId)
+    {
+        Tbljob job = ejb.getJobByJobId(jobId);
+
+        if(job == null)
+        {
+            return Response.status(Response.Status.NOT_FOUND)
+                           .entity("Job not found")
+                           .build();
+        }
+
+        return Response.ok(job).build();
+    }
 
 //    @GET
 //    @Path("searchJobsByLocation")
@@ -705,17 +722,10 @@ public class CandidateResource {
     @GET
     @Path("getCandidateNotifications")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getCandidateNotifications(
-            @QueryParam("userId") int userId) {
-
+    public Response getCandidateNotifications(@QueryParam("userId") int userId) {
         try {
-
-            return Response.ok(
-                    ejb.getCandidateNotifications(userId)
-            ).build();
-
+            return Response.ok(ejb.getCandidateNotifications(userId)).build();
         } catch (Exception e) {
-
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(e.getMessage())
                     .build();
@@ -725,37 +735,48 @@ public class CandidateResource {
     @GET
     @Path("getUnreadNotifications")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getUnreadNotifications(
-            @QueryParam("userId") int userId) {
-
+    public Response getUnreadNotifications(@QueryParam("userId") int userId) {
         try {
-
-            return Response.ok(
-                    ejb.getUnreadNotifications(userId)
-            ).build();
-
+            return Response.ok(ejb.getUnreadNotifications(userId)).build();
         } catch (Exception e) {
-
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(e.getMessage())
                     .build();
         }
     }
+    
+     @GET
+    @Path("/getApplicationNotifications")
+    public Collection<Tblnotification> getApplicationNotifications(
+            @QueryParam("userId") int userId) {
+
+        return ejb.getApplicationNotifications(userId);
+    }
+
+    @GET
+    @Path("/getInterviewNotifications")
+    public Collection<Tblnotification> getInterviewNotifications(
+            @QueryParam("userId") int userId) {
+
+        return ejb.getInterviewNotifications(userId);
+    }
+
+    @GET
+    @Path("/getProfileNotifications")
+    public Collection<Tblnotification> getProfileNotifications(
+            @QueryParam("userId") int userId) {
+
+        return ejb.getProfileNotifications(userId);
+    }
 
     @PUT
     @Path("markNotificationAsRead")
-    public Response markNotificationAsRead(
-            @QueryParam("notificationId") int notificationId) {
-
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response markNotificationAsRead(@QueryParam("notificationId") int notificationId) {
         try {
-
             ejb.markNotificationAsRead(notificationId);
-
-            return Response.ok("Notification marked as read")
-                    .build();
-
+            return Response.ok("Notification marked as read").build();
         } catch (Exception e) {
-
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(e.getMessage())
                     .build();

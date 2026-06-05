@@ -41,7 +41,7 @@ import java.util.Date;
     @NamedQuery(name = "Tblapplication.findByApplicationStatus", query = "SELECT t FROM Tblapplication t WHERE t.applicationStatus = :applicationStatus"),
     @NamedQuery(name = "Tblapplication.findByLastUpdatedDate", query = "SELECT t FROM Tblapplication t WHERE t.lastUpdatedDate = :lastUpdatedDate"),
 
-    @NamedQuery(name = "Tblapplication.findByCandidate", query = "SELECT t FROM Tblapplication t WHERE t.candidateId.candidateId = :candidateId"),
+    @NamedQuery(name = "Tblapplication.findByCandidate", query = "SELECT t FROM Tblapplication t WHERE t.candidateId.candidateId = :candidateId ORDER BY t.applicationAppliedDate DESC"),
     @NamedQuery(name = "Tblapplication.findByJob", query = "SELECT t FROM Tblapplication t WHERE t.jobId.jobId = :jobId"),
     
     @NamedQuery(name="Tblapplication.count", query="SELECT COUNT(t) FROM Tblapplication t"),

@@ -45,7 +45,7 @@ import java.util.Date;
     @NamedQuery(name = "Tblinterview.findByResult", query = "SELECT t FROM Tblinterview t WHERE t.result = :result"),
     @NamedQuery(name = "Tblinterview.findByInterviewStatus", query = "SELECT t FROM Tblinterview t WHERE t.interviewStatus = :interviewStatus"),
 
-    @NamedQuery(name = "Tblinterview.findByApplication", query = "SELECT t FROM Tblinterview t WHERE t.applicationId.applicationId = :applicationId")
+    @NamedQuery(name = "Tblinterview.findByApplication", query = "SELECT t FROM Tblinterview t WHERE t.applicationId.applicationId = :applicationId ORDER BY t.interviewDate DESC")
 })
 public class Tblinterview implements Serializable {
 

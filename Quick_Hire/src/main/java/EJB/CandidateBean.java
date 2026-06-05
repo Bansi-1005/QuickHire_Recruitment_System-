@@ -138,6 +138,29 @@ public class CandidateBean implements CandidateBeanLocal {
                 }
 
                 em.merge(existing);
+                
+                // profile notitfication 
+                Tblnotification notification = new Tblnotification();
+
+                notification.setSenderUserId(null); // System
+
+                notification.setReceiverUserId(existing.getUserId());
+
+                notification.setNotificationTitle(
+                        "Profile Updated");
+
+                notification.setNotificationMessage(
+                        "Your profile has been updated successfully.");
+
+                notification.setNotificationType(
+                        "PROFILE_UPDATED");
+
+                notification.setIsRead(false);
+
+                notification.setCreatedDate(new Date());
+
+                em.persist(notification);
+                
             }
 
         } catch (Exception e) {
@@ -472,6 +495,21 @@ public class CandidateBean implements CandidateBeanLocal {
             return new ArrayList<>();
         }
     }
+    
+    @Override
+    public Tbljob getJobByJobId(Integer jobId)
+    {
+        try
+        {
+            return em.createNamedQuery("Tbljob.findByJobId", Tbljob.class)
+                     .setParameter("jobId", jobId)
+                     .getSingleResult();
+        }
+        catch(Exception e)
+        {
+            return null;
+        }
+    }
 
 //    @Override
 //    public Collection<Tbljob> searchJobsByLocation(String jobLocation) {
@@ -581,26 +619,27 @@ public class CandidateBean implements CandidateBeanLocal {
                         candidate.getUserId();
 
                 // notification 
-                Tblnotification notification = new Tblnotification();
+                Tblnotification candidateNotification = new Tblnotification();
 
-                notification.setSenderUserId(candidateUser);
+                candidateNotification.setSenderUserId(null);
 
-                notification.setReceiverUserId(recruiterUser);
+                candidateNotification.setReceiverUserId(candidateUser);
 
-                notification.setNotificationTitle("New Job Application");
+                candidateNotification.setNotificationTitle(
+                        "Application Submitted");
 
-                notification.setNotificationMessage(
-                        candidateUser.getUserName()
-                        + " applied for "
+                candidateNotification.setNotificationMessage(
+                        "You successfully applied for "
                         + job.getJobTitle());
 
-                notification.setNotificationType("JOB_APPLIED");
+                candidateNotification.setNotificationType(
+                        "APPLICATION_SUBMITTED");
 
-                notification.setIsRead(false);
+                candidateNotification.setIsRead(false);
 
-                notification.setCreatedDate(new Date());
+                candidateNotification.setCreatedDate(new Date());
 
-                em.persist(notification);
+                em.persist(candidateNotification);
 
                 try {
 
@@ -727,7 +766,7 @@ public class CandidateBean implements CandidateBeanLocal {
     // ================= NOTIFICATION =================
     @Override
     public Collection<Tblnotification> getCandidateNotifications(int userId) {
-         try {
+        try {
             return em.createNamedQuery("Tblnotification.findByReceiver", Tblnotification.class)
                     .setParameter("userId", userId)
                     .getResultList();
@@ -735,29 +774,59 @@ public class CandidateBean implements CandidateBeanLocal {
             return new ArrayList<>();
         }
     }
-    
+
     @Override
     public Collection<Tblnotification> getUnreadNotifications(int userId) {
-
-        return em.createNamedQuery(
-                "Tblnotification.findUnreadByReceiver",
-                Tblnotification.class)
-                .setParameter("userId", userId)
-                .getResultList();
+        try {
+            return em.createNamedQuery("Tblnotification.findUnreadByReceiver", Tblnotification.class)
+                    .setParameter("userId", userId)
+                    .getResultList();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
+
+    @Override
+    public Collection<Tblnotification> getApplicationNotifications(int userId) {
+        try {
+            return em.createNamedQuery("Tblnotification.findApplicationByReceiver", Tblnotification.class)
+                    .setParameter("userId", userId)
+                    .getResultList();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public Collection<Tblnotification> getInterviewNotifications(int userId) {
+        try {
+            return em.createNamedQuery("Tblnotification.findInterviewByReceiver", Tblnotification.class)
+                    .setParameter("userId", userId)
+                    .getResultList();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public Collection<Tblnotification> getProfileNotifications(int userId) {
+        try {
+            return em.createNamedQuery("Tblnotification.findProfileByReceiver", Tblnotification.class)
+                    .setParameter("userId", userId)
+                    .getResultList();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
     
     @Override
     public void markNotificationAsRead(int notificationId) {
-
-        Tblnotification notification =
-                em.find(Tblnotification.class, notificationId);
+        Tblnotification notification = em.find(Tblnotification.class, notificationId);
 
         if (notification != null) {
-
             notification.setIsRead(true);
-
             notification.setReadDate(new Date());
-
             em.merge(notification);
         }
     }

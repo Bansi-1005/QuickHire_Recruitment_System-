@@ -62,39 +62,6 @@
 
                 </div>
 
-                <!-- STATS -->
-                <div class="hero-stats">
-
-                    <div class="hero-mini-card">
-                        <span>Total Interviews</span>
-                        <strong>
-                            #{candidateCDIBean.interviewList.size()}
-                        </strong>
-                    </div>
-
-                    <div class="hero-mini-card">
-                        <span>Upcoming</span>
-                        <strong>
-                            #{candidateCDIBean.interviewList.size()}
-                        </strong>
-                    </div>
-
-                    <div class="hero-mini-card">
-                        <span>Online</span>
-                        <strong>
-                            Online
-                        </strong>
-                    </div>
-
-                    <div class="hero-mini-card">
-                        <span>Status</span>
-                        <strong>
-                            Active
-                        </strong>
-                    </div>
-
-                </div>
-
             </div>
 
         </section>
@@ -120,7 +87,6 @@
                         <thead>
 
                             <tr>
-                                <th>#</th>
                                 <th>Job Title</th>
                                 <th>Round</th>
                                 <th>Mode</th>
@@ -137,11 +103,6 @@
                                        varStatus="loop">
 
                                 <tr>
-
-                                    <td>
-                                        #{loop.index + 1}
-                                    </td>
-
                                     <td>
 
                                         <div class="job-info">

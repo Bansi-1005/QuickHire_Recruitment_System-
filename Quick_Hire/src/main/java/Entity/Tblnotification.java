@@ -37,7 +37,16 @@ import java.util.Date;
     @NamedQuery(name = "Tblnotification.findByCreatedDate", query = "SELECT t FROM Tblnotification t WHERE t.createdDate = :createdDate"),
     
     @NamedQuery(name = "Tblnotification.findByReceiver", query = "SELECT t FROM Tblnotification t WHERE t.receiverUserId.userId = :userId ORDER BY t.createdDate DESC"),
-    @NamedQuery(name = "Tblnotification.findUnreadByReceiver", query = "SELECT t FROM Tblnotification t WHERE t.receiverUserId.userId = :userId AND t.isRead = false ORDER BY t.createdDate DESC")
+    @NamedQuery(name = "Tblnotification.findUnreadByReceiver", query = "SELECT t FROM Tblnotification t WHERE t.receiverUserId.userId = :userId AND t.isRead = false ORDER BY t.createdDate DESC"),
+     //  APPLICATION (job related)
+    @NamedQuery(name = "Tblnotification.findApplicationByReceiver", query = "SELECT t FROM Tblnotification t WHERE t.receiverUserId.userId = :userId AND t.notificationType LIKE 'Application%' ORDER BY t.createdDate DESC"),
+
+    // INTERVIEW
+    @NamedQuery(name = "Tblnotification.findInterviewByReceiver", query = "SELECT t FROM Tblnotification t WHERE t.receiverUserId.userId = :userId AND t.notificationType LIKE 'INTERVIEW%' ORDER BY t.createdDate DESC"),
+
+    // PROFILE
+    @NamedQuery(name = "Tblnotification.findProfileByReceiver", query = "SELECT t FROM Tblnotification t WHERE t.receiverUserId.userId = :userId AND t.notificationType LIKE 'PROFILE%' ORDER BY t.createdDate DESC")
+
 })
 public class Tblnotification implements Serializable {
 

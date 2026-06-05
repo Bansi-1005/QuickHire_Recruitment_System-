@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html>
-
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
@@ -16,7 +15,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <h:outputStylesheet library="css" name="/candidate/candidate.css" />
     <h:outputStylesheet library="css" name="/candidate/dashboard.css" />
-    <h:outputStylesheet library="css" name="/candidate/profile.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 </h:head>
 
@@ -34,56 +32,56 @@
 
         <main class="main" id="main">
 
+            <h:form id="msgForm">
+                    <h:messages id="messages" globalOnly="true" showDetail="true" showSummary="false"
+                                styleClass="custom-toast" infoClass="info" warnClass="warn" errorClass="error"/>
+            </h:form>
+            <!-- SECTION 1: HERO (With Profile Completion) -->
             <section class="hero">
                 <div class="hero-grid">
-
                     <div class="hero-left">
                         <div class="welcome-tag">Candidate Dashboard</div>
-
-                        <h1>
-                            Welcome, #{candidateCDIBean.candidateObj.userId.userName} 👋
-                        </h1>
-
+                        <h1>Welcome, #{candidateCDIBean.candidateObj.userId.userName} 👋</h1>
                         <p class="hero-info">
                             #{candidateCDIBean.candidateObj.candidateCity}, #{candidateCDIBean.candidateObj.candidateState}
                             <span class="separator">•</span>
                             #{candidateCDIBean.candidateObj.candidateExperience} Years Experience
                         </p>
+
                     </div>
-
-                    <div class="hero-stats">
-                        <div class="hero-mini-card profile-completion">
-                            <span>Profile Completion</span>
-                            <strong>
-                                <h:outputText value="#{candidateCDIBean.profileCompletion}">
-                                    <f:convertNumber integerOnly="true"/>
-                                </h:outputText>%
-                            </strong>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: #{candidateCDIBean.profileCompletion}%;"></div>
+                    <div class="hero-right">
+                        <!-- Profile Completion in Hero -->
+                        <div class="hero-profile-box">
+                            <div class="hero-profile-head">
+                                <h4>Complete your profile</h4>
+                                <span class="hero-profile-percent">
+                                    <h:outputText value="#{candidateCDIBean.profileCompletion}">
+                                        <f:convertNumber integerOnly="true"/>
+                                    </h:outputText>%
+                                </span>
                             </div>
-                        </div>
-
-                        <div class="hero-mini-card">
-                            <span>Shortlisted</span>
-                            <strong>#{candidateCDIBean.getApplicationsByStatus('Shortlisted')}</strong>
-                        </div>
-
-                        <div class="hero-mini-card">
-                            <span>Interviews</span>
-                            <strong>#{candidateCDIBean.interviewList.size()}</strong>
-                        </div>
-
-                        <div class="hero-mini-card">
-                            <span>Skills</span>
-                            <strong>#{candidateCDIBean.candidateSkills.size()}</strong>
+                            <div class="progress-bar dark">
+                                <div class="progress-fill" style="width: #{candidateCDIBean.profileCompletion}%"></div>
+                            </div>
+                            <ui:fragment rendered="#{candidateCDIBean.profileCompletion lt 100}">
+                                <ul class="hero-profile-tips">
+                                    <ui:repeat value="#{candidateCDIBean.profileMissingItems}" var="tip">
+                                        <li>#{tip}</li>
+                                    </ui:repeat>
+                                </ul>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{candidateCDIBean.profileCompletion ge 100}">
+                                <div class="hero-profile-complete-box">
+                                    Your profile is fully completed.
+                                </div>
+                            </ui:fragment>
                         </div>
                     </div>
                 </div>
             </section>
 
+            <!-- SECTION 2: STATS CARDS -->
             <section class="cards">
-
                 <div class="card">
                     <div class="card-top">
                         <h3>Available Jobs</h3>
@@ -127,29 +125,45 @@
                     <div class="card-value">#{candidateCDIBean.notificationList.size()}</div>
                     <div class="card-note">Stay updated</div>
                 </div>
-
             </section>
 
+            <!-- SECTION 3: PRIMARY ACTIONS (2-column) -->
             <div class="dashboard-grid">
-
                 <section class="dashboard-panel">
                     <div class="panel-header">
                         <h2>Recent Applications</h2>
+                        <div class="panel-actions">
+                            <h:link outcome="/candidate/manageApplications" styleClass="panel-link">
+                                View All
+                            </h:link>
+                        </div>
                     </div>
-
+                    
                     <h:panelGroup rendered="#{empty candidateCDIBean.recentApplications}">
                         <div class="empty-state">No applications yet</div>
                     </h:panelGroup>
-
                     <ui:repeat value="#{candidateCDIBean.recentApplications}" var="app">
-                        <div class="dashboard-item">
+                        <div class="dashboard-item application-card">
+
                             <div class="item-info">
-                                <h3>#{app.jobId.jobTitle}</h3>
-                                <p>#{app.jobId.jobLocation}</p>
+
+                                <div class="application-top">
+                                    <h3>#{app.jobId.jobTitle}</h3>
+
+                                    <span class="application-date">
+                                        <h:outputText value="#{app.applicationAppliedDate}">
+                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm a"/>
+                                        </h:outputText>
+                                    </span>
+                                </div>
+
+                                <div class="application-location">
+                                    <i class="fas fa-location-dot"></i>
+                                    #{app.jobId.jobLocation}
+                                </div>
+
                             </div>
-                            <span class="status-badge #{app.applicationStatus.toLowerCase()}">
-                                #{app.applicationStatus}
-                            </span>
+
                         </div>
                     </ui:repeat>
                 </section>
@@ -158,53 +172,58 @@
                     <div class="panel-header">
                         <h2>Recommended Jobs</h2>
                         <div class="panel-actions">
-                            <a href="#" class="panel-link">View All</a>
-                            <h:form styleClass="refresh-form">
-                                <h:commandButton value="Refresh"
-                                                 action="#{candidateCDIBean.loadDashboardData}"
-                                                 styleClass="refresh-btn">
-                                    <f:ajax render="@form"/>
-                                </h:commandButton>
-                            </h:form>
+                            <h:link outcome="/candidate/searchJobs" styleClass="panel-link">
+                                View All
+                            </h:link>
                         </div>
                     </div>
-
                     <h:panelGroup rendered="#{empty candidateCDIBean.recommendedJobs}">
                         <div class="empty-state">No recommended jobs</div>
                     </h:panelGroup>
-
                     <ui:repeat value="#{candidateCDIBean.recommendedJobs}" var="job">
                         <div class="dashboard-item">
                             <div class="item-info">
                                 <h3>#{job.jobTitle}</h3>
-                                <p>#{job.jobLocation}</p>
-                                <small>
-                                    #{job.jobType} • #{job.experienceRequired} Years Exp
-                                </small>
+                                <div class="application-location">
+                                    <i class="fas fa-location-dot"></i>
+                                    #{job.jobLocation}
+                                </div>
+                                <small>#{job.jobType} • #{job.experienceRequired} Years Exp</small>
                             </div>
-                            <h:button value="View" outcome="searchJobs" styleClass="btn-view"/>
+                            <h:form>
+                                <h:commandButton value="View"
+                                                styleClass="btn-view"
+                                                action="#{candidateCDIBean.loadJobDetails(job.jobId)}">
+
+                                    <f:ajax execute="@this"
+                                            render="jobDetailsModal"
+                                            onevent="showJobModal"/>
+
+                                </h:commandButton>
+                            </h:form>
                         </div>
                     </ui:repeat>
                 </section>
-
             </div>
 
-            <div class="dashboard-grid bottom-grid">
-
+            <!-- SECTION 4: UPCOMING INTERVIEWS + NOTIFICATIONS (1-row) -->
+            <div class="dashboard-grid secondary-grid">
                 <section class="dashboard-panel">
                     <div class="panel-header">
                         <h2>Upcoming Interviews</h2>
                     </div>
-
                     <h:panelGroup rendered="#{empty candidateCDIBean.interviewList}">
                         <div class="empty-state">No interviews scheduled</div>
                     </h:panelGroup>
-
                     <ui:repeat value="#{candidateCDIBean.interviewList}" var="interview">
                         <div class="dashboard-item">
                             <div class="item-info">
                                 <h3>#{interview.applicationId.jobId.jobTitle}</h3>
-                                <p>#{interview.interviewDate}</p>
+                                <p>
+                                    <h:outputText value="#{interview.interviewDate}">
+                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm a"/>
+                                    </h:outputText>
+                                </p>
                                 <small>#{interview.interviewerMode}</small>
                             </div>
                             <span class="status-badge shortlisted">Scheduled</span>
@@ -212,91 +231,57 @@
                     </ui:repeat>
                 </section>
 
-                <section class="dashboard-panel">
+                <section class="dashboard-panel notification-mini-panel">
                     <div class="panel-header">
-                        <h2>Profile Completion</h2>
+                        <h2>Recent Notifications</h2>
+                        <h:link outcome="/candidate/notifications" styleClass="panel-link">
+                            View All
+                        </h:link>
                     </div>
 
-                    <div class="profile-box">
-                        <div class="profile-box-head">
-                            <h4>Complete your profile</h4>
-                            <span class="profile-percent">
-                                <h:outputText value="#{candidateCDIBean.profileCompletion}">
-                                    <f:convertNumber integerOnly="true"/>
-                                </h:outputText>%
-                            </span>
+                    <h:panelGroup rendered="#{empty candidateCDIBean.recentNotifications}">
+                        <div class="empty-state">
+                            <i class="fa-regular fa-bell-slash empty-icon"></i>
+                            <h3>No Notifications Yet</h3>
+                            <p>Updates will appear here.</p>
                         </div>
+                    </h:panelGroup>
 
-                        <div class="progress-bar dark">
-                            <div class="progress-fill" style="width: #{candidateCDIBean.profileCompletion}%;"></div>
+                    <h:panelGroup rendered="#{not empty candidateCDIBean.recentNotifications}">
+                        <div class="mini-activity-list">
+                            <ui:repeat value="#{candidateCDIBean.recentNotifications}" var="noti">
+                                <div class="mini-activity-item #{noti.isRead ? '' : 'activity-unread'}">
+                                    <div class="mini-activity-dot"></div>
+                                    <div class="mini-activity-content">
+                                        <strong>#{empty noti.notificationTitle ? 'Notification' : noti.notificationTitle}</strong>
+                                        <p class="mini-activity-message">#{noti.notificationMessage}</p>
+                                        <span class="mini-activity-time">
+                                            <h:outputText value="#{noti.createdDate}">
+                                                <f:convertDateTime pattern="dd MMM yyyy hh:mm a"/>
+                                            </h:outputText>
+                                        </span>
+                                        <div class="mini-activity-actions">
+                                            <h:panelGroup rendered="#{noti.isRead == false}">
+                                                <h:form>
+                                                    <h:commandLink value="Mark as Read"
+                                                                   styleClass="read-link"
+                                                                   action="#{candidateCDIBean.markNotificationAsRead(noti.notificationId)}">
+                                                        <f:ajax render="@all"/>
+                                                    </h:commandLink>
+                                                </h:form>
+                                                <span class="status-dot unread-dot">Unread</span>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{noti.isRead == true}">
+                                                <span class="status-dot read-dot">Read</span>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ui:repeat>
                         </div>
-
-                        <ui:fragment rendered="#{candidateCDIBean.profileCompletion lt 100}">
-                            <ul class="profile-tips">
-                                <ui:repeat value="#{candidateCDIBean.profileMissingItems}" var="tip">
-                                    <li>#{tip}</li>
-                                </ui:repeat>
-                            </ul>
-                        </ui:fragment>
-
-                        <ui:fragment rendered="#{candidateCDIBean.profileCompletion ge 100}">
-                            <div class="profile-complete-box">
-                                Your profile is fully completed.
-                            </div>
-                        </ui:fragment>
-                    </div>
+                    </h:panelGroup>
                 </section>
-
             </div>
-
-            <section class="dashboard-panel notification-panel">
-                <div class="panel-header">
-                    <h2>Recent Notifications</h2>
-                </div>
-
-                <h:panelGroup rendered="#{empty candidateCDIBean.notificationList}">
-                    <div class="empty-state">No notifications</div>
-                </h:panelGroup>
-
-                <ui:repeat value="#{candidateCDIBean.notificationList}" var="noti">
-
-                    <div class="notification-item #{noti.isRead ? 'read' : 'unread'}">
-
-                        <div class="notification-icon">
-                            <i class="fa-solid fa-bell"></i>
-                        </div>
-
-                        <div class="notification-content">
-
-                            <h4>
-                                #{empty noti.notificationTitle
-                                    ? noti.notificationType
-                                    : noti.notificationTitle}
-                            </h4>
-
-                            <p>#{noti.notificationMessage}</p>
-
-                            <small class="notification-meta">
-                                #{noti.notificationType}
-                                •
-                                <h:outputText value="#{noti.createdDate}">
-                                    <f:convertDateTime
-                                        pattern="dd MMM yyyy hh:mm a"/>
-                                </h:outputText>
-                            </small>
-
-                        </div>
-
-                        <div class="notification-status">
-                            <span class="#{noti.isRead ? 'read-dot' : 'unread-dot'}">
-                                #{noti.isRead ? 'Read' : 'Unread'}
-                            </span>
-                        </div>
-
-                    </div>
-
-                </ui:repeat>
-            </section>
 
         </main>
     </div>
@@ -310,8 +295,267 @@
     </div>
 </h:panelGroup>
 
-<!-- COMMON FOOTER -->
 <ui:include src="/common/footer.xhtml"/>
 
+    <!-- JOB DETAILS MODAL -->
+
+    <h:panelGroup id="jobDetailsModal">
+
+        <div id="jobModal"
+             class="modal-overlay"
+             style="display:none;">
+
+            <div class="modal-content job-modal">
+
+                <span class="close-btn"
+                      onclick="closeJobModal();">&#215;</span>
+
+                <ui:fragment rendered="#{candidateCDIBean.selectedJob != null}">
+
+                    <ui:param name="job"
+                              value="#{candidateCDIBean.selectedJob}" />
+
+                        <div class="job-card">
+                            <div class="job-card-head">
+                                <div class="job-main">
+                                    <h3 class="job-title">#{job.jobTitle}</h3>
+                                    <div class="company-name">
+                                        <i class="fa-solid fa-building"></i>
+                                        #{job.recruiterId.companyId.companyName}
+                                    </div>
+                                    <div class="job-location">
+                                        <i class="fa-solid fa-location-dot"></i>
+                                        <span>#{job.jobLocation}</span>
+                                        <span class="job-divider">•</span>
+                                        <span>#{job.workMode}</span>
+                                    </div>
+                                </div>
+                                <div class="job-icon">
+                                    <i class="fa-solid fa-briefcase"></i>
+                                </div>
+                            </div>
+
+                            <div class="job-desc">#{job.jobDescription}</div>
+
+                            <h:form id="applyForm_#{job.jobId}">
+                                <h:inputHidden id="jobIdHidden" value="#{job.jobId}"/>
+
+                                <div class="job-info-grid">
+                                    <div class="info-item">
+                                        <span class="info-label">Experience</span>
+                                        <span class="info-value"><i class="fa-solid fa-briefcase"></i> #{job.experienceRequired}+ Years</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Openings</span>
+                                        <span class="info-value"><i class="fa-solid fa-users"></i> #{job.jobVacancies}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Job Type</span>
+                                        <span class="info-value"><i class="fa-solid fa-calendar"></i> #{job.jobType}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Salary Range</span>
+                                        <span class="info-value salary-value"><i class="fa-solid fa-money-bill"></i> ₹#{job.jobCompensationMin} - ₹#{job.jobCompensationMax}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Status</span>
+                                        <span class="info-value"><i class="fa-solid fa-circle-check"></i> #{job.jobStatus}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Expiry Date</span>
+                                        <span class="info-value">
+                                            <i class="fa-solid fa-calendar-days"></i>
+                                            <h:outputText value="#{job.jobExpiryDate}">
+                                                <f:convertDateTime pattern="dd MMM yyyy"/>
+                                            </h:outputText>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="skills-section">
+                                    <div class="section-mini-title">Required Skills</div>
+                                    <div class="skills-wrap">
+                                        <ui:repeat value="#{job.tblskillsCollection}" var="skill">
+                                            <span class="badge">#{skill.skillName}</span>
+                                        </ui:repeat>
+                                    </div>
+                                </div>
+
+                                <div class="job-footer">
+                                    <div class="job-footer-left">
+                                        <span class="posted-date">
+                                            <i class="fa-solid fa-clock"></i>
+                                            Posted: <h:outputText value="#{job.jobExpiryDate}">
+                                                <f:convertDateTime pattern="dd MMM yyyy"/>
+                                            </h:outputText>
+                                        </span>
+                                    </div>
+                                    <h:commandButton value="#{candidateCDIBean.isApplied(job.jobId) ? 'Applied' : 'Apply Now'}"
+                                                     styleClass="#{candidateCDIBean.isApplied(job.jobId) ? 'btn-disabled' : 'btn-apply'}"
+                                                     disabled="#{candidateCDIBean.isApplied(job.jobId)}"
+                                                     onclick="openResumeModal('#{job.jobId}'); return false;">
+                                        <f:ajax execute="@form" render="@form"/>
+                                    </h:commandButton>
+                                </div>
+                            </h:form>
+                        </div>
+
+                </ui:fragment>
+
+            </div>
+
+        </div>
+
+    </h:panelGroup>
+
+    <div id="resumeModal" class="modal-overlay" style="display:none;">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div>
+                    <h3>Select Resume</h3>
+                    <p class="modal-subtitle">Choose the resume you want to submit for this job.</p>
+                </div>
+                <button type="button" class="modal-close" onclick="closeResumeModal()">×</button>
+            </div>
+
+            <h:form id="resumeApplyForm">
+                <h:inputHidden id="selectedJobId" value="#{candidateCDIBean.selectedJobId}"/>
+
+                <div class="resume-area">
+                    <h:panelGroup rendered="#{empty candidateCDIBean.resumeList}">
+                        <div class="resume-empty">
+                            <i class="fa-solid fa-file-circle-xmark"></i>
+                            <h4>No resumes found</h4>
+                            <p>Please upload a resume first.</p>
+                        </div>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{not empty candidateCDIBean.resumeList}">
+                        <div class="resume-dropdown-wrapper">
+                            <label class="resume-label" for="resumeSelect">Select from your resumes</label>
+                            <h:selectOneMenu id="resumeSelect" value="#{candidateCDIBean.selectedResumeId}"
+                                             styleClass="resume-dropdown" required="true"
+                                             requiredMessage="Please select a resume">
+                                <f:selectItem itemLabel="-- Select Resume --" itemValue="" noSelectionOption="true"/>
+                                <f:selectItems value="#{candidateCDIBean.resumeList}" var="resume"
+                                               itemValue="#{resume.resumeId}" itemLabel="#{resume.resumeFile}"/>
+                                <f:ajax render="resumeViewer"/>
+                            </h:selectOneMenu>
+
+                            <h:panelGroup id="resumeMessageContainer">
+                                <h:message for="resumeSelect" styleClass="field-error"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="resumeViewer" styleClass="resume-viewer">
+                                <ui:repeat value="#{candidateCDIBean.resumeList}" var="resume">
+                                    <h:panelGroup rendered="#{resume.resumeId eq candidateCDIBean.selectedResumeId}">
+                                        <div class="resume-selected-card">
+                                            <div class="resume-selected-info">
+                                                <div class="resume-selected-title">#{resume.resumeFile}</div>
+                                                <div class="resume-selected-meta">Resume ID: #{resume.resumeId}</div>
+                                            </div>
+                                            <a class="resume-view-btn"
+                                               href="#{request.contextPath}/resume?file=#{resume.resumeFile}"
+                                               target="_blank"
+                                               title="View Resume">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </h:panelGroup>
+                                </ui:repeat>
+                            </h:panelGroup>
+                        </div>
+                    </h:panelGroup>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeResumeModal()">Cancel</button>
+                    <h:commandButton value="Apply" action="#{candidateCDIBean.applySelectedJob}" styleClass="btn-confirm">
+                        <f:ajax execute="@form" render="@all" onevent="applySuccess"/>
+                    </h:commandButton>
+                </div>
+            </h:form>
+        </div>
+    </div>
+    
+    <script>
+
+        function showJobModal(data) {
+
+            if (data.status === "success") {
+
+                setTimeout(function () {
+
+                    const modal = document.getElementById("jobModal");
+
+                    if (modal) {
+                        modal.style.display = "flex";
+                    }
+
+                }, 100);
+            }
+        }
+
+        function closeJobModal() {
+
+            const modal = document.getElementById("jobModal");
+
+            if (modal) {
+                modal.style.display = "none";
+            }
+        }
+        
+        function openResumeModal(jobId) {
+            document.getElementById('resumeModal').style.display = 'flex';
+            document.getElementById('resumeApplyForm:selectedJobId').value = jobId;
+            const d = document.getElementById('resumeApplyForm:resumeSelect');
+            if (d) {
+                d.selectedIndex = 0;
+            }
+        }
+
+        function closeResumeModal() {
+            document.getElementById('resumeModal').style.display = 'none';
+        }
+
+        window.addEventListener('click', function (e) {
+            const m = document.getElementById('resumeModal');
+            if (e.target === m) m.style.display = 'none';
+        });
+
+        function applySuccess(data) {
+
+            if (data.status === 'success') {
+
+                setTimeout(function () {
+
+                    const error = document.querySelector('.field-error');
+
+                    if (!error || error.innerText.trim() === '') {
+
+                        closeResumeModal();
+                        closeJobModal();
+
+                    }
+
+                }, 100);
+
+                hideToast();
+            }
+        }
+
+        function hideToast() {
+            setTimeout(function () {
+                const toast = document.querySelector('.custom-toast');
+                if (toast) {
+                    toast.classList.add('fade-out');
+                    setTimeout(function () {
+                        toast.style.display = 'none';
+                    }, 400);
+                }
+            }, 4000);
+        }
+
+    </script>
 </h:body>
 </html>
