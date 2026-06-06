@@ -323,14 +323,27 @@ public class CandidateResource {
     @POST
     @Path("addSkillToCandidate")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addSkillToCandidate(@QueryParam("candidateId") int candidateId,
-                            @QueryParam("skillId") int skillId) {
+    public Response addSkillToCandidate(
+        @QueryParam("candidateId") int candidateId,
+        @QueryParam("skillId") int skillId) {
+
         try {
-            ejb.addSkillToCandidate(candidateId, skillId);
-            return Response.ok("Skill Added").build();
+
+            String msg = ejb.addSkillToCandidate(candidateId, skillId);
+
+            if ("Skill already added".equals(msg)) {
+                return Response.status(Response.Status.CONFLICT)
+                        .entity(msg)
+                        .build();
+            }
+
+            return Response.ok(msg).build();
 
         } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build();
         }
     }
     

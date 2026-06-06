@@ -37,7 +37,7 @@ public interface CandidateBeanLocal {
     Collection<Tblskillcategory> getAllSkillCategories();
     Collection<Tblskills> getSkillsByCategory(int categoryId);
     
-    void addSkillToCandidate(int candidateId, int skillId);
+    String addSkillToCandidate(int candidateId, int skillId);
 //    void updateSkillToCandidate(int candidateId, Collection<Integer> skillIds);
     void removeSkillFromCandidate(int candidateId, int skillId);
     Collection<Tblskills> getCandidateSkills(int candidateId);

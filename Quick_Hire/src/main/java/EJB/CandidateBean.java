@@ -321,28 +321,30 @@ public class CandidateBean implements CandidateBeanLocal {
     }
     
     @Override
-    public void addSkillToCandidate(int candidateId, int skillId) {
-        try {
-            Tblcandidates c = em.find(Tblcandidates.class, candidateId);
-            Tblskills s = em.find(Tblskills.class, skillId);
+    public String addSkillToCandidate(int candidateId, int skillId) {
 
-            if (c != null && s != null) {
+        Tblcandidates c = em.find(Tblcandidates.class, candidateId);
+        Tblskills s = em.find(Tblskills.class, skillId);
 
-                if (c.getTblskillsCollection() == null) {
-                    c.setTblskillsCollection(new ArrayList<>());
-                }
-
-                if (!c.getTblskillsCollection().contains(s)) {
-                    c.getTblskillsCollection().add(s);
-                }
-
-                em.merge(c);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (c == null || s == null) {
+            return "Candidate or Skill not found";
         }
-    }
 
+        if (c.getTblskillsCollection() == null) {
+            c.setTblskillsCollection(new ArrayList<>());
+        }
+
+        if (c.getTblskillsCollection().contains(s)) {
+            return "Skill already added";
+        }
+
+        c.getTblskillsCollection().add(s);
+
+        em.merge(c);
+
+        return "Skill Added Successfully";
+    }
+    
 //    @Override
 //    public void updateSkillToCandidate(int candidateId, Collection<Integer> skillIds) {
 //        try {

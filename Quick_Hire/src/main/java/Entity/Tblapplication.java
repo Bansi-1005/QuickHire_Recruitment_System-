@@ -90,8 +90,8 @@ public class Tblapplication implements Serializable {
     private Integer applicationId;
     @OneToMany(mappedBy = "applicationId")
     private Collection<Tblinterview> tblinterviewCollection;
-    @OneToMany(mappedBy = "applicationId")
-    private Collection<Tblapplicationstatushistory> tblapplicationstatushistoryCollection;
+//    @OneToMany(mappedBy = "applicationId")
+//    private Collection<Tblapplicationstatushistory> tblapplicationstatushistoryCollection;
     @OneToMany(mappedBy = "applicationId")
     private Collection<Tblscreeningscore> tblscreeningscoreCollection;
     @JoinColumn(name = "candidateId", referencedColumnName = "candidateId")
@@ -132,15 +132,15 @@ public class Tblapplication implements Serializable {
         this.tblinterviewCollection = tblinterviewCollection;
     }
 
-    @XmlTransient
-    @JsonbTransient
-    public Collection<Tblapplicationstatushistory> getTblapplicationstatushistoryCollection() {
-        return tblapplicationstatushistoryCollection;
-    }
-
-    public void setTblapplicationstatushistoryCollection(Collection<Tblapplicationstatushistory> tblapplicationstatushistoryCollection) {
-        this.tblapplicationstatushistoryCollection = tblapplicationstatushistoryCollection;
-    }
+//    @XmlTransient
+//    @JsonbTransient
+//    public Collection<Tblapplicationstatushistory> getTblapplicationstatushistoryCollection() {
+//        return tblapplicationstatushistoryCollection;
+//    }
+//
+//    public void setTblapplicationstatushistoryCollection(Collection<Tblapplicationstatushistory> tblapplicationstatushistoryCollection) {
+//        this.tblapplicationstatushistoryCollection = tblapplicationstatushistoryCollection;
+//    }
 
     @XmlTransient
     @JsonbTransient

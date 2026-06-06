@@ -1276,13 +1276,17 @@ public class CandidateCDIBean implements Serializable {
 
             String msg = response.readEntity(String.class);
 
+            FacesMessage.Severity severity;
+
+            if (response.getStatus() == 200) {
+                severity = FacesMessage.SEVERITY_INFO;
+            } else {
+                severity = FacesMessage.SEVERITY_WARN;
+            }
+
             FacesContext.getCurrentInstance().addMessage(
                     null,
-                    new FacesMessage(
-                            FacesMessage.SEVERITY_INFO,
-                            msg,
-                            null
-                    )
+                    new FacesMessage(severity, msg, null)
             );
 
             loadCandidateSkills();

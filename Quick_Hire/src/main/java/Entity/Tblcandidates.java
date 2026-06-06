@@ -66,8 +66,6 @@ public class Tblcandidates implements Serializable {
     private String candidateState;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "candidateId")
     private Collection<Tblcandidateeducation> tblcandidateeducationCollection;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "candidateId")
-    private Collection<Tblsavedjobs> tblsavedjobsCollection;
     @OneToMany(mappedBy = "candidateId")
     private Collection<Tblresume> tblresumeCollection;
 
@@ -87,11 +85,11 @@ public class Tblcandidates implements Serializable {
         @JoinColumn(name = "skillId", referencedColumnName = "skillId")})
     @ManyToMany
     private Collection<Tblskills> tblskillsCollection;
-    @JoinTable(name = "tblcandidate_job", joinColumns = {
-        @JoinColumn(name = "candidateId", referencedColumnName = "candidateId")}, inverseJoinColumns = {
-        @JoinColumn(name = "jobId", referencedColumnName = "jobId")})
-    @ManyToMany
-    private Collection<Tbljob> tbljobCollection;
+//    @JoinTable(name = "tblcandidate_job", joinColumns = {
+//        @JoinColumn(name = "candidateId", referencedColumnName = "candidateId")}, inverseJoinColumns = {
+//        @JoinColumn(name = "jobId", referencedColumnName = "jobId")})
+//    @ManyToMany
+//    private Collection<Tbljob> tbljobCollection;
     @JoinTable(name = "tblcandidate_recruiters", joinColumns = {
         @JoinColumn(name = "candidateId", referencedColumnName = "candidateId")}, inverseJoinColumns = {
         @JoinColumn(name = "recruiterId", referencedColumnName = "recruiterId")})
@@ -144,15 +142,15 @@ public class Tblcandidates implements Serializable {
         this.tblskillsCollection = tblskillsCollection;
     }
 
-    @XmlTransient
-    @JsonbTransient
-    public Collection<Tbljob> getTbljobCollection() {
-        return tbljobCollection;
-    }
-
-    public void setTbljobCollection(Collection<Tbljob> tbljobCollection) {
-        this.tbljobCollection = tbljobCollection;
-    }
+//    @XmlTransient
+//    @JsonbTransient
+//    public Collection<Tbljob> getTbljobCollection() {
+//        return tbljobCollection;
+//    }
+//
+//    public void setTbljobCollection(Collection<Tbljob> tbljobCollection) {
+//        this.tbljobCollection = tbljobCollection;
+//    }
 
     @XmlTransient
     @JsonbTransient
@@ -216,14 +214,6 @@ public class Tblcandidates implements Serializable {
         this.tblresumeCollection = tblresumeCollection;
     }
     
-    @XmlTransient
-    @JsonbTransient
-    public Collection<Tblsavedjobs> getTblsavedjobsCollection() {
-        return tblsavedjobsCollection;
-    }
-    public void setTblsavedjobsCollection(Collection<Tblsavedjobs> tblsavedjobsCollection) {
-        this.tblsavedjobsCollection = tblsavedjobsCollection;
-    }
     @XmlTransient
     @JsonbTransient
     public Collection<Tblcandidateeducation> getTblcandidateeducationCollection() {

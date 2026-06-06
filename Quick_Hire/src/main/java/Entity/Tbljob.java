@@ -139,8 +139,8 @@ public class Tbljob implements Serializable {
         @JoinColumn(name = "skillId", referencedColumnName = "skillId")})
     @ManyToMany
     private Collection<Tblskills> tblskillsCollection;
-    @ManyToMany(mappedBy = "tbljobCollection")
-    private Collection<Tblcandidates> tblcandidatesCollection;
+//    @ManyToMany(mappedBy = "tbljobCollection")
+//    private Collection<Tblcandidates> tblcandidatesCollection;
     @JoinColumn(name = "recruiterId", referencedColumnName = "recruiterId")
     @ManyToOne
     private Tblrecruiters recruiterId;
@@ -220,15 +220,15 @@ public class Tbljob implements Serializable {
         this.tblskillsCollection = tblskillsCollection;
     }
 
-    @XmlTransient
-    @JsonbTransient
-    public Collection<Tblcandidates> getTblcandidatesCollection() {
-        return tblcandidatesCollection;
-    }
-
-    public void setTblcandidatesCollection(Collection<Tblcandidates> tblcandidatesCollection) {
-        this.tblcandidatesCollection = tblcandidatesCollection;
-    }
+//    @XmlTransient
+//    @JsonbTransient
+//    public Collection<Tblcandidates> getTblcandidatesCollection() {
+//        return tblcandidatesCollection;
+//    }
+//
+//    public void setTblcandidatesCollection(Collection<Tblcandidates> tblcandidatesCollection) {
+//        this.tblcandidatesCollection = tblcandidatesCollection;
+//    }
 
     public Tblrecruiters getRecruiterId() {
         return recruiterId;
