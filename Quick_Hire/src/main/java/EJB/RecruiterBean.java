@@ -14,11 +14,14 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.security.enterprise.identitystore.Pbkdf2PasswordHash;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import util.EmailServiceLocal;
 
 /**
@@ -1067,191 +1070,461 @@ public class RecruiterBean implements RecruiterBeanLocal {
         }
     }
 
+//    @Override
+//    public double calculateAndSaveScreeningScore(int applicationId) {
+//
+//        try {
+//
+//            Tblapplication app = em.find(Tblapplication.class, applicationId);
+//
+//            if (app == null) {
+//                System.out.println("APP NOT FOUND");
+//                return 0;
+//            }
+//
+//            Tbljob job = app.getJobId();
+//            Tblcandidates candidate = app.getCandidateId();
+//
+//            System.out.println("\n====================================");
+//            System.out.println("APPLICATION : " + applicationId);
+//
+//            // =====================================================
+//            // SAFE COLLECTIONS
+//            // =====================================================
+//            Collection<Tblskills> jobSkills
+//                    = job.getTblskillsCollection() != null ? job.getTblskillsCollection() : new ArrayList<>();
+//
+//            Collection<Tblskills> candidateSkills
+//                    = candidate.getTblskillsCollection() != null ? candidate.getTblskillsCollection() : new ArrayList<>();
+//
+//            Collection<Tbleducation> jobEducations
+//                    = job.getTbleducationCollection();
+//
+//            Collection<Tblcandidateeducation> candidateEducations
+//                    = candidate.getTblcandidateeducationCollection() != null
+//                    ? candidate.getTblcandidateeducationCollection()
+//                    : new ArrayList<>();
+//
+//            // =====================================================
+//            // 1. SKILL SCORE (0–50)
+//            // =====================================================
+//            long matchedSkills = 0;
+//
+//            for (Tblskills js : jobSkills) {
+//
+//                boolean found = candidateSkills.stream()
+//                        .anyMatch(cs -> cs.getSkillId().equals(js.getSkillId()));
+//
+//                if (found) {
+//                    matchedSkills++;
+//                }
+//            }
+//
+//            double skillScore = jobSkills.isEmpty()
+//                    ? 0
+//                    : ((double) matchedSkills / jobSkills.size()) * 50.0;
+//
+//            // =====================================================
+//            // 2. EXPERIENCE SCORE (0–30)
+//            // =====================================================
+//            int requiredMonths = job.getExperienceRequired() == null ? 0 : job.getExperienceRequired();
+//            int candidateMonths = candidate.getCandidateExperience() == null ? 0 : candidate.getCandidateExperience();
+//
+//            double expScore;
+//
+//            if (requiredMonths <= 0) {
+//                expScore = 20; // neutral baseline (important fix)
+//            } else {
+//
+//                double ratio = (double) candidateMonths / requiredMonths;
+//
+//                if (ratio >= 1.50) {
+//                    expScore = 30;
+//                } else if (ratio >= 1.00) {
+//                    expScore = 25;
+//                } else if (ratio >= 0.75) {
+//                    expScore = 20;
+//                } else if (ratio >= 0.50) {
+//                    expScore = 12;
+//                } else {
+//                    expScore = 5;
+//                }
+//            }
+//
+//            // =====================================================
+//            // 3. EDUCATION SCORE (0–20) — LIBERAL FIX
+//            // =====================================================
+//            double eduScore;
+//
+//            if (jobEducations == null || jobEducations.isEmpty()) {
+//
+//                // 🔥 IMPORTANT FIX:
+//                // If job does NOT specify education → don't punish candidate
+//                eduScore = 15;
+//
+//            } else {
+//
+//                long matchedEducation = 0;
+//
+//                for (Tbleducation je : jobEducations) {
+//
+//                    boolean found = candidateEducations.stream()
+//                            .anyMatch(ce
+//                                    -> ce.getEducationName() != null
+//                            && je.getEducationName() != null
+//                            && ce.getEducationName().trim()
+//                                    .equalsIgnoreCase(je.getEducationName().trim())
+//                            );
+//
+//                    if (found) {
+//                        matchedEducation++;
+//                    }
+//                }
+//
+//                eduScore = ((double) matchedEducation / jobEducations.size()) * 20.0;
+//            }
+//
+//            // =====================================================
+//            // FINAL SCORE
+//            // =====================================================
+//            double finalScore = skillScore + expScore + eduScore;
+//
+//            if (finalScore > 100) {
+//                finalScore = 100;
+//            }
+//
+//            finalScore = Math.round(finalScore);
+//
+//            System.out.println("FINAL SCORE : " + finalScore);
+//
+//            // =====================================================
+//            // SAVE
+//            // =====================================================
+//            List<Tblscreeningscore> existing
+//                    = em.createQuery(
+//                            "SELECT s FROM Tblscreeningscore s WHERE s.applicationId.applicationId = :aid",
+//                            Tblscreeningscore.class
+//                    )
+//                            .setParameter("aid", applicationId)
+//                            .getResultList();
+//
+//            Tblscreeningscore score;
+//
+//            if (existing.isEmpty()) {
+//                score = new Tblscreeningscore();
+//                score.setApplicationId(app);
+//            } else {
+//                score = existing.get(0);
+//            }
+//
+//            score.setMatchingScore(BigDecimal.valueOf(finalScore));
+//
+//            score.setScreeningLevel(
+//                    finalScore >= 80 ? "EXCELLENT"
+//                            : finalScore >= 65 ? "HIGH"
+//                                    : finalScore >= 45 ? "MEDIUM"
+//                                            : "LOW"
+//            );
+//
+//            score.setScoreDate(new Date());
+//
+//            if (existing.isEmpty()) {
+//                em.persist(score);
+//            } else {
+//                em.merge(score);
+//            }
+//
+//            return finalScore;
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return 0;
+//        }
+//    }
     @Override
     public double calculateAndSaveScreeningScore(int applicationId) {
 
         try {
 
+            System.out.println("\n====================================");
+            System.out.println("START SCREENING SCORE CALCULATION");
+            System.out.println("APPLICATION ID : " + applicationId);
+            System.out.println("====================================");
+
             Tblapplication app = em.find(Tblapplication.class, applicationId);
 
             if (app == null) {
+                System.out.println("ERROR : Application not found.");
                 return 0;
             }
 
-            int candidateId = app.getCandidateId().getCandidateId();
-            int jobId = app.getJobId().getJobId();
+            Tbljob job = app.getJobId();
+            Tblcandidates candidate = app.getCandidateId();
 
-            // ==================================================
-            // 1. JOB SKILLS
-            // ==================================================
-            List<Integer> jobSkills = em.createQuery(
-                    "SELECT js.skillId.skillId FROM TblJobSkills js WHERE js.jobId.jobId = :jobId",
-                    Integer.class
-            )
-                    .setParameter("jobId", jobId)
-                    .getResultList();
+            if (job == null || candidate == null) {
+                System.out.println("ERROR : Job or Candidate is missing.");
+                return 0;
+            }
 
-            // ==================================================
-            // 2. CANDIDATE SKILLS
-            // ==================================================
-            List<Integer> candidateSkills = em.createQuery(
-                    "SELECT cs.skillId.skillId FROM TblCandidateSkills cs WHERE cs.candidateId.candidateId = :cid",
-                    Integer.class
-            )
-                    .setParameter("cid", candidateId)
-                    .getResultList();
+            Collection<Tblskills> jobSkills
+                    = job.getTblskillsCollection() != null ? job.getTblskillsCollection() : new ArrayList<>();
+
+            Collection<Tblskills> candidateSkills
+                    = candidate.getTblskillsCollection() != null ? candidate.getTblskillsCollection() : new ArrayList<>();
+
+            Collection<Tbleducation> jobEducations
+                    = job.getTbleducationCollection() != null ? job.getTbleducationCollection() : new ArrayList<>();
+
+            Collection<Tblcandidateeducation> candidateEducations
+                    = candidate.getTblcandidateeducationCollection() != null ? candidate.getTblcandidateeducationCollection() : new ArrayList<>();
 
             // =========================
-            // SKILL SCORE (0–50)
+            // 1. SKILL SCORE - 50
             // =========================
             double skillScore = 0;
+            long matchedSkills = 0;
 
-            if (!jobSkills.isEmpty()) {
+            if (jobSkills.isEmpty()) {
+                skillScore = 0;
+                System.out.println("SKILL DEBUG : Job skills are required, but no job skills found.");
+            } else if (candidateSkills.isEmpty()) {
+                skillScore = 0;
+                System.out.println("SKILL DEBUG : Candidate has no skills.");
+            } else {
+                for (Tblskills jobSkill : jobSkills) {
+                    for (Tblskills candidateSkill : candidateSkills) {
+                        if (jobSkill.getSkillId() != null
+                                && candidateSkill.getSkillId() != null
+                                && jobSkill.getSkillId().equals(candidateSkill.getSkillId())) {
 
-                long matched = jobSkills.stream()
-                        .filter(candidateSkills::contains)
-                        .count();
-
-                double matchRatio = (double) matched / jobSkills.size();
-
-                skillScore = matchRatio * 50;
-            }
-
-            // ==================================================
-            // 3. EXPERIENCE SCORE (0–30)
-            // ==================================================
-            int candidateExp = app.getCandidateId().getCandidateExperience();
-            int requiredExp = app.getJobId().getExperienceRequired();
-
-            double expScore;
-
-            if (requiredExp > 0) {
-
-                double ratio = (double) candidateExp / requiredExp;
-
-                if (ratio >= 1.2) {
-                    expScore = 30;
-                } else if (ratio >= 1.0) {
-                    expScore = 27;
-                } else if (ratio >= 0.8) {
-                    expScore = 22;
-                } else if (ratio >= 0.5) {
-                    expScore = 15;
-                } else {
-                    expScore = 8;
+                            matchedSkills++;
+                            System.out.println("SKILL MATCHED : " + jobSkill.getSkillName());
+                            break;
+                        }
+                    }
                 }
 
-            } else {
-                expScore = 20; // neutral score if no requirement
+                skillScore = ((double) matchedSkills / jobSkills.size()) * 50;
             }
 
-            // ==================================================
-            // 4. EDUCATION SCORE (0–20)
-            // ==================================================
+            System.out.println("SKILL SCORE : " + skillScore + " / 50");
+
+            // =========================
+            // 2. EXPERIENCE SCORE - 30
+            // Experience is saved in MONTHS
+            // =========================
+            int requiredMonths = job.getExperienceRequired() != null ? job.getExperienceRequired() : 0;
+            int candidateMonths = candidate.getCandidateExperience() != null ? candidate.getCandidateExperience() : 0;
+
+            double expScore = 0;
+
+            System.out.println("REQUIRED EXPERIENCE  : " + requiredMonths + " months");
+            System.out.println("CANDIDATE EXPERIENCE : " + candidateMonths + " months");
+
+            if (requiredMonths <= 0) {
+                expScore = 0;
+                System.out.println("EXP DEBUG : Experience is required, but job required months is missing/zero.");
+            } else if (candidateMonths <= 0) {
+                expScore = 0;
+                System.out.println("EXP DEBUG : Candidate has 0 months experience.");
+            } else {
+                double ratio = (double) candidateMonths / requiredMonths;
+
+                System.out.println("EXP DEBUG : Ratio = " + ratio);
+
+                if (ratio >= 2.00) {
+                    expScore = 30;
+                } else if (ratio >= 1.50) {
+                    expScore = 28;
+                } else if (ratio >= 1.00) {
+                    expScore = 25;
+                } else if (ratio >= 0.75) {
+                    expScore = 18;
+                } else if (ratio >= 0.50) {
+                    expScore = 10;
+                } else {
+                    expScore = 3;
+                }
+            }
+
+            System.out.println("EXPERIENCE SCORE : " + expScore + " / 30");
+
+            // =========================
+            // 3. EDUCATION SCORE - 20
+            // Education is OPTIONAL
+            // =========================
             double eduScore = 0;
+            long matchedEducation = 0;
+            boolean educationRequired = !jobEducations.isEmpty();
 
-            List<Integer> jobEduList = em.createQuery(
-                    "SELECT je.educationId.educationId FROM TblJobEducation je WHERE je.jobId.jobId = :jobId",
-                    Integer.class
-            )
-                    .setParameter("jobId", jobId)
-                    .getResultList();
-
-            List<String> candidateEduList = em.createQuery(
-                    "SELECT ce.educationName FROM TblCandidateEducation ce WHERE ce.candidateId.candidateId = :cid",
-                    String.class
-            )
-                    .setParameter("cid", candidateId)
-                    .getResultList();
-
-            if (!jobEduList.isEmpty()) {
-
-                List<String> jobEduNames = em.createQuery(
-                        "SELECT e.educationName FROM TblEducation e WHERE e.educationId IN :ids",
-                        String.class
-                )
-                        .setParameter("ids", jobEduList)
-                        .getResultList();
-
-                long matchCount = jobEduNames.stream()
-                        .filter(candidateEduList::contains)
-                        .count();
-
-                double eduRatio = (double) matchCount / jobEduNames.size();
-
-                eduScore = eduRatio * 20;
-
+            if (!educationRequired) {
+                System.out.println("EDU DEBUG : Education is optional/not selected. Education will not affect score.");
+            } else if (candidateEducations.isEmpty()) {
+                eduScore = 0;
+                System.out.println("EDU DEBUG : Job requires education but candidate has no education.");
             } else {
-                eduScore = 10; // neutral when no requirement
+                for (Tbleducation jobEdu : jobEducations) {
+                    for (Tblcandidateeducation candidateEdu : candidateEducations) {
+
+                        String jobEduName = jobEdu.getEducationName();
+                        String candidateEduName = candidateEdu.getEducationName();
+
+                        if (jobEduName != null
+                                && candidateEduName != null
+                                && jobEduName.trim().equalsIgnoreCase(candidateEduName.trim())) {
+
+                            matchedEducation++;
+                            System.out.println("EDUCATION MATCHED : " + jobEduName);
+                            break;
+                        }
+                    }
+                }
+
+                if (matchedEducation == 0) {
+                    eduScore = 4;
+                } else {
+                    eduScore = ((double) matchedEducation / jobEducations.size()) * 20;
+                }
             }
 
-            // ==================================================
-            // 5. FINAL SCORE (0–100)
-            // ==================================================
-            double finalScore = skillScore + expScore + eduScore;
+            System.out.println("EDUCATION SCORE : " + eduScore + (educationRequired ? " / 20" : " ignored"));
 
-            finalScore = Math.min(100, finalScore);
+            // =========================
+            // FINAL SCORE
+            // =========================
+            double totalScore;
+            double totalPossibleMarks;
 
-            // ==================================================
-            // 6. SAVE SCORE
-            // ==================================================
-            Tblscreeningscore score = new Tblscreeningscore();
+            if (educationRequired) {
+                totalScore = skillScore + expScore + eduScore;
+                totalPossibleMarks = 100;
+            } else {
+                totalScore = skillScore + expScore;
+                totalPossibleMarks = 80;
+            }
 
-            score.setApplicationId(app);
-            score.setMatchingScore(BigDecimal.valueOf(finalScore));
-            score.setScreeningLevel(
-                    finalScore >= 80 ? "EXCELLENT"
-                            : finalScore >= 65 ? "HIGH"
-                                    : finalScore >= 45 ? "MEDIUM"
-                                            : "LOW"
-            );
-            score.setScoreDate(new Date());
+            double finalScore = (totalScore / totalPossibleMarks) * 100;
 
-            em.persist(score);
+            if (finalScore > 100) {
+                finalScore = 100;
+            }
+
+            if (finalScore < 0) {
+                finalScore = 0;
+            }
+
+            finalScore = Math.round(finalScore);
+
+            String level;
+
+            if (finalScore >= 80) {
+                level = "EXCELLENT";
+            } else if (finalScore >= 65) {
+                level = "HIGH";
+            } else if (finalScore >= 45) {
+                level = "MEDIUM";
+            } else {
+                level = "LOW";
+            }
+
+            String remarks
+                    = "Skills " + matchedSkills + "/" + jobSkills.size()
+                    + ", Experience " + candidateMonths + "/" + requiredMonths + " months";
+
+            if (educationRequired) {
+                remarks += ", Education " + matchedEducation + "/" + jobEducations.size();
+            } else {
+                remarks += ", Education optional";
+            }
+
+            System.out.println("TOTAL SCORE BEFORE NORMALIZE : " + totalScore + " / " + totalPossibleMarks);
+            System.out.println("FINAL SCORE : " + finalScore + " / 100");
+            System.out.println("SCREENING LEVEL : " + level);
+            System.out.println("REMARKS : " + remarks);
+
+            List<Tblscreeningscore> existingScores = em.createQuery(
+                    "SELECT s FROM Tblscreeningscore s WHERE s.applicationId.applicationId = :aid",
+                    Tblscreeningscore.class
+            )
+                    .setParameter("aid", applicationId)
+                    .getResultList();
+
+            Tblscreeningscore screeningScore;
+
+            if (existingScores.isEmpty()) {
+                screeningScore = new Tblscreeningscore();
+                screeningScore.setApplicationId(app);
+                System.out.println("DB DEBUG : New screening score record will be inserted.");
+            } else {
+                screeningScore = existingScores.get(0);
+                System.out.println("DB DEBUG : Existing screening score record will be updated.");
+            }
+
+            screeningScore.setMatchingScore(BigDecimal.valueOf(finalScore).setScale(2, RoundingMode.HALF_UP));
+            screeningScore.setScreeningLevel(level);
+            screeningScore.setRemarks(remarks);
+            screeningScore.setScoreDate(new Date());
+
+            if (existingScores.isEmpty()) {
+                em.persist(screeningScore);
+            } else {
+                em.merge(screeningScore);
+            }
+
+            System.out.println("DB DEBUG : Screening score saved successfully.");
+            System.out.println("====================================\n");
 
             return finalScore;
 
         } catch (Exception e) {
+            System.out.println("ERROR : Failed to calculate screening score for application ID " + applicationId);
             e.printStackTrace();
             return 0;
         }
     }
 
     @Override
-    public BigDecimal getScreeningScore(int applicationId) {
-
+    public Map<Integer, BigDecimal> getAllScreeningScores(int recruiterId) {
         try {
-
-            return em.createQuery(
-                    "SELECT s.matchingScore FROM Tblscreeningscore s "
-                    + "WHERE s.applicationId.applicationId = :aid "
+            List<Object[]> results = em.createQuery(
+                    "SELECT s.applicationId.applicationId, s.matchingScore "
+                    + "FROM Tblscreeningscore s "
+                    + "WHERE s.applicationId.jobId.recruiterId.recruiterId = :rid "
                     + "ORDER BY s.scoreDate DESC",
-                    BigDecimal.class
-            )
-                    .setParameter("aid", applicationId)
-                    .setMaxResults(1)
-                    .getSingleResult();
+                    Object[].class)
+                    .setParameter("rid", recruiterId)
+                    .getResultList();
+
+            Map<Integer, BigDecimal> scoreMap = new HashMap<>();
+            for (Object[] row : results) {
+                Integer appId = (Integer) row[0];
+                BigDecimal score = (BigDecimal) row[1];
+                // Only keep the latest score per application
+                if (!scoreMap.containsKey(appId)) {
+                    scoreMap.put(appId, score);
+                }
+            }
+            return scoreMap;
 
         } catch (Exception e) {
             e.printStackTrace();
-            return BigDecimal.ZERO;
+            return new HashMap<>();
         }
     }
 
     @Override
     public String getScreeningLevel(int applicationId) {
-
         try {
-
-            return em.createQuery(
+            List<String> results = em.createQuery(
                     "SELECT s.screeningLevel FROM Tblscreeningscore s "
                     + "WHERE s.applicationId.applicationId = :aid "
                     + "ORDER BY s.scoreDate DESC",
-                    String.class
-            )
+                    String.class)
                     .setParameter("aid", applicationId)
                     .setMaxResults(1)
-                    .getSingleResult();
+                    .getResultList();
+
+            return results.isEmpty() ? "NOT_SCORED" : results.get(0);
 
         } catch (Exception e) {
             return "NOT_SCORED";
@@ -1259,23 +1532,394 @@ public class RecruiterBean implements RecruiterBeanLocal {
     }
 
     @Override
-    public Collection<Tblapplication> getApplicationsByStatus(int recruiterId, String status) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public void shortlistApplication(int applicationId) {
+        updateApplicationStatusWithHistoryAndNotification(
+                applicationId,
+                "Shortlisted",
+                "Application Under Review",
+                "Your application is under review."
+        );
+    }
+
+//    @Override
+//    public void selectApplication(int applicationId) {
+//        updateApplicationStatusWithHistoryAndNotification(
+//                applicationId,
+//                "Selected",
+//                "Application Selected",
+//                "Congratulations. You are selected for this application."
+//        );
+//    }
+    private void updateApplicationStatusWithHistoryAndNotification(
+            int applicationId,
+            String newStatus,
+            String notificationTitle,
+            String candidateMessage) {
+
+        try {
+            if (applicationId <= 0) {
+                throw new RuntimeException("Invalid application id");
+            }
+
+            Tblapplication app = em.find(Tblapplication.class, applicationId);
+
+            if (app == null) {
+                throw new RuntimeException("Application not found");
+            }
+
+            String oldStatus = app.getApplicationStatus();
+
+            if (oldStatus != null && oldStatus.equalsIgnoreCase(newStatus)) {
+                return;
+            }
+
+            app.setApplicationStatus(newStatus);
+            app.setLastUpdatedDate(new Date());
+
+            em.merge(app);
+
+//            addApplicationStatusHistory(app, oldStatus, newStatus);
+            Tblusers recruiterUser = app.getJobId()
+                    .getRecruiterId()
+                    .getUserId();
+
+            Tblusers candidateUser = app.getCandidateId()
+                    .getUserId();
+
+            saveNotification(
+                    recruiterUser,
+                    candidateUser,
+                    notificationTitle,
+                    candidateMessage,
+                    "APPLICATION_STATUS"
+            );
+
+            saveNotification(
+                    recruiterUser,
+                    recruiterUser,
+                    "Application Status Updated",
+                    candidateUser.getUserName()
+                    + " status changed to "
+                    + newStatus
+                    + " for "
+                    + app.getJobId().getJobTitle(),
+                    "APPLICATION_STATUS"
+            );
+
+            if (candidateUser.getUserEmail() != null) {
+                emailService.sendEmail(
+                        candidateUser.getUserEmail(),
+                        notificationTitle,
+                        "Hello " + candidateUser.getUserName() + ",\n\n"
+                        + candidateMessage + "\n\n"
+                        + "Job: " + app.getJobId().getJobTitle() + "\n"
+                        + "Status: " + newStatus + "\n\n"
+                        + "Regards,\nQuickHire Team"
+                );
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    private void saveNotification(
+            Tblusers senderUser,
+            Tblusers receiverUser,
+            String title,
+            String message,
+            String type) {
+
+        Tblnotification notification = new Tblnotification();
+
+        notification.setSenderUserId(senderUser);
+        notification.setReceiverUserId(receiverUser);
+        notification.setNotificationTitle(title);
+        notification.setNotificationMessage(message);
+        notification.setNotificationType(type);
+        notification.setIsRead(false);
+        notification.setCreatedDate(new Date());
+
+        em.persist(notification);
     }
 
     @Override
-    public Collection<Tblapplication> searchRecruiterCandidates(int recruiterId, String keyword) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public void scheduleInterview(Tblinterview interview) {
+
+        try {
+
+            // ================= VALIDATION =================
+            if (interview == null
+                    || interview.getApplicationId() == null
+                    || interview.getApplicationId().getApplicationId() == null) {
+
+                throw new RuntimeException("Application id is required");
+            }
+
+            // ================= FETCH APPLICATION =================
+            Tblapplication app = em.find(
+                    Tblapplication.class,
+                    interview.getApplicationId().getApplicationId()
+            );
+
+            if (app == null) {
+
+                throw new RuntimeException("Application not found");
+            }
+
+            // ================= STATUS CHECK =================
+            if (!"Shortlisted".equalsIgnoreCase(app.getApplicationStatus())) {
+
+                throw new RuntimeException(
+                        "Interview can only be scheduled for shortlisted candidates"
+                );
+            }
+
+            // ================= SET APPLICATION =================
+            interview.setApplicationId(app);
+
+            // ================= DEFAULT VALUES =================
+            // Interview just scheduled
+            interview.setInterviewStatus("Scheduled");
+
+            // Result will be updated after interview
+            interview.setResult("Pending");
+
+            // Feedback will be added later
+            interview.setFeedback(null);
+
+            // ================= SAVE INTERVIEW =================
+            em.persist(interview);
+
+            // ================= UPDATE APPLICATION STATUS =================
+            app.setApplicationStatus("Interview Scheduled");
+
+            app.setLastUpdatedDate(new Date());
+
+            em.merge(app);
+
+            // ================= GET USERS =================
+            Tblusers recruiterUser = app.getJobId()
+                    .getRecruiterId()
+                    .getUserId();
+
+            Tblusers candidateUser = app.getCandidateId()
+                    .getUserId();
+
+            // ================= SAVE CANDIDATE NOTIFICATION =================
+            saveNotification(
+                    recruiterUser,
+                    candidateUser,
+                    "Interview Scheduled",
+                    "Your interview has been scheduled for "
+                    + app.getJobId().getJobTitle(),
+                    "INTERVIEW"
+            );
+
+            // ================= SAVE RECRUITER ACTIVITY =================
+            saveNotification(
+                    recruiterUser,
+                    recruiterUser,
+                    "Interview Scheduled",
+                    "Interview scheduled with "
+                    + candidateUser.getUserName()
+                    + " for "
+                    + app.getJobId().getJobTitle(),
+                    "INTERVIEW"
+            );
+
+            // ================= EMAIL SECTION =================
+            if (candidateUser.getUserEmail() != null) {
+
+                String interviewDetails = "";
+
+                // ================= ONLINE =================
+                if ("Online".equalsIgnoreCase(interview.getInterviewerMode())) {
+
+                    interviewDetails
+                            = "Mode: Online\n"
+                            + "Meeting details will be shared soon.\n";
+                } // ================= OFFLINE =================
+                else if ("Offline".equalsIgnoreCase(interview.getInterviewerMode())) {
+
+                    interviewDetails
+                            = "Mode: Offline\n"
+                            + "Interview location will be shared later by the recruiter.\n";
+                } // ================= PHONE =================
+                else if ("Phone".equalsIgnoreCase(interview.getInterviewerMode())) {
+
+                    interviewDetails
+                            = "Mode: Phone Interview\n"
+                            + "The recruiter will contact you on your registered phone number.\n";
+                } // ================= DEFAULT FALLBACK =================
+                else {
+
+                    interviewDetails
+                            = "Interview mode details will be shared soon.\n";
+                }
+
+                String subject = "Interview Scheduled";
+
+                String message
+                        = "Hello "
+                        + candidateUser.getUserName()
+                        + ",\n\n"
+                        + "Congratulations! Your interview has been scheduled "
+                        + "for the position of "
+                        + app.getJobId().getJobTitle()
+                        + ".\n\n"
+                        + "Interview Details:\n"
+                        + "Date: "
+                        + interview.getInterviewDate()
+                        + "\n"
+                        + "Interviewer: "
+                        + interview.getInterviewerName()
+                        + "\n"
+                        + interviewDetails
+                        + "\n"
+                        + "Please be available on time and prepare well for your interview.\n\n"
+                        + "Best Regards,\n"
+                        + "QuickHire Team";
+
+                // ================= SEND EMAIL =================
+                emailService.sendEmail(
+                        candidateUser.getUserEmail(),
+                        subject,
+                        message
+                );
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            throw new RuntimeException(
+                    "Error while scheduling interview: "
+                    + e.getMessage()
+            );
+        }
+    }
+
+    // ================= INTERVIEW =================
+    @Override
+    public Collection<Tblinterview> getRecruiterInterviews(Integer recruiterId) {
+
+        return em.createQuery(
+                "SELECT i FROM Tblinterview i "
+                + "WHERE i.applicationId.jobId.recruiterId.recruiterId = :rid "
+                + "ORDER BY i.interviewDate DESC",
+                Tblinterview.class)
+                .setParameter("rid", recruiterId)
+                .getResultList();
     }
 
     @Override
-    public Tblapplication getApplicationDetails(int applicationId, int recruiterId) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public Long getCompletedInterviewCount(Integer recruiterId) {
+
+        return em.createQuery(
+                "SELECT COUNT(i) FROM Tblinterview i "
+                + "WHERE i.applicationId.jobId.recruiterId.recruiterId = :rid "
+                + "AND i.interviewStatus = :status",
+                Long.class)
+                .setParameter("rid", recruiterId)
+                .setParameter("status", "Completed")
+                .getSingleResult();
     }
 
     @Override
-    public void updateApplicationStatus(int applicationId, int recruiterId, String newStatus) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public Long getScheduledInterviewCount(Integer recruiterId) {
+
+        return em.createQuery(
+                "SELECT COUNT(i) FROM Tblinterview i "
+                + "WHERE i.applicationId.jobId.recruiterId.recruiterId = :rid "
+                + "AND i.interviewStatus = :status",
+                Long.class)
+                .setParameter("rid", recruiterId)
+                .setParameter("status", "Scheduled")
+                .getSingleResult();
+    }
+
+    @Override
+    public Long getSelectedCount(Integer recruiterId) {
+
+        return em.createQuery(
+                "SELECT COUNT(i) FROM Tblinterview i "
+                + "WHERE i.applicationId.jobId.recruiterId.recruiterId = :rid "
+                + "AND i.result = :result",
+                Long.class)
+                .setParameter("rid", recruiterId)
+                .setParameter("result", "Selected")
+                .getSingleResult();
+    }
+
+    @Override
+    public Long getRejectedCount(Integer recruiterId) {
+
+        return em.createQuery(
+                "SELECT COUNT(i) FROM Tblinterview i "
+                + "WHERE i.applicationId.jobId.recruiterId.recruiterId = :rid "
+                + "AND i.result = :result",
+                Long.class)
+                .setParameter("rid", recruiterId)
+                .setParameter("result", "Rejected")
+                .getSingleResult();
+    }
+
+    @Override
+    public Long getTotalInterviewCount(Integer recruiterId) {
+
+        return em.createQuery(
+                "SELECT COUNT(i) FROM Tblinterview i "
+                + "WHERE i.applicationId.jobId.recruiterId.recruiterId = :rid",
+                Long.class)
+                .setParameter("rid", recruiterId)
+                .getSingleResult();
+    }
+
+    @Override
+    public void conductInterview(Integer interviewId,
+            String feedback,
+            String result) {
+
+        Tblinterview interview
+                = em.find(Tblinterview.class, interviewId);
+
+        if (interview != null) {
+
+            interview.setFeedback(feedback);
+            interview.setResult(result);
+            interview.setInterviewStatus("Completed");
+
+            em.merge(interview);
+
+            Tblapplication application
+                    = interview.getApplicationId();
+
+            application.setApplicationStatus(result);
+
+            em.merge(application);
+        }
+    }
+
+    @Override
+    public void rescheduleInterview(Integer interviewId,
+            Date interviewDate,
+            String interviewerName,
+            String interviewerMode) {
+
+        Tblinterview interview
+                = em.find(Tblinterview.class, interviewId);
+
+        if (interview != null) {
+
+            interview.setInterviewDate(interviewDate);
+            interview.setInterviewerName(interviewerName);
+            interview.setInterviewerMode(interviewerMode);
+            interview.setInterviewStatus("Scheduled");
+
+            em.merge(interview);
+        }
     }
 
 //    // ================= APPLICATION =================

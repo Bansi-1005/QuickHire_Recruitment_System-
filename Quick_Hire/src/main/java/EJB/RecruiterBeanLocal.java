@@ -56,20 +56,39 @@ public interface RecruiterBeanLocal {
 
     // ================= CANDIDATE MANAGEMENT =================
     public Collection<Tblapplication> getRecruiterApplications(int recruiterId);
-    
+
     public double calculateAndSaveScreeningScore(int applicationId);
-    
+
     public String getScreeningLevel(int applicationId);
-    
-    public BigDecimal getScreeningScore(int applicationId);
 
-    public Collection<Tblapplication> getApplicationsByStatus(int recruiterId,String status);
+    public Map<Integer, BigDecimal> getAllScreeningScores(int recruiterId);
 
-    public Collection<Tblapplication> searchRecruiterCandidates(int recruiterId,String keyword);
+    void shortlistApplication(int applicationId);
 
-    public Tblapplication getApplicationDetails(int applicationId,int recruiterId);
+//    void selectApplication(int applicationId);
+    void scheduleInterview(Tblinterview interview);
 
-    public void updateApplicationStatus(int applicationId,int recruiterId,String newStatus);
+    // ================= INTERVIEW =================
+    Collection<Tblinterview> getRecruiterInterviews(Integer recruiterId);
+
+    Long getScheduledInterviewCount(Integer recruiterId);
+
+    Long getCompletedInterviewCount(Integer recruiterId);
+
+    Long getSelectedCount(Integer recruiterId);
+
+    Long getRejectedCount(Integer recruiterId);
+
+    Long getTotalInterviewCount(Integer recruiterId);
+
+    void conductInterview(Integer interviewId,
+            String feedback,
+            String result);
+
+    void rescheduleInterview(Integer interviewId,
+            Date interviewDate,
+            String interviewerName,
+            String interviewerMode);
 
 //    // ================= APPLICATION =================
 //    Collection<Tblapplication> getApplications(int jobId);

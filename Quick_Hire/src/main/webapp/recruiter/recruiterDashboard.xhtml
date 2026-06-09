@@ -33,9 +33,8 @@
                             <h:commandLink value="📋 Job Postings" action="recruiterPostJob?faces-redirect=true" styleClass="menu-link" />
                             <h:commandLink value="📋 View Jobs" action="recruiterViewJobs?faces-redirect=true" styleClass="menu-link" />
                             <h:commandLink value="👥 Applicants" action="recruiterApplicants?faces-redirect=true" styleClass="menu-link" />
-                            <h:commandLink value="📅 Interviews" styleClass="menu-link" />
-                            <h:commandLink value="📊 Reports" styleClass="menu-link" />
-                            <h:commandLink value="⚙ Settings" styleClass="menu-link" />
+                            <h:commandLink value="📅 Interviews" action="recruiterInterview?faces-redirect=true" styleClass="menu-link" />
+                            <h:commandLink value="📊 Notifications" styleClass="menu-link" />
                         </h:form>
 
                         <div class="sidebar-card">
@@ -276,9 +275,9 @@
                                                         #{a.notificationTitle}
                                                     </strong>
 
-                                                    <p class="activity-message">
+                                                    <span class="activity-message">
                                                         #{a.notificationMessage}
-                                                    </p>
+                                                    </span>
 
                                                     <span class="activity-time">
                                                         #{recruiterCDIBean.getTimeAgo(a.createdDate)}

@@ -24,6 +24,7 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 import jakarta.servlet.http.Cookie;
+import jwt.TokenProvider;
 import util.EmailServiceLocal;
 
 /**
@@ -33,33 +34,35 @@ import util.EmailServiceLocal;
 @Named(value = "loginBean")
 @SessionScoped
 public class LoginCDIBean implements Serializable {
+
     @Inject
     RecruiterCDIBean recruiterCDIBean;
-    
+
     @Inject
     CandidateCDIBean candidateCDIBean;
-    
+
     @Inject
     EmailServiceLocal emailService;
-    
+
+    @Inject
+    private TokenProvider tokenProvider;
     // Stores user credentials from UI
     private String username;
     private String password;
-    
+
     // Message to show on UI (error/success)
     private String message;
-    
+
     // JWT Token received from backend
     private String token;
-    
+
     // Role of logged-in user (Admin / Recruiter / Candidate)
     private String role;
 
     private int userId;
 
     private boolean rememberMe;
-    
-    
+
     private String forgotEmail;
     private String otp;
     private String enteredOtp;
@@ -67,10 +70,7 @@ public class LoginCDIBean implements Serializable {
 
     private boolean successMessage;
 
-
-
     // ================= GETTERS & SETTERS =================
-
     public String getUsername() {
         return username;
     }
@@ -110,15 +110,15 @@ public class LoginCDIBean implements Serializable {
     public void setRole(String role) {
         this.role = role;
     }
-    
+
     public int getUserId() {
-    return userId;
+        return userId;
     }
 
     public void setUserId(int userId) {
         this.userId = userId;
     }
-    
+
     public boolean isRememberMe() {
         return rememberMe;
     }
@@ -158,7 +158,7 @@ public class LoginCDIBean implements Serializable {
     public void setNewPassword(String newPassword) {
         this.newPassword = newPassword;
     }
-    
+
     public boolean isSuccessMessage() {
         return successMessage;
     }
@@ -169,8 +169,7 @@ public class LoginCDIBean implements Serializable {
 
     public LoginCDIBean() {
     }
-    
-    
+
     public String login() {
 
         message = null;
@@ -193,13 +192,16 @@ public class LoginCDIBean implements Serializable {
 
             if (response.getStatus() == 200) {
 
-                String fullToken =
-                        response.getHeaderString(HttpHeaders.AUTHORIZATION);
+                String fullToken
+                        = response.getHeaderString(HttpHeaders.AUTHORIZATION);
 
                 if (fullToken != null
                         && fullToken.startsWith("Bearer ")) {
 
                     token = fullToken.substring(7).trim();
+
+                    System.out.println("NEW LOGIN TOKEN:");
+                    System.out.println(token);
                 }
 
                 String jsonResponse = response.readEntity(String.class);
@@ -236,14 +238,14 @@ public class LoginCDIBean implements Serializable {
                                     "quickhire_userId",
                                     String.valueOf(userId),
                                     cookieProps);
-                    
+
                     FacesContext.getCurrentInstance()
                             .getExternalContext()
                             .addResponseCookie(
                                     "quickhire_username",
                                     username,
                                     cookieProps);
-                    
+
                 }
 
                 FacesContext.getCurrentInstance()
@@ -285,65 +287,77 @@ public class LoginCDIBean implements Serializable {
             return null;
         }
     }
-    
+
     public void checkLogin() {
         if (token == null || role == null) {
             try {
                 FacesContext.getCurrentInstance()
-                    .getExternalContext()
-                    .redirect(
-                        FacesContext.getCurrentInstance()
-                                .getExternalContext()
-                                .getRequestContextPath()
+                        .getExternalContext()
+                        .redirect(
+                                FacesContext.getCurrentInstance()
+                                        .getExternalContext()
+                                        .getRequestContextPath()
                                 + "/Login.xhtml"
-                    );
+                        );
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
-    
+
     public void loadRememberMe() {
 
         token = null;
         role = null;
         userId = 0;
         username = null;
-        
-        Map<String, Object> cookies =
-                FacesContext.getCurrentInstance()
+
+        Map<String, Object> cookies
+                = FacesContext.getCurrentInstance()
                         .getExternalContext()
                         .getRequestCookieMap();
 
-        Cookie tokenCookie =
-                (Cookie) cookies.get("quickhire_token");
+        Cookie tokenCookie
+                = (Cookie) cookies.get("quickhire_token");
 
-        Cookie roleCookie =
-                (Cookie) cookies.get("quickhire_role");
+        Cookie roleCookie
+                = (Cookie) cookies.get("quickhire_role");
 
-        Cookie userIdCookie =
-                (Cookie) cookies.get("quickhire_userId");
+        Cookie userIdCookie
+                = (Cookie) cookies.get("quickhire_userId");
 
-        Cookie usernameCookie =
-                (Cookie) cookies.get("quickhire_username");
-        
-        if (tokenCookie != null &&
-            roleCookie != null &&
-            userIdCookie != null &&
-            usernameCookie != null) {
+        Cookie usernameCookie
+                = (Cookie) cookies.get("quickhire_username");
+
+        if (tokenCookie != null
+                && roleCookie != null
+                && userIdCookie != null
+                && usernameCookie != null) {
 
             token = tokenCookie.getValue();
             role = roleCookie.getValue();
             userId = Integer.parseInt(userIdCookie.getValue());
             username = usernameCookie.getValue();
+
+            System.out.println("COOKIE TOKEN = " + token);
+            System.out.println("COOKIE ROLE = " + role);
+            System.out.println("COOKIE USERID = " + userId);
+           
         }
     }
-    
+
     public String autoLogin() {
 
         loadRememberMe();
 
         if (token == null || role == null) {
+            return null;
+        }
+
+        if (!tokenProvider.validateToken(token)) {
+
+            logout();
+
             return null;
         }
 
@@ -370,7 +384,7 @@ public class LoginCDIBean implements Serializable {
             return "/candidate/candidateDashboard.xhtml?faces-redirect=true";
         }
     }
-    
+
     // ================= LOGOUT =================
     public String logout() {
 
@@ -399,7 +413,7 @@ public class LoginCDIBean implements Serializable {
                         "quickhire_userId",
                         "",
                         cookieProps);
-        
+
         FacesContext.getCurrentInstance()
                 .getExternalContext()
                 .addResponseCookie(
@@ -413,21 +427,19 @@ public class LoginCDIBean implements Serializable {
 
         return "/Login.xhtml?faces-redirect=true";
     }
-    
-    
-    
+
     public void sendOtp() {
 
         try {
 
             otp = String.valueOf(
-                    (int)((Math.random() * 900000) + 100000)
+                    (int) ((Math.random() * 900000) + 100000)
             );
 
             String subject = "QuickHire Password Reset OTP";
 
-            String body =
-                    "Dear User,\n\n"
+            String body
+                    = "Dear User,\n\n"
                     + "Your OTP for password reset is: "
                     + otp
                     + "\n\nThis OTP is valid for one use only.\n\n"
@@ -464,27 +476,27 @@ public class LoginCDIBean implements Serializable {
             );
         }
     }
-    
+
     public boolean verifyOtp() {
 
-        if (otp != null &&
-            otp.equals(enteredOtp)) {
+        if (otp != null
+                && otp.equals(enteredOtp)) {
 
             return true;
         }
 
         FacesContext.getCurrentInstance().addMessage(
-            null,
-            new FacesMessage(
-                FacesMessage.SEVERITY_ERROR,
-                "Invalid OTP",
-                null
-            )
+                null,
+                new FacesMessage(
+                        FacesMessage.SEVERITY_ERROR,
+                        "Invalid OTP",
+                        null
+                )
         );
 
         return false;
     }
-    
+
     public String resetPassword() {
 
         try {
@@ -555,6 +567,3 @@ public class LoginCDIBean implements Serializable {
         }
     }
 }
-
-
-

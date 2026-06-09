@@ -59,7 +59,6 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     padding:7px 14px;
     border-radius:999px;
     font-size:13px;
-    font-weight:600;
     margin-bottom:14px;
     animation:fadeSlideIn 0.7s ease both;
 }
@@ -103,10 +102,18 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     animation:fadeScaleIn 0.7s ease both;
 }
 
-.hero-mini-card:nth-child(1){ animation-delay:0.15s; }
-.hero-mini-card:nth-child(2){ animation-delay:0.25s; }
-.hero-mini-card:nth-child(3){ animation-delay:0.35s; }
-.hero-mini-card:nth-child(4){ animation-delay:0.45s; }
+.hero-mini-card:nth-child(1){
+    animation-delay:0.15s;
+}
+.hero-mini-card:nth-child(2){
+    animation-delay:0.25s;
+}
+.hero-mini-card:nth-child(3){
+    animation-delay:0.35s;
+}
+.hero-mini-card:nth-child(4){
+    animation-delay:0.45s;
+}
 
 .hero-mini-card:hover{
     transform:translateY(-4px);
@@ -148,10 +155,18 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     animation:cardReveal 0.65s ease both;
 }
 
-.card:nth-child(1){ animation-delay:0.10s; }
-.card:nth-child(2){ animation-delay:0.18s; }
-.card:nth-child(3){ animation-delay:0.26s; }
-.card:nth-child(4){ animation-delay:0.34s; }
+.card:nth-child(1){
+    animation-delay:0.10s;
+}
+.card:nth-child(2){
+    animation-delay:0.18s;
+}
+.card:nth-child(3){
+    animation-delay:0.26s;
+}
+.card:nth-child(4){
+    animation-delay:0.34s;
+}
 
 .card:hover{
     transform:translateY(-6px);
@@ -414,7 +429,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
         rgba(15,155,142,0.08),
         rgba(30,60,114,0.03),
         transparent
-    );
+        );
     pointer-events:none;
 }
 
@@ -430,7 +445,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
         transparent,
         rgba(255,255,255,0.28),
         transparent
-    );
+        );
     transform:skewX(-20deg);
     animation:panelShine 5.5s ease-in-out infinite;
     pointer-events:none;
@@ -481,12 +496,24 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
     animation:activityCardIn 0.55s ease both;
 }
 
-.activity-item:nth-child(1){ animation-delay:0.08s; }
-.activity-item:nth-child(2){ animation-delay:0.16s; }
-.activity-item:nth-child(3){ animation-delay:0.24s; }
-.activity-item:nth-child(4){ animation-delay:0.32s; }
-.activity-item:nth-child(5){ animation-delay:0.40s; }
-.activity-item:nth-child(6){ animation-delay:0.48s; }
+.activity-item:nth-child(1){
+    animation-delay:0.08s;
+}
+.activity-item:nth-child(2){
+    animation-delay:0.16s;
+}
+.activity-item:nth-child(3){
+    animation-delay:0.24s;
+}
+.activity-item:nth-child(4){
+    animation-delay:0.32s;
+}
+.activity-item:nth-child(5){
+    animation-delay:0.40s;
+}
+.activity-item:nth-child(6){
+    animation-delay:0.48s;
+}
 
 .activity-item::before{
     content:"";
@@ -508,7 +535,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
         transparent 0%,
         rgba(15,155,142,0.04) 50%,
         transparent 100%
-    );
+        );
     opacity:0;
     transition:opacity 0.30s ease;
     pointer-events:none;
@@ -546,11 +573,10 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
 }
 
 .activity-message{
-    margin:0;
-    width:100%;
-    font-size:15px;
+    font-size:14px;
+    color:#64748b;
     font-weight:600;
-    color:var(--text);
+
     line-height:1.55;
     word-break:break-word;
 }
@@ -615,7 +641,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to ed
         135deg,
         rgba(15,155,142,0.12),
         rgba(30,60,114,0.10)
-    );
+        );
     color:var(--primary-dark);
     position:relative;
     z-index:1;

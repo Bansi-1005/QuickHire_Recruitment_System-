@@ -333,6 +333,13 @@ public class RecruiterCDIBean implements Serializable {
                 loadProfile();
             }
 
+            if (recruiter == null
+                    || recruiter.getRecruiterId() == null) {
+
+                System.out.println("Recruiter not loaded");
+
+                return;
+            }
             int recruiterId
                     = recruiter.getRecruiterId();
 

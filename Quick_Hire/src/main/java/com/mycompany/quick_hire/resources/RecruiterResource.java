@@ -841,8 +841,7 @@ public class RecruiterResource {
                         .build();
             }
 
-            double score
-                    = ejb.calculateAndSaveScreeningScore(applicationId);
+            double score = ejb.calculateAndSaveScreeningScore(applicationId);
 
             return Response.ok(
                     "Screening Score Generated : " + score
@@ -860,10 +859,10 @@ public class RecruiterResource {
         }
     }
 
-    @GET
-    @Path("getScreeningScore")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getScreeningScore(
+    @PUT
+    @Path("shortlistApplication")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response shortlistApplication(
             @QueryParam("applicationId") int applicationId) {
 
         try {
@@ -875,8 +874,10 @@ public class RecruiterResource {
                         .build();
             }
 
+            ejb.shortlistApplication(applicationId);
+
             return Response.ok(
-                    ejb.getScreeningScore(applicationId)
+                    "Applicant Shortlisted Successfully"
             ).build();
 
         } catch (Exception e) {
@@ -891,6 +892,384 @@ public class RecruiterResource {
         }
     }
 
+    @POST
+    @Path("scheduleInterview")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response scheduleInterview(Tblinterview interview) {
+
+        try {
+
+            // ================= VALIDATION =================
+            if (interview == null) {
+
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Interview data is required")
+                        .build();
+            }
+
+            if (interview.getApplicationId() == null
+                    || interview.getApplicationId().getApplicationId() == null) {
+
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Application ID is required")
+                        .build();
+            }
+
+            if (interview.getInterviewDate() == null) {
+
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Interview date is required")
+                        .build();
+            }
+
+            if (interview.getInterviewerName() == null
+                    || interview.getInterviewerName().trim().isEmpty()) {
+
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Interviewer name is required")
+                        .build();
+            }
+
+            if (interview.getInterviewerMode() == null
+                    || interview.getInterviewerMode().trim().isEmpty()) {
+
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Interview mode is required")
+                        .build();
+            }
+
+            // ================= VALID MODES =================
+            String mode = interview.getInterviewerMode().trim();
+
+            if (!mode.equalsIgnoreCase("Online")
+                    && !mode.equalsIgnoreCase("Offline")
+                    && !mode.equalsIgnoreCase("Phone")) {
+
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Interview mode must be Online, Offline, or Phone")
+                        .build();
+            }
+
+            // ================= CALL EJB =================
+            ejb.scheduleInterview(interview);
+
+            // ================= SUCCESS =================
+            return Response.ok(
+                    "Interview Scheduled Successfully"
+            ).build();
+
+        } catch (RuntimeException e) {
+
+            e.printStackTrace();
+
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(e.getMessage())
+                    .build();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error scheduling interview")
+                    .build();
+        }
+    }
+
+    @GET
+    @Path("getAllScreeningScores")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllScreeningScores(
+            @QueryParam("recruiterId") int recruiterId) {
+        try {
+            if (recruiterId <= 0) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid Recruiter ID").build();
+            }
+            return Response.ok(ejb.getAllScreeningScores(recruiterId)).build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(500).entity(e.getMessage()).build();
+        }
+    }
+
+    // ================= INTERVIEW MANAGEMENT =================
+    @GET
+    @Path("getRecruiterInterviews")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getRecruiterInterviews(
+            @QueryParam("recruiterId") Integer recruiterId) {
+
+        try {
+
+            if (recruiterId == null || recruiterId <= 0) {
+
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid Recruiter ID")
+                        .build();
+            }
+
+            Collection<Tblinterview> interviews
+                    = ejb.getRecruiterInterviews(recruiterId);
+
+            if (interviews == null) {
+                interviews = new ArrayList<>();
+            }
+
+            return Response.ok(interviews).build();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return Response.status(
+                    Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
+    @GET
+    @Path("scheduledInterviewCount")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response scheduledInterviewCount(
+            @QueryParam("recruiterId") Integer recruiterId) {
+
+        try {
+
+            if (recruiterId == null || recruiterId <= 0) {
+
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid Recruiter ID")
+                        .build();
+            }
+
+            Long count
+                    = ejb.getScheduledInterviewCount(recruiterId);
+
+            return Response.ok(String.valueOf(count)).build();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return Response.status(500)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
+    @GET
+    @Path("completedInterviewCount")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response completedInterviewCount(
+            @QueryParam("recruiterId") Integer recruiterId) {
+
+        try {
+
+            if (recruiterId == null || recruiterId <= 0) {
+
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid Recruiter ID")
+                        .build();
+            }
+
+            Long count
+                    = ejb.getCompletedInterviewCount(recruiterId);
+
+            return Response.ok(String.valueOf(count)).build();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return Response.status(500)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
+    @GET
+    @Path("selectedCount")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response selectedCount(
+            @QueryParam("recruiterId") Integer recruiterId) {
+
+        try {
+
+            if (recruiterId == null || recruiterId <= 0) {
+
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid Recruiter ID")
+                        .build();
+            }
+
+            Long count
+                    = ejb.getSelectedCount(recruiterId);
+
+            return Response.ok(String.valueOf(count)).build();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return Response.status(500)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
+    @GET
+    @Path("rejectedCount")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response rejectedCount(
+            @QueryParam("recruiterId") Integer recruiterId) {
+
+        try {
+
+            if (recruiterId == null || recruiterId <= 0) {
+
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid Recruiter ID")
+                        .build();
+            }
+
+            Long count
+                    = ejb.getRejectedCount(recruiterId);
+
+            return Response.ok(String.valueOf(count)).build();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return Response.status(500)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
+    @GET
+    @Path("totalInterviewCount")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response totalInterviewCount(
+            @QueryParam("recruiterId") Integer recruiterId) {
+
+        try {
+
+            if (recruiterId == null || recruiterId <= 0) {
+
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid Recruiter ID")
+                        .build();
+            }
+
+            Long count
+                    = ejb.getTotalInterviewCount(recruiterId);
+
+            return Response.ok(String.valueOf(count)).build();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return Response.status(500)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
+    @PUT
+    @Path("conductInterview")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response conductInterview(
+            @QueryParam("interviewId") Integer interviewId,
+            @QueryParam("feedback") String feedback,
+            @QueryParam("result") String result) {
+
+        try {
+
+            if (interviewId == null || interviewId <= 0) {
+
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid Interview ID")
+                        .build();
+            }
+
+            if (result == null || result.trim().isEmpty()) {
+
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Result is required")
+                        .build();
+            }
+
+            ejb.conductInterview(
+                    interviewId,
+                    feedback,
+                    result
+            );
+
+            return Response.ok(
+                    "Interview completed successfully"
+            ).build();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return Response.status(500)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
+    @PUT
+    @Path("rescheduleInterview")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response rescheduleInterview(
+            @QueryParam("interviewId") Integer interviewId,
+            @QueryParam("interviewerName") String interviewerName,
+            @QueryParam("interviewerMode") String interviewerMode,
+            @QueryParam("interviewDate") String interviewDateStr) {
+
+        try {
+
+            if (interviewId == null || interviewId <= 0) {
+
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid Interview ID")
+                        .build();
+            }
+
+            SimpleDateFormat sdf
+                    = new SimpleDateFormat(
+                            "yyyy-MM-dd'T'HH:mm"
+                    );
+
+            Date interviewDate
+                    = sdf.parse(interviewDateStr);
+
+            ejb.rescheduleInterview(
+                    interviewId,
+                    interviewDate,
+                    interviewerName,
+                    interviewerMode
+            );
+
+            return Response.ok(
+                    "Interview rescheduled successfully"
+            ).build();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return Response.status(500)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
 //    // ================= APPLICATION =================
 //    @GET
 //    @Path("getApplications")
@@ -1010,6 +1389,7 @@ public class RecruiterResource {
 //        }
 //    }
 //
+
     ////    // ================= SHORTLIST =================
 //    @GET
 //    @Path("topCandidates")

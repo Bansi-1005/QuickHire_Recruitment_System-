@@ -30,17 +30,30 @@ public class TokenProvider implements Serializable {
      // Convert Base64 secret into secure Key object for signing
     private final Key key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET));
 
+    
+    long THIRTY_DAYS = 30L * 24 * 60 * 60 * 1000;
+
+    
     // Method to CREATE JWT token using username and role
     public String createToken(String userName, String role) {
 
         long now = System.currentTimeMillis(); // Get current time
+        
+        
+         Date issuedAt = new Date(now);
+    Date expiry = new Date(now + THIRTY_DAYS);
 
+    System.out.println("ISSUED AT : " + issuedAt);
+    System.out.println("EXPIRES AT: " + expiry);
+
+        
         return Jwts.builder()
                 .subject(userName) // Set username as subject of token                 // ✅ NEW (replaces setSubject)
                 .claim("role", role) // Add user role as custom claim
                 .issuer("quickhire") // Set token issuer (your application name)
                 .issuedAt(new Date(now))// Set token creation time
-                .expiration(new Date(now + 86400000)) // Set expiry time (1 day)
+                .expiration(new Date(now + THIRTY_DAYS))
+ // Set expiry time (1 day)
                 .signWith(key) // Sign token with secret key
                 .compact();// Generate final JWT string
     }
