@@ -33,7 +33,7 @@ import java.util.Date;
 @Table(name = "tblskillcategory")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Tblskillcategory.findAll", query = "SELECT t FROM Tblskillcategory t"),
+    @NamedQuery(name = "Tblskillcategory.findAll", query = "SELECT t FROM Tblskillcategory t ORDER BY t.createdDate DESC"),
     @NamedQuery(name = "Tblskillcategory.findByCategoryId", query = "SELECT t FROM Tblskillcategory t WHERE t.categoryId = :categoryId"),
     @NamedQuery(name = "Tblskillcategory.findByCategoryName", query = "SELECT t FROM Tblskillcategory t WHERE t.categoryName = :categoryName"),
     @NamedQuery(name = "Tblskillcategory.findByCategoryStatus", query = "SELECT t FROM Tblskillcategory t WHERE t.categoryStatus = :categoryStatus"),

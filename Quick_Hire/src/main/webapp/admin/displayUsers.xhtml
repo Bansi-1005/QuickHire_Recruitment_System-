@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+
+<f:metadata>
+    <f:viewAction action="#{loginBean.checkLogin}" />
+    <f:viewAction action="#{adminCDIBean.loadUsersPage}" />
+</f:metadata>
+
+<h:head>
+    <title>All Users</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <h:outputStylesheet library="css" name="admin/admin.css" />
+    <h:outputStylesheet library="css" name="admin/displayUsers.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</h:head>
+
+<h:body>
+    <ui:include src="/common/header.xhtml"/>
+
+    <h:panelGroup rendered="#{loginBean.role eq 'Admin'}">
+        <div class="dashboard-layout">
+
+            <ui:include src="/admin/sidebar.xhtml">
+                <ui:param name="activePage" value="displayUsers"/>
+            </ui:include>
+
+            <main class="main" id="main">
+
+                <h:form id="msgForm">
+                    <h:messages id="messages"
+                                globalOnly="true"
+                                showDetail="true"
+                                showSummary="false"
+                                styleClass="custom-toast"
+                                infoClass="info"
+                                warnClass="warn"
+                                errorClass="error"/>
+                </h:form>
+
+                <section class="hero">
+                    <div class="hero-grid">
+                        <div>
+                            <div class="welcome-tag">Users</div>
+                            <h1>Manage candidates and recruiters</h1>
+                            <p>
+                                View all registered users in tabbed tables and manage their records from one place.
+                            </p>
+                        </div>
+
+                        <div class="hero-stats">
+                            <div class="hero-mini-card">
+                                <span>Total Candidates</span>
+                                <strong>
+                                    #{empty adminCDIBean.candidateList ? 0 : adminCDIBean.candidateList.size()}
+                                </strong>
+                            </div>
+
+                            <div class="hero-mini-card">
+                                <span>Total Recruiters</span>
+                                <strong>
+                                    #{empty adminCDIBean.recruiterList ? 0 : adminCDIBean.recruiterList.size()}
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <h:form id="tabForm">
+                    <section class="toolbar">
+                        <div class="search-box">
+
+                            <h:commandLink value="Candidates"
+                                           styleClass="#{adminCDIBean.activeTab eq 'CANDIDATES' ? 'filter-chip active' : 'filter-chip'}"
+                                           action="#{adminCDIBean.showCandidates}">
+                                <f:ajax render="usersPanel tabForm :msgForm:messages"/>
+                            </h:commandLink>
+
+                            <h:commandLink value="Recruiters"
+                                           styleClass="#{adminCDIBean.activeTab eq 'RECRUITERS' ? 'filter-chip active' : 'filter-chip'}"
+                                           action="#{adminCDIBean.showRecruiters}">
+                                <f:ajax render="usersPanel tabForm :msgForm:messages"/>
+                            </h:commandLink>
+
+                            <h:commandButton value="Refresh"
+                                             action="#{adminCDIBean.loadUsersPage}"
+                                             styleClass="refresh-btn">
+                                <f:ajax render="usersPanel tabForm :msgForm:messages"/>
+                            </h:commandButton>
+
+                        </div>
+                    </section>
+
+                    <h:panelGroup id="usersPanel" layout="block">
+
+                        <div class="results-bar">
+                            <h2>
+                                #{adminCDIBean.activeTab eq 'CANDIDATES' ? 'Candidates' : 'Recruiters'}
+                                <span class="result-count">
+                                    #{adminCDIBean.activeTab eq 'CANDIDATES' ? adminCDIBean.candidateList.size() : adminCDIBean.recruiterList.size()}
+                                </span>
+                            </h2>
+                        </div>
+
+                        <h:panelGroup rendered="#{adminCDIBean.activeTab eq 'CANDIDATES'}">
+                            <section class="dashboard-panel">
+
+                                <h:panelGroup rendered="#{empty adminCDIBean.candidateList}">
+                                    <div class="empty-state">
+                                        <i class="fa-regular fa-user-slash empty-icon"></i>
+                                        <h3>No Candidates Found</h3>
+                                        <p>Candidate records will appear here.</p>
+                                    </div>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{not empty adminCDIBean.candidateList}">
+                                    <div class="table-wrap table-wrap-user">
+                                        <table class="user-table professional-table">
+                                            <thead>
+                                                <tr>
+                                                    <th width="60">Profile</th>
+                                                    <th>Name</th>
+                                                    <th>Email</th>
+                                                    <th>Phone</th>
+                                                    <th>Area</th>
+                                                    <th>City</th>
+                                                    <th>State</th>
+                                                    <th>Experience</th>
+                                                    <th>Is Active</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <ui:repeat value="#{adminCDIBean.candidateList}" var="cand">
+
+                                                    <tr class="user-row">
+
+                                                        <td>
+                                                            <img src="#{request.contextPath}/profilephotos/#{adminCDIBean.getProfilePhoto(cand.userId)}"
+                                                                 alt="profile"
+                                                                 width="48"
+                                                                 height="48"
+                                                                 class="profile-img"/>
+                                                        </td>
+
+                                                        <td class="cell-name">
+                                                            #{cand.userId.userName}
+                                                        </td>
+
+                                                        <td class="cell-company">
+                                                            #{cand.userId.userEmail}
+                                                        </td>
+
+                                                        <td class="cell-location">
+                                                            <i class="fa-solid fa-phone location-icon"></i>
+                                                            #{cand.candidatePhone}
+                                                        </td>
+
+                                                        <td class="cell-type">
+                                                            #{cand.candidateArea}
+                                                        </td>
+
+                                                        <td class="cell-company">
+                                                            #{cand.candidateCity}
+                                                        </td>
+
+                                                        <td class="cell-company">
+                                                            #{cand.candidateState}
+                                                        </td>
+
+                                                        <td class="cell-experience">
+                                                            <i class="fa-solid fa-clock experience-icon"></i>
+                                                            #{cand.candidateExperience} Months
+                                                        </td>
+
+                                                        <td class="cell-status">
+                                                            <div class="status-wrap">
+
+                                                                <label class="switch">
+
+                                                                    <h:selectBooleanCheckbox
+                                                                        value="#{cand.userId.userIsActive}"
+                                                                        styleClass="switch-input">
+
+                                                                        <f:ajax execute="@this"
+                                                                                render=":tabForm:usersPanel :msgForm:messages"
+                                                                                listener="#{adminCDIBean.toggleUserStatus(cand.userId)}"/>
+
+                                                                    </h:selectBooleanCheckbox>
+
+                                                                    <span class="slider"></span>
+
+                                                                </label>
+
+                                                            </div>
+                                                        </td>
+
+                                                    </tr>
+
+                                                </ui:repeat>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </h:panelGroup>
+                            </section>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{adminCDIBean.activeTab eq 'RECRUITERS'}">
+                            <section class="dashboard-panel">
+
+                                <h:panelGroup rendered="#{empty adminCDIBean.recruiterList}">
+                                    <div class="empty-state">
+                                        <i class="fa-regular fa-user-slash empty-icon"></i>
+                                        <h3>No Recruiters Found</h3>
+                                        <p>Recruiter records will appear here.</p>
+                                    </div>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{not empty adminCDIBean.recruiterList}">
+                                    <div class="table-wrap table-wrap-user">
+                                        <table class="user-table professional-table">
+                                            <thead>
+                                                <tr>
+                                                    <th width="60">Profile</th>
+                                                    <th>Name</th>
+                                                    <th>Email</th>
+                                                    <th>Company</th>
+                                                    <th>Designation</th>
+                                                    <th>Phone</th>
+                                                    <th width="120">Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <ui:repeat value="#{adminCDIBean.recruiterList}" var="rec">
+
+                                                    <tr class="user-row">
+
+                                                        <td>
+                                                            <img src="#{request.contextPath}/profilephotos/#{adminCDIBean.getProfilePhoto(rec.userId)}"
+                                                                 alt="profile"
+                                                                 width="48"
+                                                                 height="48"
+                                                                 class="profile-img"/>
+                                                        </td>
+
+                                                        <td class="cell-name">
+                                                            #{rec.userId.userName}
+                                                        </td>
+
+                                                        <td class="cell-company">
+                                                            #{rec.userId.userEmail}
+                                                        </td>
+
+                                                        <td class="cell-title">
+                                                            <div class="title-wrapper">
+                                                                <i class="fa-solid fa-building title-icon"></i>
+                                                                <span class="job-title-text">
+                                                                    #{rec.companyId.companyName}
+                                                                </span>
+                                                            </div>
+                                                        </td>
+
+                                                        <td class="cell-type">
+                                                            #{rec.designation}
+                                                        </td>
+
+                                                        <td class="cell-location">
+                                                            <i class="fa-solid fa-phone location-icon"></i>
+                                                            #{rec.recruiterPhone}
+                                                        </td>
+
+                                                        <td class="cell-status">
+                                                            <div class="status-wrap">
+
+                                                                <label class="switch">
+
+                                                                    <h:selectBooleanCheckbox
+                                                                        value="#{rec.userId.userIsActive}"
+                                                                        styleClass="switch-input">
+
+                                                                        <f:ajax execute="@this"
+                                                                                render=":tabForm:usersPanel :msgForm:messages"
+                                                                                listener="#{adminCDIBean.toggleUserStatus(rec.userId)}"/>
+
+                                                                    </h:selectBooleanCheckbox>
+
+                                                                    <span class="slider"></span>
+
+                                                                </label>
+
+                                                            </div>
+                                                        </td>
+
+                                                    </tr>
+
+                                                </ui:repeat>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </h:panelGroup>
+                            </section>
+                        </h:panelGroup>
+
+                    </h:panelGroup>
+                </h:form>
+            </main>
+        </div>
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{loginBean.role ne 'Admin'}">
+        <div class="access-denied">
+            <h2>Access Denied</h2>
+            <p>You don't have permission to view this page.</p>
+        </div>
+    </h:panelGroup>
+
+    <ui:include src="/common/footer.xhtml"/>
+</h:body>
+</html>

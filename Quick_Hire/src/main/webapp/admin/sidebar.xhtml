@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <ui:param name="activePage" value="#{activePage}" />
+    <aside class="sidebar">
+
+        <div class="sidebar-title">
+                Admin Menu
+        </div>
+
+        <h:form styleClass="menu-form">
+
+            <!-- DASHBOARD -->
+            <h:link outcome="adminDashboard"
+                    styleClass="menu-link #{activePage eq 'dashboard' ? 'active' : ''}">
+                <i class="fa-solid fa-house"></i>
+                <span>Dashboard</span>
+            </h:link>
+            
+            <h:link outcome="profile"
+                    styleClass="menu-link #{activePage eq 'profile' ? 'active' : ''}">
+                <i class="fa-solid fa-user-pen" style="color:#6f42c1;"></i>
+                <span>Manage Profile</span>
+            </h:link>
+
+            <h:link outcome="displayUsers" 
+                    styleClass="menu-link #{activePage eq 'displayUsers' ? 'active' : ''}">
+                <i class="fa-solid fa-users"></i>
+                <span>All Users</span>
+            </h:link>
+            
+            <h:link outcome="manageCompany"
+                    styleClass="menu-link #{activePage eq 'manageCompany' ? 'active' : ''}">
+                <i class="fa-solid fa-building"></i>
+                <span>Manage Companies</span>
+            </h:link>
+
+            <h:link outcome="manageSkills"
+                    styleClass="menu-link #{activePage eq 'manageSkills' ? 'active' : ''}">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>Manage Skills</span>
+            </h:link>
+
+            <h:link outcome="jobs"
+                    styleClass="menu-link #{activePage eq 'jobs' ? 'active' : ''}">
+                <i class="fa-solid fa-briefcase"></i>
+                <span>All Jobs</span>
+            </h:link>
+
+        </h:form>
+
+        <div class="sidebar-card">
+
+            <h4>
+                Admin Panel
+            </h4>
+
+            <p>
+                Manage users, recruiters, companies, jobs,
+                applications, interviews and platform settings.
+            </p>
+
+        </div>
+
+    </aside>
+</ui:composition>

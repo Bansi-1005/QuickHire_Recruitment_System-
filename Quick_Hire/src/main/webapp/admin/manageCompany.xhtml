@@ -1,0 +1,496 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+
+<f:metadata>
+    <f:viewAction action="#{loginBean.checkLogin}" />
+    <f:viewAction action="#{adminCDIBean.loadCompanies}" />
+</f:metadata>
+
+<h:head>
+    <title>Manage Companies</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <h:outputStylesheet library="css" name="admin/admin.css" />
+    <h:outputStylesheet library="css" name="admin/manageCompany.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</h:head>
+
+<h:body>
+    <ui:include src="/common/header.xhtml" />
+
+    <h:panelGroup rendered="#{loginBean.role eq 'Admin'}" layout="block">
+        <div class="dashboard-layout">
+
+            <ui:include src="/admin/sidebar.xhtml">
+                <ui:param name="activePage" value="manageCompany" />
+            </ui:include>
+
+            <main class="main" id="main">
+
+                <h:form id="msgForm">
+                    <h:messages id="messages"
+                                globalOnly="true"
+                                showSummary="false"
+                                showDetail="true"
+                                layout="list"
+                                styleClass="custom-toast"
+                                infoClass="info"
+                                warnClass="warn"
+                                errorClass="error"
+                                fatalClass="error" />
+                </h:form>
+
+                <h:form id="companyForm">
+                    <h:panelGroup id="heroSection" layout="block">
+                        <section class="hero">
+
+                            <div class="hero-grid">
+                                <div>
+                                    <div class="welcome-tag">Companies</div>
+                                    <h1>Manage Companies</h1>
+                                    <p>Add, update and manage company records.</p>
+                                </div>
+
+                                <div class="hero-stats">
+                                    <div class="hero-mini-card">
+                                        <span>Total Companies</span>
+                                        <strong>#{adminCDIBean.companyList.size()}</strong>
+                                    </div>
+
+                                    <div class="hero-mini-card">
+                                        <span>Total Active Companies</span>
+                                        <strong>#{adminCDIBean.activeCompanyCount}</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </section>
+                    </h:panelGroup>
+
+                    <h:panelGroup id="toolbarSection" layout="block">
+                        <section class="toolbar">
+                            <div class="toolbar-left">
+                                <h2 class="section-title">
+                                    #{adminCDIBean.showCompanyForm ? (adminCDIBean.companyObj.companyId == null ? 'Add Company' : 'Update Company') : ''}
+                                </h2>
+                                <p class="section-subtitle">
+                                    #{adminCDIBean.showCompanyForm ? 'Fill company details and save the record.' : 'View and manage all company profiles.'}
+                                </p>
+                            </div>
+
+                            <div class="toolbar-actions">
+                                <h:commandButton value="View Companies"
+                                                 action="#{adminCDIBean.cancelCompanyForm}"
+                                                 styleClass="save-btn"
+                                                 rendered="#{adminCDIBean.showCompanyForm}">
+                                    <f:ajax render=":companyForm:toolbarSection :companyForm:companyPanel :msgForm:messages" />
+                                </h:commandButton>
+
+                                <h:commandButton value="Add Company"
+                                                 action="#{adminCDIBean.showAddCompanyForm}"
+                                                 styleClass="save-btn"
+                                                 rendered="#{!adminCDIBean.showCompanyForm}">
+                                    <f:ajax render=":companyForm:toolbarSection :companyForm:companyPanel :msgForm:messages" />
+                                </h:commandButton>
+
+                                <h:commandButton value="Refresh"
+                                                 action="#{adminCDIBean.loadCompanies}"
+                                                 styleClass="refresh-btn"
+                                                 rendered="#{!adminCDIBean.showCompanyForm}">
+                                    <f:ajax render=":companyForm:companyPanel :msgForm:messages" />
+                                </h:commandButton>
+                            </div>
+                        </section>
+                    </h:panelGroup>
+
+                    <h:panelGroup id="companyPanel" layout="block">
+
+                        <h:panelGroup rendered="#{adminCDIBean.showCompanyForm}" layout="block">
+                            <section class="dashboard-panel company-form-panel">
+                                <div class="panel-head">
+                                    <h3>
+                                        #{adminCDIBean.companyObj.companyId == null ? 'Add Company Details' : 'Update Company Details'}
+                                    </h3>
+                                    <span class="panel-chip">
+                                        #{adminCDIBean.companyObj.companyId == null ? 'New Entry' : 'Editing'}
+                                    </span>
+                                </div>
+
+                                <div class="company-form-grid">
+
+                                    <!-- Company Name -->
+                                    <div class="field-group">
+                                        <label>Company Name <span class="required">*</span></label>
+
+                                        <h:inputText id="companyName"
+                                                     value="#{adminCDIBean.companyObj.companyName}"
+                                                     required="true"
+                                                     requiredMessage="Company Name is required"
+                                                     validatorMessage="Company Name must be between 2 and 200 characters"
+                                                     styleClass="form-input"
+                                                     pt:placeholder="Enter Company Name">
+
+                                            <f:validateLength minimum="2" maximum="200"/>
+
+                                            <f:ajax event="keyup"
+                                                    render="companyNameMsg"
+                                                    execute="@this"/>
+                                        </h:inputText>
+
+                                        <h:message id="companyNameMsg"
+                                                   for="companyName"
+                                                   styleClass="field-error"/>
+                                    </div>
+
+                                    <!-- Email -->
+                                    <div class="field-group">
+                                        <label>Company Email <span class="required">*</span></label>
+
+                                        <h:inputText id="companyEmail"
+                                                     value="#{adminCDIBean.companyObj.companyEmail}"
+                                                     required="true"
+                                                     requiredMessage="Company Email is required"
+                                                     validatorMessage="Invalid Email Format"
+                                                     styleClass="form-input"
+                                                     pt:placeholder="company@example.com">
+
+                                            <f:validateRegex
+                                                pattern="^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"/>
+
+                                            <f:ajax event="keyup"
+                                                    render="companyEmailMsg"
+                                                    execute="@this"/>
+                                        </h:inputText>
+
+                                        <h:message id="companyEmailMsg"
+                                                   for="companyEmail"
+                                                   styleClass="field-error"/>
+                                    </div>
+
+                                    <!-- Website -->
+                                    <div class="field-group">
+                                        <label>Company Website <span class="required">*</span></label>
+
+                                        <h:inputText id="companyWebsite"
+                                                     value="#{adminCDIBean.companyObj.companyWebsite}"
+                                                     validatorMessage="Enter valid website URL"
+                                                     styleClass="form-input"
+                                                     pt:placeholder="https://www.company.com">
+
+                                            <f:validateRegex
+                                                pattern="^(https?://)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(/.*)?$"/>
+
+                                            <f:ajax event="keyup"
+                                                    render="companyWebsiteMsg"
+                                                    execute="@this"/>
+                                        </h:inputText>
+
+                                        <h:message id="companyWebsiteMsg"
+                                                   for="companyWebsite"
+                                                   styleClass="field-error"/>
+                                    </div>
+
+                                    <!-- Location -->
+                                    <div class="field-group">
+                                        <label>Company Location <span class="required">*</span></label>
+
+                                        <h:inputText id="companyLocation"
+                                                     value="#{adminCDIBean.companyObj.companyLocation}"
+                                                     required="true"
+                                                     requiredMessage="Company Location is required"
+                                                     styleClass="form-input"
+                                                     pt:placeholder="Ahmedabad, Gujarat">
+
+                                            <f:validateLength minimum="2" maximum="500"/>
+
+                                            <f:ajax event="keyup"
+                                                    render="companyLocationMsg"
+                                                    execute="@this"/>
+                                        </h:inputText>
+
+                                        <h:message id="companyLocationMsg"
+                                                   for="companyLocation"
+                                                   styleClass="field-error"/>
+                                    </div>
+
+                                    <!-- Company Size -->
+                                    <div class="field-group">
+                                        <label>Company Size</label>
+
+                                        <h:selectOneMenu id="companySize"
+                                                         value="#{adminCDIBean.companyObj.companySize}"
+                                                         styleClass="form-input">
+
+                                            <f:selectItem itemLabel="Select Company Size" itemValue=""/>
+
+                                            <f:selectItem itemLabel="1 - 10 Employees" itemValue="1-10"/>
+                                            <f:selectItem itemLabel="11 - 50 Employees" itemValue="11-50"/>
+                                            <f:selectItem itemLabel="51 - 200 Employees" itemValue="51-200"/>
+                                            <f:selectItem itemLabel="201 - 500 Employees" itemValue="201-500"/>
+                                            <f:selectItem itemLabel="501 - 1000 Employees" itemValue="501-1000"/>
+                                            <f:selectItem itemLabel="1000+ Employees" itemValue="1000+"/>
+
+                                        </h:selectOneMenu>
+                                    </div>
+
+                                    <!-- Founded Year -->
+                                    <h:inputText id="foundedYear"
+                                                value="#{adminCDIBean.companyObj.foundedYear}"
+                                                validatorMessage="Enter valid year between 1900 and 2099"
+                                                styleClass="form-input"
+                                                pt:placeholder="2020">
+
+                                        <f:validateLongRange minimum="1900"
+                                                             maximum="2099"/>
+
+                                        <f:ajax event="keyup"
+                                                render="foundedYearMsg"
+                                                execute="@this"/>
+
+                                    </h:inputText>
+
+                                    <h:message id="foundedYearMsg"
+                                               for="foundedYear"
+                                               styleClass="field-error"/>
+
+                                    <!-- Description -->
+                                    <div class="field-group field-full">
+                                        <label>Company Description</label>
+
+                                        <h:inputTextarea id="companyDescription"
+                                                         value="#{adminCDIBean.companyObj.companyDescription}"
+                                                         rows="10"
+                                                         styleClass="form-input textarea"
+                                                         pt:placeholder="Describe company, industry, mission and services..."
+                                                         validatorMessage="Company Description cannot exceed 1000 characters">
+
+                                            <f:validateLength maximum="1000"/>
+
+                                            <f:ajax event="keyup"
+                                                    render="companyDescriptionMsg"
+                                                    execute="@this"/>
+                                        </h:inputTextarea>
+
+                                        <h:message id="companyDescriptionMsg"
+                                                   for="companyDescription"
+                                                   styleClass="field-error"/>
+                                    </div>
+                                    
+                                    <!-- Active -->
+                                    <div class="field-group">
+                                        <label>Company Status (Is Active)</label>
+
+                                        <div class="status-wrap">
+                                            <label class="switch">
+
+                                                <h:selectBooleanCheckbox
+                                                    value="#{adminCDIBean.companyObj.isActive}"
+                                                    styleClass="switch-input"/>
+
+                                                <span class="slider"></span>
+
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="form-actions">
+                                    <h:commandButton value="#{adminCDIBean.companyObj.companyId == null ? 'Save Company' : 'Update Company'}"
+                                                     action="#{adminCDIBean.saveCompany}"
+                                                     styleClass="save-btn">
+                                        <f:ajax execute="@form"
+                                            render=":companyForm:toolbarSection :companyForm:companyPanel :companyForm:heroSection :msgForm:messages"
+                                            onevent="hideToast"/>
+                                    </h:commandButton>
+
+                                    
+                                </div>
+                            </section>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{!adminCDIBean.showCompanyForm}" layout="block">
+                            <section class="dashboard-panel">
+                                <div class="panel-head">
+                                    <h3>Company Records</h3>
+                                    <span class="panel-chip muted">
+                                        #{adminCDIBean.companyList.size()} Items
+                                    </span>
+                                </div>
+
+                                <h:panelGroup rendered="#{empty adminCDIBean.companyList}" layout="block">
+                                    <div class="empty-state">
+                                        <i class="fa-solid fa-building empty-icon"></i>
+                                        <h3>No Companies Found</h3>
+                                        <p>Company records will appear here.</p>
+                                    </div>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{not empty adminCDIBean.companyList}" layout="block">
+                                    <div class="table-wrap table-wrap-company">
+                                        <table class="company-table professional-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Email</th>
+                                                    <th>Website</th>
+                                                    <th>Location</th>
+                                                    <th>Size</th>
+                                                    <th>Founded</th>
+                                                    <th>IsActive</th>
+                                                    <th width="160">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <ui:repeat value="#{adminCDIBean.companyList}" var="company">
+
+                                                    <tr class="company-row">
+
+                                                        <td class="cell-title">
+                                                            <div class="title-wrapper">
+                                                                <i class="fa-solid fa-building title-icon"></i>
+                                                                <span class="job-title-text">
+                                                                    #{company.companyName}
+                                                                </span>
+                                                            </div>
+                                                        </td>
+
+                                                        <td class="cell-company">
+                                                            #{company.companyEmail}
+                                                        </td>
+
+                                                        <td class="cell-company">
+                                                            #{company.companyWebsite}
+                                                        </td>
+
+                                                        <td class="cell-location">
+                                                            <i class="fa-solid fa-location-dot location-icon"></i>
+                                                            #{company.companyLocation}
+                                                        </td>
+
+                                                        <td class="cell-type">
+                                                            #{company.companySize}
+                                                        </td>
+
+                                                        <td class="cell-experience">
+                                                            <i class="fa-solid fa-calendar"></i>
+                                                            #{company.foundedYear}
+                                                        </td>
+
+                                                        <td class="cell-status">
+                                                            <div class="status-wrap">
+                                                                <label class="switch">
+
+                                                                    <h:selectBooleanCheckbox
+                                                                        value="#{company.isActive}"
+                                                                        styleClass="switch-input">
+
+                                                                        <f:ajax execute="@this"
+                                                                                render=":companyForm:companyPanel
+                                                                                        :companyForm:heroSection
+                                                                                        :msgForm:messages"
+                                                                                listener="#{adminCDIBean.toggleCompanyStatus(company)}"
+                                                                                onevent="hideToast"/>
+
+                                                                    </h:selectBooleanCheckbox>
+
+                                                                    <span class="slider"></span>
+
+                                                                </label>
+                                                            </div>
+                                                        </td>
+
+                                                        <td class="action-cell">
+
+                                                            <h:commandButton value="Edit"
+                                                                             action="#{adminCDIBean.editCompany(company)}"
+                                                                             styleClass="edit-btn">
+
+                                                                <f:ajax render=":companyForm:toolbarSection
+                                                                                :companyForm:companyPanel
+                                                                                :msgForm:messages"
+                                                                        onevent="hideToast"/>
+
+                                                            </h:commandButton>
+
+                                                            <h:commandButton value="Delete"
+                                                                             action="#{adminCDIBean.deleteCompany(company.companyId)}"
+                                                                             styleClass="delete-btn">
+
+                                                                <f:ajax execute="@this"
+                                                                        render=":companyForm:toolbarSection
+                                                                                :companyForm:companyPanel
+                                                                                :companyForm:heroSection
+                                                                                :msgForm:messages"
+                                                                        onevent="hideToast"/>
+
+                                                            </h:commandButton>
+
+                                                        </td>
+
+                                                    </tr>
+
+                                                </ui:repeat>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </h:panelGroup>
+                            </section>
+                        </h:panelGroup>
+
+                    </h:panelGroup>
+                </h:form>
+            </main>
+        </div>
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{loginBean.role ne 'Admin'}" layout="block">
+        <div class="access-denied">
+            <h2>Access Denied</h2>
+            <p>You don't have permission to view this page.</p>
+        </div>
+    </h:panelGroup>
+
+    <ui:include src="/common/footer.xhtml" />
+
+    <script type="text/javascript">
+        function hideToast() {
+            var toast = document.querySelector(".custom-toast");
+            if (!toast || toast.innerText.trim() === "") {
+                return;
+            }
+
+            toast.style.display = "block";
+            toast.style.opacity = "1";
+
+            clearTimeout(window.toastHideTimer);
+            clearTimeout(window.toastDisplayTimer);
+
+            window.toastDisplayTimer = setTimeout(function () {
+                toast.style.transition = "opacity 0.5s ease";
+                toast.style.opacity = "0";
+
+                window.toastHideTimer = setTimeout(function () {
+                    toast.style.display = "none";
+                }, 500);
+            }, 3000);
+        }
+
+        window.addEventListener("load", hideToast);
+
+        if (window.jsf) {
+            if (jsf.ajax) {
+                jsf.ajax.addOnEvent(function(data) {
+                    if (data.status === "success") {
+                        hideToast();
+                    }
+                });
+            }
+        }
+    </script>
+</h:body>
+</html>

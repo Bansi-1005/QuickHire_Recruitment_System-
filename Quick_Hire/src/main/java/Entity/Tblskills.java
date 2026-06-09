@@ -47,7 +47,7 @@ import java.util.Date;
 
 @NamedQueries({
     @NamedQuery(name = "Tblskills.findAll",
-            query = "SELECT t FROM Tblskills t"),
+            query = "SELECT t FROM Tblskills t ORDER BY t.createdDate DESC"),
 
     @NamedQuery(name = "Tblskills.findBySkillId",
             query = "SELECT t FROM Tblskills t WHERE t.skillId = :skillId"),

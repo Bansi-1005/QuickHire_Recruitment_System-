@@ -40,7 +40,6 @@ import java.util.Date;
     @NamedQuery(name = "Tblcompany.findByCompanyLocation", query = "SELECT t FROM Tblcompany t WHERE t.companyLocation = :companyLocation"),
     @NamedQuery(name = "Tblcompany.findByCompanyEmail", query = "SELECT t FROM Tblcompany t WHERE t.companyEmail = :companyEmail"),
     @NamedQuery(name = "Tblcompany.findByCompanyWebsite", query = "SELECT t FROM Tblcompany t WHERE t.companyWebsite = :companyWebsite"),
-    @NamedQuery(name = "Tblcompany.findByCompanyStatus", query = "SELECT t FROM Tblcompany t WHERE t.companyStatus = :companyStatus"),
     @NamedQuery(name = "Tblcompany.findByCreatedDate", query = "SELECT t FROM Tblcompany t WHERE t.createdDate = :createdDate"),
 
     @NamedQuery(name="Tblcompany.count", query="SELECT COUNT(t) FROM Tblcompany t"),
@@ -62,9 +61,8 @@ public class Tblcompany implements Serializable {
     @Size(max = 200)
     @Column(name = "companyWebsite")
     private String companyWebsite;
-    @Size(max = 50)
-    @Column(name = "companyStatus")
-    private String companyStatus;
+    @Column(name = "isActive")
+    private Boolean isActive;
     @Lob
     @Size(max = 65535)
     @Column(name = "companyDescription")
@@ -73,8 +71,7 @@ public class Tblcompany implements Serializable {
     @Column(name = "companySize")
     private String companySize;
     @Column(name = "foundedYear")
-    @Temporal(TemporalType.DATE)
-    private Date foundedYear;
+    private Integer foundedYear;
     @Column(name = "createdDate")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
@@ -181,12 +178,12 @@ public class Tblcompany implements Serializable {
         this.companyWebsite = companyWebsite;
     }
 
-    public String getCompanyStatus() {
-        return companyStatus;
+    public Boolean getIsActive() {
+        return isActive;
     }
 
-    public void setCompanyStatus(String companyStatus) {
-        this.companyStatus = companyStatus;
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
     }
 
     public String getCompanyDescription() {
@@ -205,11 +202,11 @@ public class Tblcompany implements Serializable {
         this.companySize = companySize;
     }
 
-    public Date getFoundedYear() {
+    public Integer getFoundedYear() {
         return foundedYear;
     }
 
-    public void setFoundedYear(Date foundedYear) {
+    public void setFoundedYear(Integer foundedYear) {
         this.foundedYear = foundedYear;
     }
     

@@ -1,0 +1,367 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+
+<f:metadata>
+    <f:viewAction action="#{loginBean.checkLogin}" />
+    <f:viewAction action="#{adminCDIBean.loadProfileData}" />
+</f:metadata>
+
+<h:head>
+    <title>Admin Profile</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <h:outputStylesheet library="css" name="/admin/admin.css" />
+    <h:outputStylesheet library="css" name="/admin/profile.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+</h:head>
+
+<h:body>
+
+<ui:include src="/common/header.xhtml"/>
+
+<h:panelGroup rendered="#{loginBean.role eq 'Admin'}">
+
+    <div class="dashboard-layout">
+
+        <ui:include src="/admin/sidebar.xhtml">
+            <ui:param name="activePage" value="adminProfile"/>
+        </ui:include>
+
+        <main class="main">
+
+            <!-- Hero Section -->
+            <section class="hero">
+                <div class="hero-grid">
+                    <div class="hero-content">
+                        <div class="welcome-tag">
+                            Account Settings
+                        </div>
+                        <h1>My Profile</h1>
+                        <p>Manage your personal information, update password, and account settings.</p>
+                    </div>
+                    
+                    <div class="hero-stats">
+                        <div class="hero-mini-card">
+                            <span>Member Since</span>
+                            <strong>
+                                <h:outputText value="#{adminCDIBean.userObj.createdDate}">
+                                    <f:convertDateTime pattern="dd-MM-yyyy"/>
+                                </h:outputText>
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Toast Messages -->
+            <h:form id="profileMsgForm">
+                <h:messages id="profileMessages" 
+                            globalOnly="true" 
+                            showDetail="true" 
+                            showSummary="false"
+                            styleClass="custom-toast" 
+                            infoClass="info" 
+                            warnClass="warn" 
+                            errorClass="error"/>
+            </h:form>    
+
+            <!-- Profile Form -->
+            <h:form id="profileForm" styleClass="profile-form" enctype="multipart/form-data">
+
+                <div class="profile-section">
+                    
+                    <!-- Profile Photo Section -->
+                    <div class="photo-upload-section">
+                                   
+                        <div class="photo-preview">
+                            <img src="#{request.contextPath}/profilephotos/#{adminCDIBean.profilePhotoPath}"
+                                class="profile-photo-img"/>
+                        </div>
+
+                        <div class="photo-upload-info">
+
+                            <h4>Profile Photo</h4>
+                            <p>JPG, PNG max 2MB</p>
+
+                           <h:inputFile id="photoUpload"
+                                        value="#{adminCDIBean.profilePhoto}"
+                                        styleClass="file-input"
+                                        onchange="updateProfilePhotoName(this)"/>
+
+                            <div class="photo-actions">
+
+                                <h:outputLabel for="photoUpload"
+                                               styleClass="choose-file-btn">
+                                    <i class="fa-solid fa-image"></i>
+                                    Choose Photo
+                                </h:outputLabel>
+
+                                <h:commandButton value="Upload Photo"
+                                                action="#{adminCDIBean.uploadProfilePhoto}"
+                                                styleClass="btn-photo-upload">
+
+                                    <f:ajax execute="@form"
+                                            render="@form :profileMsgForm:profileMessages"
+                                            onevent="handlePhotoUpload"/>
+
+                                </h:commandButton>
+
+                            </div>
+
+                            <div class="selected-file-name" id="selectedPhotoName">
+                                No file selected
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Personal Information -->
+                    <div class="form-grid">
+                        
+                        <!-- Full Name -->
+                        <div class="form-group">
+                            <label for="userName">Full Name <span class="required">*</span></label>
+                            <h:inputText id="userName"
+                                         value="#{adminCDIBean.userObj.userName}"
+                                         styleClass="form-input"
+                                         required="true"
+                                         requiredMessage="Full Name is required">
+                                <f:ajax event="keyup" execute="@this" render="userNameMsg"/>
+                            </h:inputText>
+                            <h:message id="userNameMsg" for="userName" styleClass="field-error"/>
+                        </div>
+
+                        <!-- Email (Readonly) -->
+                        <div class="form-group">
+                            <label for="userEmail">Email Address <span class="required">*</span></label>
+                            <h:inputText id="userEmail" 
+                                         value="#{adminCDIBean.userObj.userEmail}"
+                                         styleClass="form-input" 
+                                         required="true" 
+                                         requiredMessage="Email is required"
+                                         >
+                                <f:validateRegex pattern="^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"/>
+                            </h:inputText>
+                        </div>
+
+                        <!-- Account Status -->
+                        <div class="form-group">
+                            <label>Account Status</label>
+                            <div class="status-wrap">
+                                <label class="switch">
+
+                                    <h:selectBooleanCheckbox
+                                        value="#{adminCDIBean.userObj.userIsActive}"
+                                        styleClass="switch-input"/>
+
+                                    <span class="slider"></span>
+
+                                </label>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <h:commandButton value="Save Changes"
+                                        action="#{adminCDIBean.updateProfile}"
+                                        styleClass="btn-save">
+                            <f:ajax execute="@form"
+                                    render="@form :profileMsgForm:profileMessages"
+                                    onevent="hideToast"/>
+                        </h:commandButton>
+                    </div>
+
+                </div>
+            </h:form>
+
+            <!-- Change Password Section -->
+            <h:form id="passwordForm" styleClass="profile-section password-section">
+
+                <div class="panel-header">
+                    <h3>
+                        <i class="fa-solid fa-lock"></i>
+                        Change Password
+                    </h3>
+                    <span class="panel-chip">Secure Your Account</span>
+                </div>
+
+                <div class="form-grid">
+
+                    <!-- CURRENT PASSWORD -->
+                    <div class="form-group form-col-full">
+                        <label>Current Password <span class="required">*</span></label>
+
+                        <h:inputSecret id="currentPassword"
+                                       value="#{adminCDIBean.currentPassword}"
+                                       styleClass="form-input"
+                                       required="true"
+                                       requiredMessage="Current password is required">
+
+                            <!-- AJAX validation on blur -->
+                            <f:ajax event="keyup"
+                                    execute="@this"
+                                    render="currentPasswordMsg"/>
+                        </h:inputSecret>
+
+                        <h:message id="currentPasswordMsg"
+                                   for="currentPassword"
+                                   styleClass="field-error"/>
+                    </div>
+
+                    <!-- NEW PASSWORD -->
+                    <div class="form-group">
+                        <label>New Password <span class="required">*</span></label>
+
+                        <h:inputSecret id="newPassword"
+                                       value="#{adminCDIBean.newPassword}"
+                                       styleClass="form-input"
+                                       required="true"
+                                       requiredMessage="New password is required">
+
+                            <f:validateLength minimum="8" maximum="20"/>
+
+                            <!-- AJAX validation on blur -->
+                            <f:ajax event="keyup"
+                                    execute="@this"
+                                    render="newPasswordMsg"/>
+                        </h:inputSecret>
+
+                        <h:message id="newPasswordMsg"
+                                   for="newPassword"
+                                   styleClass="field-error"/>
+                    </div>
+
+                    <!-- CONFIRM PASSWORD -->
+                    <div class="form-group">
+                        <label>Confirm Password <span class="required">*</span></label>
+
+                        <h:inputSecret id="confirmPassword"
+                                       value="#{adminCDIBean.confirmPassword}"
+                                       styleClass="form-input"
+                                       required="true"
+                                       requiredMessage="Please confirm password">
+
+                            <!-- AJAX validation on blur -->
+                            <f:ajax event="keyup"
+                                    execute="@this"
+                                    render="confirmPasswordMsg"/>
+                        </h:inputSecret>
+
+                        <h:message id="confirmPasswordMsg"
+                                   for="confirmPassword"
+                                   styleClass="field-error"/>
+                    </div>
+
+                </div>
+
+                <!-- ACTION -->
+                <div class="form-actions">
+
+                    <h:commandButton value="Update Password"
+                                     action="#{adminCDIBean.changePassword}"
+                                     styleClass="btn-password">
+
+                        <!-- FULL FORM AJAX SUBMIT -->
+                        <f:ajax execute="passwordForm"
+                                render="passwordForm :profileMsgForm:profileMessages"
+                                onevent="hideToast"/>
+                    </h:commandButton>
+
+                </div>
+
+            </h:form>
+
+        </main>
+    </div>
+</h:panelGroup>
+
+<!-- Access Denied -->
+<h:panelGroup rendered="#{loginBean.role ne 'Admin'}">
+    <div class="access-denied">
+        <div class="access-denied-icon">
+            <i class="fa-solid fa-circle-exclamation"></i>
+        </div>
+        <h2>Access Denied</h2>
+        <p>You must be logged in as Admin to view this page.</p>
+    </div>
+</h:panelGroup>
+
+<ui:include src="/common/footer.xhtml"/>
+
+<!-- JavaScript -->
+<script type="text/javascript">
+    function updateProfilePhotoName(input) {
+
+        var fileName = input.files[0]
+            ? input.files[0].name
+            : 'No file selected';
+
+        document.getElementById('selectedPhotoName').textContent = fileName;
+    }
+
+    function clearPhotoInputAfterUpload() {
+
+        var input =
+            document.getElementById('profileForm:photoUpload');
+
+        if (input) {
+            input.value = '';
+        }
+
+        document.getElementById('selectedPhotoName').textContent =
+            'No file selected';
+    }
+
+    function handlePhotoUpload(data) {
+
+        if (data.status === 'success') {
+
+            clearPhotoInputAfterUpload();
+            hideToast();
+        }
+    }
+    
+    function hideToast() {
+         var toast = document.querySelector(".custom-toast");
+         if (!toast || toast.innerText.trim() === "") {
+             return;
+         }
+
+         toast.style.display = "block";
+         toast.style.opacity = "1";
+
+         clearTimeout(window.toastHideTimer);
+         clearTimeout(window.toastDisplayTimer);
+
+         window.toastDisplayTimer = setTimeout(function () {
+             toast.style.transition = "opacity 0.5s ease";
+             toast.style.opacity = "0";
+
+             window.toastHideTimer = setTimeout(function () {
+                 toast.style.display = "none";
+             }, 500);
+         }, 3000);
+     }
+
+     window.addEventListener("load", hideToast);
+
+     if (window.jsf) {
+         if (jsf.ajax) {
+             jsf.ajax.addOnEvent(function(data) {
+                 if (data.status === "success") {
+                     hideToast();
+                 }
+             });
+         }
+     }
+</script>
+
+</h:body>
+</html>
