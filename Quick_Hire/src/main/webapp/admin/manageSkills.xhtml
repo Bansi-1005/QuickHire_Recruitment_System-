@@ -32,7 +32,7 @@
             <main class="main" id="main">
 
                 <h:form id="msgForm">
-                    <h:messages id="messages" globalOnly="true" showDetail="true" showSummary="true"
+                    <h:messages id="messages" globalOnly="true" showDetail="true" showSummary="false"
                                 styleClass="custom-toast" infoClass="info" warnClass="warn" errorClass="error" fatalClass="error"/>
                 </h:form>
 
@@ -110,9 +110,9 @@
                                         value="#{adminCDIBean.categoryObj.categoryId == null ? 'Save' : 'Update'}"
                                         action="#{adminCDIBean.saveCategory}"
                                         styleClass="save-btn">
-                                        <f:ajax execute="@form" 
-                                                render=":tabForm:Panel :msgForm:messages" 
-                                                onevent="hideToast"/>
+                                       <f:ajax execute="@form"
+                                            render=":msgForm :msgForm:messages :tabForm:Panel"
+                                            onevent="hideToast"/>
                                     </h:commandButton>
                                 </div>
                             </section>

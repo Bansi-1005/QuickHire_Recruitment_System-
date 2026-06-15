@@ -50,7 +50,13 @@
                 <i class="fa-solid fa-briefcase"></i>
                 <span>All Jobs</span>
             </h:link>
-
+            
+            <!-- NOTIFICATIONS -->
+            <h:link outcome="notifications"
+                    styleClass="menu-link #{activePage eq 'notifications' ? 'active' : ''}" >
+                <i class="fa-solid fa-bell" style="color:#f59e0b;"></i> 
+                <span>Notifications</span>
+            </h:link>
         </h:form>
 
         <div class="sidebar-card">

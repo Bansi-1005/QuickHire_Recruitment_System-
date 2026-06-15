@@ -1,0 +1,293 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+<f:metadata>
+    <f:viewAction action="#{loginBean.checkLogin}" />
+    <f:viewAction action="#{adminCDIBean.loadNotificationsPage}" />
+</f:metadata>
+
+<h:head>
+    <title>Admin Notifications</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <h:outputStylesheet library="css" name="admin/admin.css"/>
+    <h:outputStylesheet library="css" name="candidate/notifications.css"/>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+</h:head>
+
+<h:body>
+
+    <ui:include src="/common/header.xhtml"/>
+
+    <h:panelGroup rendered="#{loginBean.role eq 'Admin'}">
+
+        <div class="dashboard-layout">
+
+            <ui:include src="/admin/sidebar.xhtml">
+                <ui:param name="activePage" value="notifications"/>
+            </ui:include>
+
+            <main class="main" id="main">
+
+                <!-- HERO -->
+                <section class="notify-hero">
+
+                    <div class="notify-hero-left">
+
+                        <span class="notify-tag">
+                            Admin Notifications
+                        </span>
+
+                        <h1>
+                            Manage System Notifications
+                        </h1>
+
+                        <p>
+                            Monitor recruiter activities,
+                            candidate updates,
+                            job approvals,
+                            reports and important
+                            system alerts from one place.
+                        </p>
+
+                    </div>
+
+                    <h:panelGroup id="statsPanel"
+                                  layout="block"
+                                  styleClass="notify-hero-right">
+
+                        <div class="notify-stat">
+
+                            <i class="fa-solid fa-bell"></i>
+
+                            <div>
+                                <span>Total</span>
+
+                                <strong>
+                                    #{empty adminCDIBean.notificationList ? 0 :
+                                      adminCDIBean.notificationList.size()}
+                                </strong>
+                            </div>
+
+                        </div>
+
+                        <div class="notify-stat unread">
+
+                            <i class="fa-solid fa-circle-dot"></i>
+
+                            <div>
+                                <span>Unread</span>
+
+                                <strong>
+                                    #{adminCDIBean.unreadNotificationCount}
+                                </strong>
+                            </div>
+
+                        </div>
+
+                    </h:panelGroup>
+
+                </section>
+
+                <!-- FILTERS -->
+                <section class="notify-toolbar">
+
+                    <h:form id="filterForm">
+
+                        <div class="notify-filters">
+
+                            <h:commandLink value="All"
+                                           styleClass="#{adminCDIBean.notificationFilter eq 'ALL'
+                                                          ? 'filter-chip active'
+                                                          : 'filter-chip'}"
+                                           action="#{adminCDIBean.applyFilter('ALL')}">
+
+                                <f:ajax render="notificationPanel statsPanel filterForm"/>
+
+                            </h:commandLink>
+
+                            <h:commandLink value="Unread"
+                                           styleClass="#{adminCDIBean.notificationFilter eq 'UNREAD'
+                                                          ? 'filter-chip active'
+                                                          : 'filter-chip'}"
+                                           action="#{adminCDIBean.applyFilter('UNREAD')}">
+
+                                <f:ajax render="notificationPanel statsPanel filterForm"/>
+
+                            </h:commandLink>
+
+                        </div>
+
+                    </h:form>
+
+                    <h:form>
+
+                        <h:commandButton value="Refresh"
+                                         action="#{adminCDIBean.loadNotificationsPage}"
+                                         styleClass="refresh-btn">
+
+                            <f:ajax render="notificationPanel statsPanel filterForm"/>
+
+                        </h:commandButton>
+
+                    </h:form>
+
+                </section>
+
+                <!-- NOTIFICATIONS -->
+                <h:panelGroup id="notificationPanel" layout="block">
+
+                    <section class="dashboard-panel notification-panel notify-panel">
+
+                        <div class="panel-header">
+
+                            <h2>
+                                Recent Notifications
+                            </h2>
+
+                            <span class="panel-badge">
+
+                                #{empty adminCDIBean.notificationList ? 0 :
+                                  adminCDIBean.notificationList.size()}
+
+                                items
+
+                            </span>
+
+                        </div>
+
+                        <!-- EMPTY STATE -->
+                        <h:panelGroup rendered="#{empty adminCDIBean.notificationList}">
+
+                            <div class="empty-state">
+
+                                <i class="fa-regular fa-bell-slash empty-icon"></i>
+
+                                <h3>
+                                    No Notifications Yet
+                                </h3>
+
+                                <p>
+                                    Updates will appear here.
+                                </p>
+
+                            </div>
+
+                        </h:panelGroup>
+
+                        <!-- NOTIFICATION LIST -->
+                        <h:panelGroup rendered="#{not empty adminCDIBean.notificationList}">
+
+                            <h:form id="notificationForm">
+
+                                <div class="notification-list">
+
+                                    <ui:repeat value="#{adminCDIBean.notificationList}"
+                                               var="noti">
+
+                                        <div class="notification-card #{noti.isRead ? '' : 'unread'}">
+
+                                            <div class="notification-icon #{adminCDIBean.getNotificationBadge(noti)}">
+                                                <i class="fa-solid fa-bell"></i>
+                                            </div>
+
+                                            <div class="notification-body">
+
+                                                <div class="notification-head">
+
+                                                    <h3>
+                                                        #{empty noti.notificationTitle
+                                                          ? 'Notification'
+                                                          : noti.notificationTitle}
+                                                    </h3>
+
+                                                    <span class="notification-time">
+                                                        <h:outputText value="#{noti.createdDate}">
+                                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm a"/>
+                                                        </h:outputText>
+                                                    </span>
+
+                                                </div>
+
+                                                <p>#{noti.notificationMessage}</p>
+
+                                                <div class="notification-meta">
+
+                                                    <h:panelGroup rendered="#{noti.isRead == false}">
+
+                                                        <h:commandLink value="Mark as read"
+                                                                       styleClass="read-link"
+                                                                       action="#{adminCDIBean.markNotificationAsRead(noti.notificationId)}">
+
+                                                            <f:ajax render="notificationPanel statsPanel filterForm notificationForm"/>
+
+                                                        </h:commandLink>
+
+                                                        <span class="status-dot unread-dot">
+                                                            Unread
+                                                        </span>
+
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{noti.isRead == true}">
+
+                                                        <span class="status-dot read-dot">
+                                                            Read
+                                                        </span>
+
+                                                    </h:panelGroup>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    </ui:repeat>
+
+                                </div>
+
+                            </h:form>
+
+                        </h:panelGroup>
+
+                    </section>
+
+                </h:panelGroup>
+
+            </main>
+
+        </div>
+
+    </h:panelGroup>
+
+    <!-- ACCESS DENIED -->
+    <h:panelGroup rendered="#{loginBean.role ne 'Admin'}">
+
+        <div class="access-denied">
+
+            <h2>
+                Access Denied
+            </h2>
+
+            <p>
+                You don't have permission to view this page.
+            </p>
+
+        </div>
+
+    </h:panelGroup>
+
+    <ui:include src="/common/footer.xhtml"/>
+
+</h:body>
+
+</html>

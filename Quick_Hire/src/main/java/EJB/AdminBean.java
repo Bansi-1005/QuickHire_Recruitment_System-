@@ -563,6 +563,26 @@ public class AdminBean implements AdminBeanLocal {
                 user.getUserIsActive());
 
         em.merge(dbUser);
+        
+        // profile notification
+        Tblnotification notification = new Tblnotification();
+
+        notification.setNotificationTitle("Profile Updated");
+
+        notification.setNotificationMessage(
+                "Your admin profile information has been updated successfully.");
+
+        notification.setNotificationType("PROFILE");
+
+        notification.setIsRead(false);
+
+        notification.setCreatedDate(new Date());
+
+        notification.setReceiverUserId(dbUser);
+
+        notification.setSenderUserId(dbUser);
+
+        em.persist(notification);
     }
     
     @Override
@@ -602,6 +622,20 @@ public class AdminBean implements AdminBeanLocal {
 
             user.setUserPassword(encryptedPassword);
 
+            // password change notification
+            Tblnotification notification = new Tblnotification();
+
+            notification.setNotificationTitle("Password Changed");
+            notification.setNotificationMessage(
+                    "Your account password was changed successfully.");
+            notification.setNotificationType("PROFILE");
+            notification.setIsRead(false);
+            notification.setCreatedDate(new Date());
+            notification.setReceiverUserId(user);
+            notification.setSenderUserId(user);
+
+            em.persist(notification);
+
             em.merge(user);
 
             return "Password updated successfully";
@@ -624,6 +658,75 @@ public class AdminBean implements AdminBeanLocal {
 
         em.merge(user);
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    // ================= ADMIN NOTIFICATIONS =================
+
+    @Override
+    public Collection<Tblnotification> getAdminNotifications(int adminId) {
+
+        try {
+
+            return em.createNamedQuery(
+                    "Tblnotification.findByReceiver",
+                    Tblnotification.class)
+                    .setParameter("userId", adminId)
+                    .getResultList();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public Collection<Tblnotification> getAdminUnreadNotifications(int adminId) {
+
+        try {
+
+            return em.createNamedQuery(
+                    "Tblnotification.findUnreadByReceiver",
+                    Tblnotification.class)
+                    .setParameter("userId", adminId)
+                    .getResultList();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public void markNotificationAsRead(int notificationId) {
+
+        try {
+
+            Tblnotification notification =
+                    em.find(Tblnotification.class, notificationId);
+
+            if (notification != null) {
+
+                notification.setIsRead(true);
+                notification.setReadDate(new Date());
+
+                em.merge(notification);
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
+    
     
 
     // ================= APPLICATION =================

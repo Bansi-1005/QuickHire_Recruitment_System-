@@ -623,6 +623,82 @@ public class AdminResource {
         return Response.ok().build();
     }
 
+    
+    
+    
+    
+    
+    
+    
+    // ================= ADMIN NOTIFICATIONS =================
+
+    @GET
+    @Path("getAdminNotifications")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAdminNotifications(
+            @QueryParam("adminId") int adminId) {
+
+        try {
+
+            return Response.ok(
+                    ejb.getAdminNotifications(adminId))
+                    .build();
+
+        } catch (Exception e) {
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
+    @GET
+    @Path("getAdminUnreadNotifications")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAdminUnreadNotifications(
+            @QueryParam("adminId") int adminId) {
+
+        try {
+
+            return Response.ok(
+                    ejb.getAdminUnreadNotifications(adminId))
+                    .build();
+
+        } catch (Exception e) {
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
+    @PUT
+    @Path("markNotificationAsRead")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response markNotificationAsRead(
+            @QueryParam("notificationId") int notificationId) {
+
+        try {
+
+            ejb.markNotificationAsRead(notificationId);
+
+            return Response.ok(
+                    "Notification marked as read")
+                    .build();
+
+        } catch (Exception e) {
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+    
+    
+    
+    
+    
+    
     // ================= APPLICATION =================
 //    @GET
 //    @Path("getAllApplications")

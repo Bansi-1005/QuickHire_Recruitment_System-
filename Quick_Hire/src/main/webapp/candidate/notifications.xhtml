@@ -131,7 +131,8 @@
                         <!-- LIST -->
                         <h:panelGroup rendered="#{not empty candidateCDIBean.notificationList}">
 
-                            <div class="notification-list">
+                            <h:form id="notificationForm">
+                                <div class="notification-list">
 
                                 <ui:repeat value="#{candidateCDIBean.notificationList}" var="noti">
 
@@ -189,7 +190,7 @@
                                 </ui:repeat>
 
                             </div>
-
+                            </h:form>
                         </h:panelGroup>
 
                     </section>

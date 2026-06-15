@@ -12,6 +12,7 @@ import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -27,6 +28,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  *
@@ -71,10 +73,19 @@ public class AdminCDIBean implements Serializable {
     
     
     // Profile
+    private Tblusers userObj = new Tblusers();
+
+    private String currentPassword;
+    private String newPassword;
+    private String confirmPassword;
+
+    private Part profilePhoto;
     
     
     
     
+    
+    // Notifications
     
     
     
@@ -89,6 +100,25 @@ public class AdminCDIBean implements Serializable {
     }
 
     
+    // ------- GET SESSION USER ------
+    private int fetchAdminIdFromSession() {
+
+        HttpSession session = (HttpSession) FacesContext
+                .getCurrentInstance()
+                .getExternalContext()
+                .getSession(false);
+
+        if (session != null && session.getAttribute("userId") != null) {
+
+            return (int) session.getAttribute("userId");
+        }
+
+        return 0;
+    }
+
+    public int getLoggedInAdminId() {
+        return fetchAdminIdFromSession();
+    }
     
     
     
@@ -266,14 +296,14 @@ public class AdminCDIBean implements Serializable {
     public void saveCategory() {
 
         try {
-
+            
             if (categoryObj.getCategoryName() == null
                     || categoryObj.getCategoryName().trim().isEmpty()) {
 
                 FacesContext.getCurrentInstance().addMessage(
                         null,
                         new FacesMessage(
-                                FacesMessage.SEVERITY_WARN,
+                                FacesMessage.SEVERITY_ERROR,
                                 "Category name is required.",
                                 null));
 
@@ -400,7 +430,7 @@ public class AdminCDIBean implements Serializable {
                FacesContext.getCurrentInstance().addMessage(
                        null,
                        new FacesMessage(
-                               FacesMessage.SEVERITY_WARN,
+                               FacesMessage.SEVERITY_ERROR,
                                "Please enter Skill.",
                                null));
 
@@ -412,7 +442,7 @@ public class AdminCDIBean implements Serializable {
                FacesContext.getCurrentInstance().addMessage(
                        null,
                        new FacesMessage(
-                               FacesMessage.SEVERITY_WARN,
+                               FacesMessage.SEVERITY_ERROR,
                                "Please select a category.",
                                null));
 
@@ -823,6 +853,7 @@ public class AdminCDIBean implements Serializable {
     
     
     
+  
     
     
     
@@ -834,14 +865,6 @@ public class AdminCDIBean implements Serializable {
     /* ===============================================
         Profile
     ===================================================*/
-    
-    private Tblusers userObj = new Tblusers();
-
-    private String currentPassword;
-    private String newPassword;
-    private String confirmPassword;
-
-    private Part profilePhoto;
 
     public void loadProfileData() {
 
@@ -1038,46 +1061,198 @@ public class AdminCDIBean implements Serializable {
         return "default-user.png";
     }
 
-    public Tblusers getUserObj() {
-        return userObj;
+  
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    /* ===============================================
+        Notifications
+    ===================================================*/
+    
+    // ================= NOTIFICATIONS =================
+
+    private List<Tblnotification> notificationList = new ArrayList<>();
+    private String notificationFilter = "ALL";
+
+    // ================= NOTIFICATION METHODS =================
+
+    public void loadNotificationsPage() {
+
+        int adminId = getLoggedInAdminId();
+
+        if (adminId == 0) {
+            notificationList = new ArrayList<>();
+            notificationFilter = "ALL";
+            return;
+        }
+
+        notificationList = loadAllNotifications(adminId);
+        notificationFilter = "ALL";
     }
 
-    public void setUserObj(Tblusers userObj) {
-        this.userObj = userObj;
+    public List<Tblnotification> loadAllNotifications(int adminId) {
+
+        try {
+
+            return getClient()
+                    .target(BASE_URL + "/getAdminNotifications")
+                    .queryParam("adminId", adminId)
+                    .request(MediaType.APPLICATION_JSON)
+                    .get(new GenericType<List<Tblnotification>>() {
+                    });
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
-    public String getCurrentPassword() {
-        return currentPassword;
+    public List<Tblnotification> loadUnreadNotifications(int adminId) {
+
+        try {
+
+            return getClient()
+                    .target(BASE_URL + "/getAdminUnreadNotifications")
+                    .queryParam("adminId", adminId)
+                    .request(MediaType.APPLICATION_JSON)
+                    .get(new GenericType<List<Tblnotification>>() {
+                    });
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
-    public void setCurrentPassword(String currentPassword) {
-        this.currentPassword = currentPassword;
+    public void applyFilter(String filter) {
+
+        int adminId = getLoggedInAdminId();
+
+        if (adminId == 0) {
+            return;
+        }
+
+        notificationFilter = filter;
+
+        switch (filter.toUpperCase()) {
+
+            case "UNREAD":
+                notificationList = loadUnreadNotifications(adminId);
+                break;
+
+            case "ALL":
+            default:
+                notificationList = loadAllNotifications(adminId);
+                break;
+        }
     }
 
-    public String getNewPassword() {
-        return newPassword;
+    public void markNotificationAsRead(int notificationId) {
+
+        try {
+
+            Response response = getClient()
+                    .target(BASE_URL + "/markNotificationAsRead")
+                    .queryParam("notificationId", notificationId)
+                    .request()
+                    .put(jakarta.ws.rs.client.Entity.text(""));
+
+            if (response.getStatus() == 200) {
+
+                int adminId = getLoggedInAdminId();
+
+                if ("UNREAD".equalsIgnoreCase(notificationFilter)) {
+                    notificationList = loadUnreadNotifications(adminId);
+                } else {
+                    notificationList = loadAllNotifications(adminId);
+                }
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
     }
 
-    public void setNewPassword(String newPassword) {
-        this.newPassword = newPassword;
+    public List<Tblnotification> getRecentNotifications() {
+
+        if (notificationList == null) {
+            return new ArrayList<>();
+        }
+
+        return notificationList.stream()
+                .limit(5)
+                .toList();
     }
 
-    public String getConfirmPassword() {
-        return confirmPassword;
+    public int getUnreadNotificationCount() {
+
+        if (notificationList == null) {
+            return 0;
+        }
+
+        return (int) notificationList.stream()
+                .filter(n -> n != null && !n.getIsRead())
+                .count();
     }
 
-    public void setConfirmPassword(String confirmPassword) {
-        this.confirmPassword = confirmPassword;
+    public String getNotificationBadge(Tblnotification n) {
+
+        if (n == null || n.getNotificationType() == null) {
+            return "alert";
+        }
+
+        String type = n.getNotificationType().toUpperCase();
+
+        if (type.contains("JOB")) {
+            return "job";
+        }
+
+        if (type.contains("COMPANY")) {
+            return "company";
+        }
+
+        if (type.contains("CANDIDATE")) {
+            return "candidate";
+        }
+
+        if (type.contains("RECRUITER")) {
+            return "recruiter";
+        }
+
+        return "alert";
     }
 
-    public Part getProfilePhoto() {
-        return profilePhoto;
+    public List<Tblnotification> getNotificationList() {
+        return notificationList;
     }
 
-    public void setProfilePhoto(Part profilePhoto) {
-        this.profilePhoto = profilePhoto;
+    public void setNotificationList(List<Tblnotification> notificationList) {
+        this.notificationList = notificationList;
     }
 
+    public String getNotificationFilter() {
+        return notificationFilter;
+    }
+
+    public void setNotificationFilter(String notificationFilter) {
+        this.notificationFilter = notificationFilter;
+    }
+    
+    
+    
     
     
     
@@ -1188,7 +1363,7 @@ public class AdminCDIBean implements Serializable {
         this.showCompanyForm = showCompanyForm;
     }
     
-        public Collection<Tbljob> getJobList() {
+    public Collection<Tbljob> getJobList() {
         return jobList;
     }
 
@@ -1204,4 +1379,43 @@ public class AdminCDIBean implements Serializable {
         this.selectedJob = selectedJob;
     }
     
+      public Tblusers getUserObj() {
+        return userObj;
+    }
+
+    public void setUserObj(Tblusers userObj) {
+        this.userObj = userObj;
+    }
+
+    public String getCurrentPassword() {
+        return currentPassword;
+    }
+
+    public void setCurrentPassword(String currentPassword) {
+        this.currentPassword = currentPassword;
+    }
+
+    public String getNewPassword() {
+        return newPassword;
+    }
+
+    public void setNewPassword(String newPassword) {
+        this.newPassword = newPassword;
+    }
+
+    public String getConfirmPassword() {
+        return confirmPassword;
+    }
+
+    public void setConfirmPassword(String confirmPassword) {
+        this.confirmPassword = confirmPassword;
+    }
+
+    public Part getProfilePhoto() {
+        return profilePhoto;
+    }
+
+    public void setProfilePhoto(Part profilePhoto) {
+        this.profilePhoto = profilePhoto;
+    }
 }

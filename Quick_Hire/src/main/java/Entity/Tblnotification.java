@@ -45,8 +45,8 @@ import java.util.Date;
     @NamedQuery(name = "Tblnotification.findInterviewByReceiver", query = "SELECT t FROM Tblnotification t WHERE t.receiverUserId.userId = :userId AND t.notificationType LIKE 'INTERVIEW%' ORDER BY t.createdDate DESC"),
 
     // PROFILE
-    @NamedQuery(name = "Tblnotification.findProfileByReceiver", query = "SELECT t FROM Tblnotification t WHERE t.receiverUserId.userId = :userId AND t.notificationType LIKE 'PROFILE%' ORDER BY t.createdDate DESC")
-
+    @NamedQuery(name = "Tblnotification.findProfileByReceiver", query = "SELECT t FROM Tblnotification t WHERE t.receiverUserId.userId = :userId AND t.notificationType LIKE 'PROFILE%' ORDER BY t.createdDate DESC"),
+    
 })
 public class Tblnotification implements Serializable {
 

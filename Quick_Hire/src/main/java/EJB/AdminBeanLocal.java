@@ -73,6 +73,16 @@ public interface AdminBeanLocal {
     public void uploadProfilePhoto(Integer userId, String photo);
     
     
+    
+    // ================= Notifications =================
+    Collection<Tblnotification> getAdminNotifications(int adminId);
+    Collection<Tblnotification> getAdminUnreadNotifications(int adminId);
+    void markNotificationAsRead(int notificationId);
+    
+    
+    
+    
+    
     // ================= APPLICATION =================
 //    Collection<Tblapplication> getAllApplications();
 //    void updateApplicationStatus(int applicationId, String applicationStatus);
