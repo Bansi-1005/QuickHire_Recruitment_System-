@@ -79,105 +79,75 @@
 
             <h:panelGroup id="interviewPanel">
 
-                <!-- TABLE -->
-                <div class="table-wrapper">
+                <!-- TABLE HEADER -->
+                <h:panelGroup rendered="#{not empty candidateCDIBean.interviewList}">
+                    <div class="table-header">
+                        <div class="table-info">
+                            <span class="total-count">
+                                <i class="fa-solid fa-list"></i>
+                                <strong>#{candidateCDIBean.interviewList.size()}</strong> interviews found
+                            </span>
+                        </div>
+                    </div>
 
-                    <table class="interview-table">
-
-                        <thead>
-
-                            <tr>
-                                <th>Job Title</th>
-                                <th>Round</th>
-                                <th>Mode</th>
-                                <th>Date</th>
-                                <th>Status</th>
-                            </tr>
-
-                        </thead>
-
-                        <tbody>
-
-                            <ui:repeat value="#{candidateCDIBean.interviewList}"
-                                       var="i"
-                                       varStatus="loop">
-
+                    <!-- TABLE WRAPPER -->
+                    <div class="table-wrap table-wrap-interview">
+                        <table class="interview-table professional-table">
+                            <thead>
                                 <tr>
-                                    <td>
-
-                                        <div class="job-info">
-
-                                            <div class="job-icon">
-                                                <i class="fa-solid fa-microphone"></i>
-                                            </div>
-
-                                            <div>
-
-                                                <div class="job-title">
-                                                    #{i.applicationId.jobId.jobTitle}
-                                                </div>
-
-                                                <div class="job-location">
-                                                    #{i.applicationId.jobId.jobLocation}
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
-                                    </td>
-
-                                    <td>
-                                        Round #{i.interviewRoundName}
-                                    </td>
-
-                                    <td>
-
-                                        <span class="mode-badge">
-                                            #{i.interviewerMode}
-                                        </span>
-
-                                    </td>
-
-                                    <td>
-                                        #{i.interviewDate}
-                                    </td>
-
-                                    <td>
-
-                                        <span class="status-badge">
-                                            Scheduled
-                                        </span>
-
-                                    </td>
-
+                                    <th>Job Title</th>
+                                    <th>Round</th>
+                                    <th>Mode</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
                                 </tr>
-
-                            </ui:repeat>
-
-                        </tbody>
-
-                    </table>
-
-                </div>
+                            </thead>
+                            <tbody>
+                                <ui:repeat value="#{candidateCDIBean.interviewList}"
+                                           var="i">
+                                    <tr class="interview-row">
+                                        <td class="cell-title">
+                                            <div class="title-wrapper">
+                                                <i class="fa-solid fa-microphone title-icon"></i>
+                                                <span class="job-title-text">#{i.applicationId.jobId.jobTitle}</span>
+                                            </div>
+                                        </td>
+                                        <td class="cell-round">
+                                            <i class="fa-solid fa-layer-group round-icon"></i>
+                                            Round #{i.interviewRoundName}
+                                        </td>
+                                        <td class="cell-mode">
+                                            <span class="mode-badge mode-#{i.interviewerMode eq 'Online' ? 'online' : 'offline'}">
+                                                <i class="fa-solid #{i.interviewerMode eq 'Online' ? 'fa-laptop' : 'fa-building'}"></i>
+                                                #{i.interviewerMode}
+                                            </span>
+                                        </td>
+                                        <td class="cell-date">
+                                            <i class="fa-solid fa-calendar date-icon"></i>
+                                            <h:outputText value="#{i.interviewDate}">
+                                                <f:convertDateTime pattern="dd MMM yyyy hh:mm a"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td class="cell-status">
+                                            <span class="status-badge status-scheduled">
+                                                <i class="fa-solid fa-circle-check"></i>
+                                                Scheduled
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </ui:repeat>
+                            </tbody>
+                        </table>
+                    </div>
+                </h:panelGroup>
 
                 <!-- EMPTY STATE -->
                 <h:panelGroup rendered="#{empty candidateCDIBean.interviewList}">
-
                     <div class="empty-state">
-
                         <i class="fa-regular fa-calendar-xmark"></i>
-
-                        <h3>
-                            No Interviews Scheduled
-                        </h3>
-
-                        <p>
-                            Your interview schedules will appear here.
-                        </p>
-
+                        <h3>No Interviews Scheduled</h3>
+                        <p>Your interview schedules will appear here.</p>
                     </div>
-
                 </h:panelGroup>
 
             </h:panelGroup>
@@ -192,19 +162,13 @@
 
 <!-- ACCESS DENIED -->
 <h:panelGroup rendered="#{loginBean.role ne 'Candidate'}">
-
     <div class="access-denied">
-
-        <h2>
-            Access Denied ❌
-        </h2>
-
+        <h2>Access Denied ❌</h2>
     </div>
-
 </h:panelGroup>
 
-    <!-- COMMON FOOTER -->
-    <ui:include src="/common/footer.xhtml"/>
+<!-- COMMON FOOTER -->
+<ui:include src="/common/footer.xhtml"/>
 
 </h:body>
 </html>

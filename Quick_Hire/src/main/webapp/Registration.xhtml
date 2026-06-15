@@ -4,7 +4,8 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:pt="jakarta.faces.passthrough">
 
 <h:head>
     <title>Register</title>
@@ -58,62 +59,97 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 20px;
         }
 
         .card {
-            width: 420px;
+            width: 540px;
             background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.12);
             max-height: 90vh;
             overflow-y: auto;
+            /* Hide scrollbar but keep scrolling */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+        }
+
+        .card::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
         }
 
         .input {
             width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            border-radius: 6px;
-            border: 1px solid #ccc;
+            padding: 12px 14px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .input:focus {
+            border-color: #0f9b8e;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(15, 155, 142, 0.1);
         }
 
         .btn {
             width: 100%;
-            padding: 12px;
-            margin-top: 10px;
+            padding: 14px;
+            margin-top: 15px;
             background: linear-gradient(to right, #0f9b8e, #1f6fdc);
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(15, 155, 142, 0.3);
         }
 
         .error {
-            color: red;
+            color: #ef4444;
             font-size: 12px;
+            margin-top: 4px;
         }
 
         .bottom {
             text-align: center;
-            margin-top: 15px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .bottom a {
+            color: #0f9b8e;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .bottom a:hover {
+            color: #1f6fdc;
         }
         
-        /* container */
         .toggle-container{
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin: 12px 0;
+            margin: 15px 0;
         }
 
-        /* label */
         .toggle-label{
             font-size: 14px;
             color: #333;
+            font-weight: 500;
         }
 
-        /* switch wrapper */
         .switch{
             position: relative;
             display: inline-block;
@@ -121,14 +157,12 @@
             height: 24px;
         }
 
-        /* hide checkbox */
         .switch input{
             opacity: 0;
             width: 0;
             height: 0;
         }
 
-        /* slider background */
         .slider{
             position: absolute;
             cursor: pointer;
@@ -141,7 +175,6 @@
             border-radius: 34px;
         }
 
-        /* circle knob */
         .slider:before{
             position: absolute;
             content: "";
@@ -154,13 +187,86 @@
             border-radius: 50%;
         }
 
-        /* checked state */
-        input:checked + .slider{
+        .switch input:checked + .slider{
             background: linear-gradient(90deg,#185a9d,#0f9b8e);
         }
 
-        input:checked + .slider:before{
+        .switch input:checked + .slider:before{
             transform: translateX(22px);
+        }
+
+        /* Gender Radio Buttons */
+        .gender-group {
+            margin: 10px 0 15px 0;
+        }
+
+        .gender-label {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .radio-container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 8px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .radio-option:hover {
+            border-color: #0f9b8e;
+            background: rgba(15, 155, 142, 0.05);
+        }
+
+        .radio-option input[type="radio"] {
+            margin: 0 8px 0 0;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .radio-option.active {
+            border-color: #0f9b8e;
+            background: rgba(15, 155, 142, 0.1);
+        }
+
+        .radio-option input[type="radio"]:checked {
+            accent-color: #0f9b8e;
+        }
+
+        h2 {
+            font-size: 28px;
+            color: #1f2937;
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+
+        .form-section {
+            margin-bottom: 5px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            color: #6b7280;
+            margin: 20px 0 10px 0;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .error{
+            color:#ef4444;
+            font-size:12px;
+            display:block;
+            margin-top:4px;
         }
 
     </style>
@@ -199,31 +305,77 @@
                 <h:messages globalOnly="true" styleClass="error"/>
 
                 <!-- USERNAME -->
-                <h:inputText id="username"
-                             value="#{registrationJSFManagedBean.user.userName}"
-                             styleClass="input"
-                             required="true">
-                    <f:passThroughAttribute name="placeholder" value="Username"/>
-                </h:inputText>
-                <h:message for="username" styleClass="error"/>
+                <div class="form-section">
+                    <h:inputText id="username"
+                                value="#{registrationJSFManagedBean.user.userName}"
+                                styleClass="input"
+                                required="true"
+                                requiredMessage="Username is required"
+                                validator="candidateValidator">
+
+                        <f:attribute name="type" value="fullName"/>
+
+                        <f:ajax event="keyup"
+                                execute="@this"
+                                render="usernameMsg"/>
+
+                        <f:passThroughAttribute name="placeholder"
+                                                value="Username"/>
+                    </h:inputText>
+
+                    <h:message id="usernameMsg"
+                               for="username"
+                               styleClass="error"/>
+                </div>
 
                 <!-- EMAIL -->
-                <h:inputText id="email"
-                             value="#{registrationJSFManagedBean.user.userEmail}"
-                             styleClass="input"
-                             required="true">
-                    <f:passThroughAttribute name="placeholder" value="Email"/>
-                </h:inputText>
-                <h:message for="email" styleClass="error"/>
+                <div class="form-section">
+                    <h:inputText id="email"
+                                value="#{registrationJSFManagedBean.user.userEmail}"
+                                styleClass="input"
+                                required="true"
+                                requiredMessage="Email is required"
+                                validatorMessage="Invalid Email Address">
+
+                        <f:validateRegex
+                            pattern="^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"/>
+
+                        <f:ajax event="keyup"
+                                execute="@this"
+                                render="emailMsg"/>
+
+                        <f:passThroughAttribute name="placeholder"
+                                                value="Email"/>
+                    </h:inputText>
+
+                    <h:message id="emailMsg"
+                               for="email"
+                               styleClass="error"/>
+                </div>
 
                 <!-- PASSWORD -->
-                <h:inputSecret id="password"
-                               value="#{registrationJSFManagedBean.user.userPassword}"
-                               styleClass="input"
-                               required="true">
-                    <f:passThroughAttribute name="placeholder" value="Password"/>
-                </h:inputSecret>
-                <h:message for="password" styleClass="error"/>
+                <div class="form-section">
+                    <h:inputSecret id="password"
+                                    value="#{registrationJSFManagedBean.user.userPassword}"
+                                    styleClass="input"
+                                    required="true"
+                                    requiredMessage="Password is required"
+                                    validatorMessage="Password length must be greater than 6">
+
+                        <f:validateLength minimum="6"/>
+
+                        <f:ajax event="keyup"
+                                execute="@this"
+                                render="passwordMsg"/>
+
+                        <f:passThroughAttribute name="placeholder"
+                                                 value="Password"/>
+                    </h:inputSecret>
+
+                    <h:message id="passwordMsg"
+                                for="password"
+                                styleClass="error"/>
+                </div>
 
                 <!-- user Is Active -->
                 <div class="toggle-container">
@@ -237,14 +389,22 @@
                 </div>
 
                 <!-- ROLE -->
-                <h:selectOneMenu id="role"
-                                 value="#{registrationJSFManagedBean.roleId}"
-                                 styleClass="input">
-                    <f:selectItem itemLabel="Select Role" itemValue="#{null}" />
-                    <f:selectItem itemLabel="Candidate" itemValue="2" />
-                    <f:selectItem itemLabel="Recruiter" itemValue="3" />
-                    <f:ajax execute="@this" render="rolePanel"/>
-                </h:selectOneMenu>
+                <div class="form-section">
+                    <h:selectOneMenu id="role"
+                                     value="#{registrationJSFManagedBean.roleId}"
+                                     styleClass="input"
+                                     required="true"
+                                     requiredMessage="Please select a role">
+                        <f:selectItem itemLabel="Select Role" itemValue="#{null}" />
+                        <f:selectItem itemLabel="Candidate" itemValue="2" />
+                        <f:selectItem itemLabel="Recruiter" itemValue="3" />
+                        <f:ajax execute="@this" render="@this rolePanel roleMsg"/>
+                    </h:selectOneMenu>
+                    
+                    <h:message id="roleMsg"
+                            for="role"
+                            styleClass="error"/>
+                </div>
 
                 <!-- ROLE BASED -->
                 <h:panelGroup id="rolePanel">
@@ -252,74 +412,206 @@
                     <!-- CANDIDATE -->
                     <h:panelGroup style="#{registrationJSFManagedBean.roleId == 2 ? '' : 'display:none;'}">
 
-                        <h:inputText id="phone"
-                                     value="#{registrationJSFManagedBean.candidate.candidatePhone}"
-                                     styleClass="input">
-                            <f:passThroughAttribute name="placeholder" value="Phone"/>
-                        </h:inputText>
+                        <div class="section-title">Contact Information</div>
 
-                        <h:inputText id="area"
-                                    value="#{registrationJSFManagedBean.candidate.candidateArea}"
-                                    styleClass="input">
-                            <f:passThroughAttribute name="placeholder" value="Area"/>
-                        </h:inputText>
+                        <div class="form-section">
+                            <h:inputText id="phone"
+                                        value="#{registrationJSFManagedBean.candidate.candidatePhone}"
+                                        styleClass="input"
+                                        required="true"
+                                        requiredMessage="Phone Number is required"
+                                        validator="candidateValidator">
 
-                        <h:inputText id="city"
-                                     value="#{registrationJSFManagedBean.candidate.candidateCity}"
-                                     styleClass="input">
-                            <f:passThroughAttribute name="placeholder" value="City"/>
-                        </h:inputText>
+                                <f:attribute name="type" value="phone"/>
 
-                        <h:inputText id="state"
-                                     value="#{registrationJSFManagedBean.candidate.candidateState}"
-                                     styleClass="input">
-                            <f:passThroughAttribute name="placeholder" value="State"/>
-                        </h:inputText>
+                                <f:ajax event="keyup"
+                                        execute="@this"
+                                        render="phoneMsg"/>
 
-                        <h:inputText id="dob"
-                                     value="#{registrationJSFManagedBean.candidate.candidateDOB}"
-                                     styleClass="input">
-                            <f:convertDateTime pattern="yyyy-MM-dd"/>
-                            <f:passThroughAttribute name="type" value="date"/>
-                        </h:inputText>
+                                <f:passThroughAttribute name="placeholder"
+                                                        value="Phone"/>
+                            </h:inputText>
 
-                        <h:selectOneMenu id="gender"
-                                         value="#{registrationJSFManagedBean.candidate.candidateGender}"
-                                         styleClass="input">
-                            <f:selectItem itemLabel="Gender" itemValue="" />
-                            <f:selectItem itemLabel="Male" itemValue="Male"/>
-                            <f:selectItem itemLabel="Female" itemValue="Female"/>
-                        </h:selectOneMenu>
+                            <h:message id="phoneMsg"
+                                       for="phone"
+                                       styleClass="error"/>
+                        </div>
 
-                        <h:inputText id="experience"
-                                     value="#{registrationJSFManagedBean.candidate.candidateExperience}"
-                                     styleClass="input">
-                            <f:passThroughAttribute name="placeholder" value="Experience"/>
-                        </h:inputText>
+                        <div class="section-title">Location</div>
+
+                        <div class="form-section">
+                            <h:inputText id="area"
+                                        value="#{registrationJSFManagedBean.candidate.candidateArea}"
+                                        styleClass="input"
+                                        validatorMessage="Area cannot exceed 100 characters">
+
+                                <f:validateLength maximum="100"/>
+
+                                <f:ajax event="keyup"
+                                        execute="@this"
+                                        render="areaMsg"/>
+
+                                <f:passThroughAttribute name="placeholder"
+                                                        value="Area"/>
+                            </h:inputText>
+
+                            <h:message id="areaMsg"
+                                       for="area"
+                                       styleClass="error"/>
+                        </div>
+
+                        <div class="form-section">
+                            <h:inputText id="city"
+                                        value="#{registrationJSFManagedBean.candidate.candidateCity}"
+                                        styleClass="input"
+                                        required="true"
+                                        requiredMessage="City is required"
+                                        validator="candidateValidator">
+
+                                <f:attribute name="type" value="city"/>
+
+                                <f:ajax event="keyup"
+                                        execute="@this"
+                                        render="cityMsg"/>
+
+                                <f:passThroughAttribute name="placeholder"
+                                                        value="City"/>
+                            </h:inputText>
+
+                            <h:message id="cityMsg"
+                                       for="city"
+                                       styleClass="error"/>
+                        </div>
+
+                        <div class="form-section">
+                           <h:inputText id="state"
+                                        value="#{registrationJSFManagedBean.candidate.candidateState}"
+                                        styleClass="input"
+                                        required="true"
+                                        requiredMessage="State is required"
+                                        validator="candidateValidator">
+
+                                <f:attribute name="type" value="state"/>
+
+                                <f:ajax event="keyup"
+                                        execute="@this"
+                                        render="stateMsg"/>
+
+                                <f:passThroughAttribute name="placeholder"
+                                                        value="State"/>
+                            </h:inputText>
+
+                            <h:message id="stateMsg"
+                                       for="state"
+                                       styleClass="error"/>
+                        </div>
+
+                        <div class="section-title">Personal Details</div>
+
+                        <div class="form-section">
+                            <div class="gender-label">DOB</div>
+                            <h:inputText id="dob"
+                                         value="#{registrationJSFManagedBean.candidate.candidateDOB}"
+                                         styleClass="input"
+                                         validator="candidateValidator"
+                                         converterMessage="Please select a valid date">
+                                <f:convertDateTime pattern="yyyy-MM-dd"/>
+                                <f:passThroughAttribute name="type" value="date"/>
+                                <f:ajax event="change" execute="@this" render="DOBMsg"/>
+                            </h:inputText>
+                            <h:message id="DOBMsg" for="dob" styleClass="error"/>
+                        </div>
+
+                        <!-- GENDER RADIO BUTTONS -->
+                        <div class="gender-group">
+                            <div class="gender-label">Gender</div>
+                            <h:selectOneRadio id="gender"
+                                              value="#{registrationJSFManagedBean.candidate.candidateGender}">
+                                <f:selectItem itemValue="Male" itemLabel="Male"/>
+                                <f:selectItem itemValue="Female" itemLabel="Female"/>
+                            </h:selectOneRadio>
+                        </div>
+
+                        <div class="form-section">
+                            <h:inputText id="experience"
+                                        value="#{registrationJSFManagedBean.candidate.candidateExperience}"
+                                        styleClass="input">
+
+                                <f:validateLongRange minimum="0"
+                                                     maximum="50"/>
+
+                                <f:ajax event="keyup"
+                                        execute="@this"
+                                        render="experienceMsg"/>
+
+                                <f:passThroughAttribute name="placeholder"
+                                                        value="Experience"/>
+                            </h:inputText>
+
+                            <h:message id="experienceMsg"
+                                       for="experience"
+                                       styleClass="error"/>
+                        </div>
 
                     </h:panelGroup>
 
                     <!-- RECRUITER -->
                     <h:panelGroup style="#{registrationJSFManagedBean.roleId == 3 ? '' : 'display:none;'}">
 
-                        <h:inputText id="designation"
-                                     value="#{registrationJSFManagedBean.recruiter.designation}"
-                                     styleClass="input">
-                            <f:passThroughAttribute name="placeholder" value="Designation"/>
-                        </h:inputText>
+                        <div class="section-title">Professional Information</div>
 
-                        <h:inputText id="recphone"
-                                     value="#{registrationJSFManagedBean.recruiter.recruiterPhone}"
-                                     styleClass="input">
-                            <f:passThroughAttribute name="placeholder" value="Phone"/>
-                        </h:inputText>
+                        <div class="form-section">
+                            <h:inputText id="designation"
+                                        value="#{registrationJSFManagedBean.recruiter.designation}"
+                                        styleClass="input"
+                                        required="true"
+                                        requiredMessage="Designation is required">
 
-                        <h:inputText id="recCompany"
-                                     value="#{registrationJSFManagedBean.recruiter.companyId.companyId}"
-                                     styleClass="input">
-                            <f:convertNumber integerOnly="true"/>
-                            <f:passThroughAttribute name="placeholder" value="Company ID"/>
-                        </h:inputText>
+                                <f:validateLength minimum="2"
+                                                  maximum="50"/>
+
+                                <f:ajax event="keyup"
+                                        execute="@this"
+                                        render="designationMsg"/>
+
+                                <f:passThroughAttribute name="placeholder"
+                                                        value="Designation"/>
+                            </h:inputText>
+
+                            <h:message id="designationMsg"
+                                       for="designation"
+                                       styleClass="error"/>
+                        </div>
+
+                        <div class="form-section">
+                            <h:inputText id="recphone"
+                                        value="#{registrationJSFManagedBean.recruiter.recruiterPhone}"
+                                        styleClass="input"
+                                        pt:placeholder="Phone"
+                                        required="true"
+                                        requiredMessage="Phone Number is required"
+                                        validator="candidateValidator">
+
+                                <f:attribute name="type" value="phone"/>
+
+                                <f:ajax event="keyup"
+                                        execute="@this"
+                                        render="recPhoneMsg"/>
+                            </h:inputText>
+
+                            <h:message id="recPhoneMsg"
+                                       for="recphone"
+                                       styleClass="error"/>
+                        </div>
+
+                        <div class="form-section">
+                            <h:inputText id="recCompany"
+                                         value="#{registrationJSFManagedBean.recruiter.companyId.companyId}"
+                                         styleClass="input">
+                                <f:convertNumber integerOnly="true"/>
+                                <f:passThroughAttribute name="placeholder" value="Company ID"/>
+                            </h:inputText>
+                        </div>
 
                     </h:panelGroup>
 
