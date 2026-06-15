@@ -11,9 +11,9 @@ import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.inject.Named;
 import jakarta.enterprise.context.RequestScoped;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
 
 /**
  *
@@ -23,22 +23,38 @@ import java.util.Map;
 @RequestScoped
 public class RegistrationCDIBean {
 
-   @EJB
+    @EJB
     RegistrationBeanLocal ejb;
 
     Tblusers user = new Tblusers();
     Tblcandidates candidate = new Tblcandidates();
     Tblrecruiters recruiter = new Tblrecruiters();
-
+    private Collection<Tblcompany> companies;
+    private Integer selectedCompanyId;
     Integer roleId;
-    
+
+//    @PostConstruct
+//    public void init() {
+//        recruiter.setCompanyId(new Tblcompany());
+//
+//        // Default Active
+//        user.setUserIsActive(true);
+//    }
     @PostConstruct
     public void init() {
-        recruiter.setCompanyId(new Tblcompany());
-        
-        // Default Active
-        user.setUserIsActive(true);
+        try {
+            user.setUserIsActive(true);
+            companies = ejb.getAllCompanies();
+
+            System.out.println("Companies loaded = "
+                    + (companies == null ? "NULL" : companies.size()));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            companies = new java.util.ArrayList<>();
+        }
     }
+
     public RegistrationBeanLocal getEjb() {
         return ejb;
     }
@@ -78,32 +94,48 @@ public class RegistrationCDIBean {
     public void setRoleId(Integer roleId) {
         this.roleId = roleId;
     }
-    
+
+    public Collection<Tblcompany> getCompanies() {
+        return companies;
+    }
+
+    public void setCompanies(Collection<Tblcompany> companies) {
+        this.companies = companies;
+    }
+
+    public Integer getSelectedCompanyId() {
+        return selectedCompanyId;
+    }
+
+    public void setSelectedCompanyId(Integer selectedCompanyId) {
+        this.selectedCompanyId = selectedCompanyId;
+    }
+
     // ================= REGISTER =================
-public String registerUser() {
-    try {
+    public String registerUser() {
+        try {
 
-        RegistrationJerseyClient client = new RegistrationJerseyClient();
+            RegistrationJerseyClient client = new RegistrationJerseyClient();
 
-        // Create request body (same as your REST API expects)
-        Map<String, Object> body = new HashMap<>();
+            // Create request body (same as your REST API expects)
+            Map<String, Object> body = new HashMap<>();
 
-        body.put("userName", user.getUserName());
-        body.put("userEmail", user.getUserEmail());
-        body.put("userPassword", user.getUserPassword());
-        body.put("userIsActive", user.getUserIsActive());
+            body.put("userName", user.getUserName());
+            body.put("userEmail", user.getUserEmail());
+            body.put("userPassword", user.getUserPassword());
+            body.put("userIsActive", user.getUserIsActive());
 
-        // Role
-        if (roleId == null) {
-            System.out.println("Please select a role!");
-            return null; // Or show a message in JSF
-        }
-        
-        Map<String, Object> roleMap = new HashMap<>();
-        roleMap.put("roleId", roleId);
-        body.put("roleId", roleMap);
+            // Role
+            if (roleId == null) {
+                System.out.println("Please select a role!");
+                return null; // Or show a message in JSF
+            }
 
-        // ================= ROLE BASED =================
+            Map<String, Object> roleMap = new HashMap<>();
+            roleMap.put("roleId", roleId);
+            body.put("roleId", roleMap);
+
+            // ================= ROLE BASED =================
             if (roleId == 2) { // Candidate
 
                 Map<String, Object> candMap = new HashMap<>();
@@ -124,20 +156,23 @@ public String registerUser() {
                 }
 
                 body.put("candidate", candMap);
-            }
-
-            else if (roleId == 3) { // Recruiter
+            } else if (roleId == 3) { // Recruiter
 
                 Map<String, Object> recMap = new HashMap<>();
                 recMap.put("designation", recruiter.getDesignation());
                 recMap.put("recruiterPhone", recruiter.getRecruiterPhone());
                 recMap.put("recruiterStatus", "Active");
-       
-                if (recruiter.getCompanyId() != null &&
-                    recruiter.getCompanyId().getCompanyId() != null) {
 
+//                if (recruiter.getCompanyId() != null
+//                        && recruiter.getCompanyId().getCompanyId() != null) {
+//
+//                    Map<String, Object> compMap = new HashMap<>();
+//                    compMap.put("companyId", recruiter.getCompanyId().getCompanyId());
+//                    recMap.put("companyId", compMap);
+//                }
+                if (selectedCompanyId != null && selectedCompanyId > 0) {
                     Map<String, Object> compMap = new HashMap<>();
-                    compMap.put("companyId", recruiter.getCompanyId().getCompanyId());
+                    compMap.put("companyId", selectedCompanyId);
                     recMap.put("companyId", compMap);
                 }
                 body.put("recruiter", recMap);
@@ -147,14 +182,13 @@ public String registerUser() {
             String response = client.registerUser(body);
             System.out.println("API RESPONSE: " + response);
             System.out.println("BODY JSON: " + body);
-            
-            
+
             System.out.println("PHONE: " + candidate.getCandidatePhone());
             System.out.println("DESIGNATION: " + recruiter.getDesignation());
 
             client.close();
 
-            return "Login?faces-redirect=true";
+            return "/Login.xhtml?faces-redirect=true";
 
         } catch (Exception e) {
             e.printStackTrace();

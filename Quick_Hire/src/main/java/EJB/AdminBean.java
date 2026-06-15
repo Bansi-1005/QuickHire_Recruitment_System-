@@ -852,7 +852,8 @@ public class AdminBean implements AdminBeanLocal {
 //    @Override
 //    public Collection<Tblapplication> selectedApplications() {
 //        try {
-////            return em.createNamedQuery("Tblapplication.countSelected", Long.class)
+////            return em.createNamedQuery("Tblapplication.countSelected", Long.class
+    /// @return )
 //            return em.createNamedQuery("Tblapplication.findSelectedApplication", Tblapplication.class)
 //                .getResultList();
 //        } catch (Exception e) {
@@ -870,4 +871,189 @@ public class AdminBean implements AdminBeanLocal {
 //            return new ArrayList<>();
 //        }
 //    }  
+    @Override
+     public Collection<Tblskills> getPendingSkills() {
+        return em.createQuery(
+                "SELECT s FROM Tblskills s "
+                + "WHERE s.skillStatus = 'PENDING' "
+                + "ORDER BY s.createdDate DESC",
+                Tblskills.class)
+                .getResultList();
+    }
+    @Override
+
+    public Collection<Tblskillcategory> getPendingCategories() {
+        return em.createQuery(
+                "SELECT c FROM Tblskillcategory c "
+                + "WHERE c.categoryStatus = 'PENDING' "
+                + "ORDER BY c.createdDate DESC",
+                Tblskillcategory.class)
+                .getResultList();
+    }
+    @Override
+
+    public void approveSkill(Integer skillId, Integer adminUserId) {
+        Tblskills skill = em.find(Tblskills.class, skillId);
+        Tblusers admin = em.find(Tblusers.class, adminUserId);
+
+        if (skill == null) {
+            throw new RuntimeException("Skill not found");
+        }
+
+        skill.setSkillStatus("APPROVED");
+        skill.setApprovedByUserId(adminUserId);
+        skill.setApprovedDate(new Date());
+        em.merge(skill);
+
+        notifyCreator(skill.getCreatedByUserId(), admin,
+                "Skill Approved",
+                "Your skill has been approved: " + skill.getSkillName(),
+                "SKILL_APPROVED");
+    }
+    @Override
+
+    public void rejectSkill(Integer skillId, Integer adminUserId) {
+        Tblskills skill = em.find(Tblskills.class, skillId);
+        Tblusers admin = em.find(Tblusers.class, adminUserId);
+
+        if (skill == null) {
+            throw new RuntimeException("Skill not found");
+        }
+
+        skill.setSkillStatus("REJECTED");
+        em.merge(skill);
+
+        notifyCreator(skill.getCreatedByUserId(), admin,
+                "Skill Rejected",
+                "Your skill request was rejected: " + skill.getSkillName(),
+                "SKILL_REJECTED");
+    }
+    @Override
+
+    public void mergeSkill(Integer pendingSkillId, Integer approvedSkillId, Integer adminUserId) {
+        Tblskills pending = em.find(Tblskills.class, pendingSkillId);
+        Tblskills approved = em.find(Tblskills.class, approvedSkillId);
+        Tblusers admin = em.find(Tblusers.class, adminUserId);
+
+        if (pending == null || approved == null) {
+            throw new RuntimeException("Skill not found");
+        }
+
+        pending.setSkillStatus("MERGED");
+        pending.setMergedIntoSkillId(approved.getSkillId());
+        pending.setApprovedByUserId(adminUserId);
+        pending.setApprovedDate(new Date());
+        em.merge(pending);
+
+        notifyCreator(pending.getCreatedByUserId(), admin,
+                "Skill Merged",
+                "Your skill '" + pending.getSkillName() + "' was merged into '" + approved.getSkillName() + "'.",
+                "SKILL_MERGED");
+    }
+    @Override
+
+    public void approveCategory(Integer categoryId, Integer adminUserId) {
+        Tblskillcategory category = em.find(Tblskillcategory.class, categoryId);
+        Tblusers admin = em.find(Tblusers.class, adminUserId);
+
+        if (category == null) {
+            throw new RuntimeException("Category not found");
+        }
+
+        category.setCategoryStatus("APPROVED");
+        em.merge(category);
+
+        notifyCreator(category.getCreatedByUserId(), admin,
+                "Category Approved",
+                "Your category has been approved: " + category.getCategoryName(),
+                "CATEGORY_APPROVED");
+    }
+    @Override
+
+    public void rejectCategory(Integer categoryId, Integer adminUserId) {
+        Tblskillcategory category = em.find(Tblskillcategory.class, categoryId);
+        Tblusers admin = em.find(Tblusers.class, adminUserId);
+
+        if (category == null) {
+            throw new RuntimeException("Category not found");
+        }
+
+        category.setCategoryStatus("REJECTED");
+        em.merge(category);
+
+        notifyCreator(category.getCreatedByUserId(), admin,
+                "Category Rejected",
+                "Your category request was rejected: " + category.getCategoryName(),
+                "CATEGORY_REJECTED");
+    }
+    @Override
+
+    public void mergeCategory(Integer pendingCategoryId, Integer approvedCategoryId, Integer adminUserId) {
+        Tblskillcategory pending = em.find(Tblskillcategory.class, pendingCategoryId);
+        Tblskillcategory approved = em.find(Tblskillcategory.class, approvedCategoryId);
+        Tblusers admin = em.find(Tblusers.class, adminUserId);
+
+        if (pending == null || approved == null) {
+            throw new RuntimeException("Category not found");
+        }
+
+        pending.setCategoryStatus("MERGED");
+        pending.setMergedIntoCategoryId(approved.getCategoryId());
+        em.merge(pending);
+
+        notifyCreator(pending.getCreatedByUserId(), admin,
+                "Category Merged",
+                "Your category '" + pending.getCategoryName() + "' was merged into '" + approved.getCategoryName() + "'.",
+                "CATEGORY_MERGED");
+    }
+    @Override
+
+    public Collection<Tblnotification> getAdminNotifications(Integer adminUserId) {
+        return em.createQuery(
+                "SELECT n FROM Tblnotification n "
+                + "WHERE n.receiverUserId.userId = :uid "
+                + "ORDER BY n.createdDate DESC",
+                Tblnotification.class)
+                .setParameter("uid", adminUserId)
+                .getResultList();
+    }
+    @Override
+    public Collection<Tblskills> getApprovedSkills() {
+        return em.createQuery(
+                "SELECT s FROM Tblskills s "
+                + "WHERE s.skillStatus = 'APPROVED' "
+                + "ORDER BY s.skillName",
+                Tblskills.class)
+                .getResultList();
+    }
+    @Override
+    public Collection<Tblskillcategory> getApprovedCategories() {
+        return em.createQuery(
+                "SELECT c FROM Tblskillcategory c "
+                + "WHERE c.categoryStatus = 'APPROVED' "
+                + "ORDER BY c.categoryName",
+                Tblskillcategory.class)
+                .getResultList();
+    }
+    private void notifyCreator(Integer creatorUserId, Tblusers admin, String title, String message, String type) {
+        if (creatorUserId == null) {
+            return;
+        }
+
+        Tblusers creator = em.find(Tblusers.class, creatorUserId);
+        if (creator == null) {
+            return;
+        }
+
+        Tblnotification notification = new Tblnotification();
+        notification.setSenderUserId(admin);
+        notification.setReceiverUserId(creator);
+        notification.setNotificationTitle(title);
+        notification.setNotificationMessage(message);
+        notification.setNotificationType(type);
+        notification.setIsRead(false);
+        notification.setCreatedDate(new Date());
+        em.persist(notification);
+    }
+
 }

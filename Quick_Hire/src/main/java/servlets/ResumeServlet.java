@@ -56,76 +56,115 @@ public class ResumeServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
+//    @Override
+//    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+//            throws ServletException, IOException {
+//        //processRequest(request, response);
+//        String fileName = request.getParameter("file");
+//
+//        if (fileName == null || fileName.trim().isEmpty()) {
+//
+//            response.getWriter().println("File not found");
+//            return;
+//        }
+//
+//        // ================= FILE PATH =================
+//        String filePath = "D:/QuickHireUploads/resumes/" + fileName;
+//
+//        File file = new File(filePath);
+//
+//        System.out.println("Resume Path : " + file.getAbsolutePath());
+//
+//        // ================= FILE EXISTS =================
+//        if (!file.exists()) {
+//
+//            response.getWriter().println("Resume does not exist");
+//            return;
+//        }
+//
+//        // ================= FILE EXTENSION =================
+//        String lowerFile = fileName.toLowerCase();
+//
+//        // PDF
+//        if (lowerFile.endsWith(".pdf")) {
+//
+//            response.setContentType("application/pdf");
+//
+//        // DOC
+//        } else if (lowerFile.endsWith(".doc")) {
+//
+//            response.setContentType("application/msword");
+//
+//        // DOCX
+//        } else if (lowerFile.endsWith(".docx")) {
+//
+//            response.setContentType(
+//                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+//            );
+//
+//        } else {
+//
+//            response.setContentType("application/octet-stream");
+//        }
+//
+//        // ================= HEADER =================
+//
+//        /*
+//            inline  -> open in browser if supported
+//            attachment -> force download
+//        */
+//
+//        response.setHeader(
+//                "Content-Disposition",
+//                "inline; filename=\"" + file.getName() + "\""
+//        );
+//
+//        response.setContentLengthLong(file.length());
+//
+//        // ================= SEND FILE =================
+//        Files.copy(file.toPath(), response.getOutputStream());
+//
+//        response.getOutputStream().flush();
+//
+//    }
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        //processRequest(request, response);
+
         String fileName = request.getParameter("file");
 
         if (fileName == null || fileName.trim().isEmpty()) {
-
-            response.getWriter().println("File not found");
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Resume file is missing");
             return;
         }
 
-        // ================= FILE PATH =================
-        String filePath = "D:/QuickHireUploads/resumes/" + fileName;
+        fileName = new File(fileName).getName();
 
-        File file = new File(filePath);
+        File uploadDir = new File("D:/QuickHireUploads/resumes");
+        File file = new File(uploadDir, fileName);
 
-        System.out.println("Resume Path : " + file.getAbsolutePath());
-
-        // ================= FILE EXISTS =================
-        if (!file.exists()) {
-
-            response.getWriter().println("Resume does not exist");
+        if (!file.getCanonicalPath().startsWith(uploadDir.getCanonicalPath() + File.separator)) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid resume path");
             return;
         }
 
-        // ================= FILE EXTENSION =================
-        String lowerFile = fileName.toLowerCase();
-
-        // PDF
-        if (lowerFile.endsWith(".pdf")) {
-
-            response.setContentType("application/pdf");
-
-        // DOC
-        } else if (lowerFile.endsWith(".doc")) {
-
-            response.setContentType("application/msword");
-
-        // DOCX
-        } else if (lowerFile.endsWith(".docx")) {
-
-            response.setContentType(
-                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            );
-
-        } else {
-
-            response.setContentType("application/octet-stream");
+        if (!file.exists() || !file.isFile()) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Resume does not exist");
+            return;
         }
 
-        // ================= HEADER =================
+        String mimeType = getServletContext().getMimeType(file.getName());
+        if (mimeType == null) {
+            mimeType = "application/octet-stream";
+        }
 
-        /*
-            inline  -> open in browser if supported
-            attachment -> force download
-        */
-
-        response.setHeader(
-                "Content-Disposition",
-                "inline; filename=\"" + file.getName() + "\""
-        );
-
+        response.reset();
+        response.setContentType(mimeType);
+        response.setHeader("Content-Disposition", "inline; filename=\"" + file.getName() + "\"");
         response.setContentLengthLong(file.length());
 
-        // ================= SEND FILE =================
         Files.copy(file.toPath(), response.getOutputStream());
-
         response.getOutputStream().flush();
-
     }
 
     /**

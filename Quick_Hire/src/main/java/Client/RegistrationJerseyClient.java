@@ -4,10 +4,14 @@
  */
 package Client;
 
+import Entity.Tblcompany;
 import jakarta.ws.rs.ClientErrorException;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.util.Collection;
 
 /**
  * Jersey REST client generated for REST resource:RegistrationResource
@@ -40,12 +44,22 @@ public class RegistrationJerseyClient {
     public void close() {
         client.close();
     }
-    
+
     public String registerUser(Object requestEntity) throws ClientErrorException {
         return webTarget
                 .path("registerUser")
                 .request(jakarta.ws.rs.core.MediaType.APPLICATION_JSON)
                 .post(jakarta.ws.rs.client.Entity.entity(requestEntity, jakarta.ws.rs.core.MediaType.APPLICATION_JSON), String.class);
+    }
+
+    public Collection<Tblcompany> getAllCompanies()
+            throws ClientErrorException {
+
+        return webTarget
+                .path("getAllCompanies")
+                .request(MediaType.APPLICATION_JSON)
+                .get(new GenericType<Collection<Tblcompany>>() {
+                });
     }
 
 }

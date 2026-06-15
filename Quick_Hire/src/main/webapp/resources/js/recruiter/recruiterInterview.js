@@ -1,18 +1,21 @@
 var interviewsCurrentPage = 1;
 var interviewsPageSize = 10;
-var pendingCancelRow = null;
+var pendingCancelButton = null;
+var allowCancelSubmit = false;
+var activeViewInterviewRow = null;
 
 function getInterviewRows() {
     return Array.prototype.slice.call(document.querySelectorAll('.interview-row'));
 }
 
 function normalizeText(value) {
-    return (value || '').toString().toLowerCase().trim();
+    return (value || '').toString().toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
 function initInterviewPage() {
     var search = document.getElementById('interviewSearchInput');
-    if (search) {
+    if (search && !search.dataset.bound) {
+        search.dataset.bound = 'true';
         search.addEventListener('keydown', function (event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
@@ -20,16 +23,7 @@ function initInterviewPage() {
             }
         });
     }
-
-    updateTotalCount();
     applyInterviewFilters(false);
-}
-
-function updateTotalCount() {
-    var countEl = document.getElementById('totalInterviewCount');
-    if (countEl) {
-        countEl.textContent = getInterviewRows().length;
-    }
 }
 
 function getRowText(row) {
@@ -38,31 +32,37 @@ function getRowText(row) {
         row.getAttribute('data-email'),
         row.getAttribute('data-job'),
         row.getAttribute('data-interviewer'),
-        row.textContent
+        row.getAttribute('data-mode'),
+        row.getAttribute('data-status'),
+        row.getAttribute('data-result')
     ].join(' ');
 }
 
 function applyInterviewFilters(showMessage) {
-    var searchValue = normalizeText(document.getElementById('interviewSearchInput') && document.getElementById('interviewSearchInput').value);
-    var statusValue = document.getElementById('statusFilterSelect') ? document.getElementById('statusFilterSelect').value : 'all';
-    var resultValue = document.getElementById('resultFilterSelect') ? document.getElementById('resultFilterSelect').value : 'all';
-    var modeValue = document.getElementById('modeFilterSelect') ? document.getElementById('modeFilterSelect').value : 'all';
+    var searchValue = normalizeText(getValue('interviewSearchInput'));
+    var statusValue = getValue('statusFilterSelect') || 'all';
+    var resultValue = getValue('resultFilterSelect') || 'all';
+    var modeValue = getValue('modeFilterSelect') || 'all';
     var matchedCount = 0;
 
     getInterviewRows().forEach(function (row) {
-        var rowText = normalizeText(getRowText(row));
+        var matched = true;
         var rowStatus = row.getAttribute('data-status') || '';
         var rowResult = row.getAttribute('data-result') || 'Pending';
         var rowMode = row.getAttribute('data-mode') || '';
-        var matched = true;
 
-        if (searchValue && rowText.indexOf(searchValue) === -1) matched = false;
-        if (statusValue !== 'all' && rowStatus !== statusValue) matched = false;
-        if (resultValue !== 'all' && rowResult !== resultValue) matched = false;
-        if (modeValue !== 'all' && rowMode !== modeValue) matched = false;
+        if (searchValue && normalizeText(getRowText(row)).indexOf(searchValue) === -1)
+            matched = false;
+        if (statusValue !== 'all' && rowStatus !== statusValue)
+            matched = false;
+        if (resultValue !== 'all' && rowResult !== resultValue)
+            matched = false;
+        if (modeValue !== 'all' && rowMode !== modeValue)
+            matched = false;
 
         row.setAttribute('data-filtered', matched ? 'visible' : 'hidden');
-        if (matched) matchedCount += 1;
+        if (matched)
+            matchedCount += 1;
     });
 
     interviewsCurrentPage = 1;
@@ -112,11 +112,14 @@ function renderInterviewsPagination() {
 
     var prev = document.getElementById('prevInterviewPageBtn');
     var next = document.getElementById('nextInterviewPageBtn');
-    if (prev) prev.disabled = interviewsCurrentPage <= 1;
-    if (next) next.disabled = interviewsCurrentPage >= totalPages;
+    if (prev)
+        prev.disabled = interviewsCurrentPage <= 1;
+    if (next)
+        next.disabled = interviewsCurrentPage >= totalPages;
 
     var emptyState = document.getElementById('emptyState');
-    if (emptyState) emptyState.style.display = visibleRows.length ? 'none' : 'block';
+    if (emptyState)
+        emptyState.style.display = visibleRows.length ? 'none' : 'block';
 }
 
 function goInterviewPage(direction) {
@@ -125,35 +128,33 @@ function goInterviewPage(direction) {
 }
 
 function updateFilterSummary(count) {
-    var summary = document.getElementById('filterSummary');
-    if (summary) {
-        summary.textContent = count + ' visible';
-    }
+    setText('filterSummary', count + ' visible');
 }
 
 function exportInterviewsCsv() {
     var rows = getInterviewRows().filter(function (row) {
         return row.getAttribute('data-filtered') !== 'hidden';
     });
-    var csvRows = [['Candidate', 'Email', 'Job', 'Schedule', 'Mode', 'Status', 'Result']];
-
-    rows.forEach(function (row) {
-        var cells = row.querySelectorAll('td');
-        csvRows.push([
-            row.getAttribute('data-candidate') || '',
-            row.getAttribute('data-email') || '',
-            row.getAttribute('data-job') || '',
-            cells[2] ? cells[2].innerText.replace(/\s+/g, ' ').trim() : '',
-            row.getAttribute('data-mode') || '',
-            row.getAttribute('data-status') || '',
-            row.getAttribute('data-result') || 'Pending'
-        ]);
-    });
+    var csvRows = [['Candidate', 'Email', 'Job', 'Date', 'Time', 'Mode', 'Interviewer', 'Status', 'Result']];
 
     if (!rows.length) {
         showToast('No interviews available to export.', 'error');
         return;
     }
+
+    rows.forEach(function (row) {
+        csvRows.push([
+            row.getAttribute('data-candidate') || '',
+            row.getAttribute('data-email') || '',
+            row.getAttribute('data-job') || '',
+            row.getAttribute('data-date') || '',
+            row.getAttribute('data-time') || '',
+            row.getAttribute('data-mode') || '',
+            row.getAttribute('data-interviewer') || '',
+            row.getAttribute('data-status') || '',
+            row.getAttribute('data-result') || 'Pending'
+        ]);
+    });
 
     var csv = csvRows.map(function (row) {
         return row.map(function (value) {
@@ -161,7 +162,7 @@ function exportInterviewsCsv() {
         }).join(',');
     }).join('\r\n');
 
-    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    var blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
     var link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = 'quickhire-interviews.csv';
@@ -174,26 +175,43 @@ function exportInterviewsCsv() {
 
 function openCalendarPanel() {
     var list = document.getElementById('calendarList');
-    var rows = getInterviewRows().filter(function (row) {
-        return row.getAttribute('data-filtered') !== 'hidden';
-    });
+
+    var rows = getInterviewRows()
+            .map(function (row) {
+                return {
+                    row: row,
+                    dateObj: parseInterviewDateTime(row)
+                };
+            })
+            .filter(function (item) {
+                return isUpcomingInterviewStatus(item.row.getAttribute('data-status')) &&
+                        item.dateObj &&
+                        item.dateObj.getTime() >= startOfToday().getTime();
+            })
+            .sort(function (a, b) {
+                return a.dateObj.getTime() - b.dateObj.getTime();
+            });
 
     if (list) {
         list.innerHTML = '';
+
         if (!rows.length) {
-            list.innerHTML = '<div class="table-empty-state"><h3>No interviews found</h3><p>Reset filters to view calendar items.</p></div>';
+            list.innerHTML = '<div class="table-empty-state"><h3>No upcoming interviews</h3><p>Scheduled and rescheduled interviews will appear here by nearest date.</p></div>';
         } else {
-            rows.forEach(function (row) {
-                var cells = row.querySelectorAll('td');
+            rows.forEach(function (itemData) {
+                var row = itemData.row;
+                var dateObj = itemData.dateObj;
                 var item = document.createElement('div');
+
                 item.className = 'calendar-item';
                 item.innerHTML =
-                    '<div class="calendar-date-tile"><strong>' + escapeHtml(getCalendarDay(cells[2])) + '</strong><span>' + escapeHtml(getCalendarMonth(cells[2])) + '</span></div>' +
-                    '<div class="calendar-item-main"><strong>' + escapeHtml(row.getAttribute('data-candidate') || 'Candidate') + '</strong>' +
-                    '<span>' + escapeHtml(row.getAttribute('data-job') || 'Job position') + '</span>' +
-                    '<small>' + escapeHtml(cells[2] ? cells[2].innerText.replace(/\s+/g, ' ').trim() : '') + '</small></div>' +
-                    '<div class="calendar-item-side"><span class="mode-badge mode-' + normalizeText(row.getAttribute('data-mode')) + '">' + escapeHtml(row.getAttribute('data-mode') || 'Mode') + '</span>' +
-                    '<span class="status-badge status-' + normalizeText(row.getAttribute('data-status')) + '">' + escapeHtml(row.getAttribute('data-status') || 'Scheduled') + '</span></div>';
+                        '<div class="calendar-date-tile"><strong>' + escapeHtml(getCalendarDay(row, dateObj)) + '</strong><span>' + escapeHtml(getCalendarMonth(row, dateObj)) + '</span></div>' +
+                        '<div class="calendar-item-main"><strong>' + escapeHtml(row.getAttribute('data-candidate') || 'Candidate') + '</strong>' +
+                        '<span>' + escapeHtml(row.getAttribute('data-job') || 'Job position') + '</span>' +
+                        '<small>' + escapeHtml((row.getAttribute('data-date') || '') + ' ' + (row.getAttribute('data-time') || '')) + '</small></div>' +
+                        '<div class="calendar-item-side"><span class="mode-badge mode-' + normalizeText(row.getAttribute('data-mode')) + '">' + escapeHtml(row.getAttribute('data-mode') || 'Mode') + '</span>' +
+                        '<span class="status-badge status-' + normalizeText(row.getAttribute('data-status')) + '">' + escapeHtml(row.getAttribute('data-status') || 'Scheduled') + '</span></div>';
+
                 list.appendChild(item);
             });
         }
@@ -202,97 +220,246 @@ function openCalendarPanel() {
     openModal(document.getElementById('calendarPanel'));
 }
 
+    function openConductInterviewModal(event) {
+        if (event && event.status && event.status !== 'success') {
+            return;
+        }
+
+        var data = document.getElementById('conductInterviewData');
+
+        if (!data) {
+            showToast('Unable to load interview details.', 'error');
+            return;
+        }
+
+        var candidateName = data.getAttribute('data-name') || 'Candidate';
+        var jobTitle = data.getAttribute('data-job') || 'Job title';
+        var feedback = data.getAttribute('data-feedback') || '';
+        var result = data.getAttribute('data-result') || 'Pending';
+
+        setText('conductCandidateName', candidateName);
+        setText('conductJobTitle', jobTitle);
+        setText('conductCandidateAvatar', getInitial(candidateName));
+
+        setValue('feedbackTextarea', feedback);
+        setValue('resultSelect', result);
+
+        openModal(document.getElementById('conductInterviewModal'));
+    }
+
 function closeCalendarPanel() {
     closeModal(document.getElementById('calendarPanel'));
 }
 
-function openCancelInterviewModal(button) {
-    var row = button ? button.closest('.interview-row') : null;
-    pendingCancelRow = row;
+function rememberViewInterviewRow(button) {
+    activeViewInterviewRow = button ? button.closest('.interview-row') : null;
+}
 
-    if (!row) {
-        showToast('Unable to find interview row.', 'error');
+function openViewInterviewModalAfterAjax(event) {
+    if (!event || event.status !== 'success') {
         return;
     }
 
-    setText('cancelCandidateName', row.getAttribute('data-candidate') || 'Candidate');
-    setText('cancelJobTitle', row.getAttribute('data-job') || 'Job title');
-    setText('cancelCandidateAvatar', getInitial(row.getAttribute('data-candidate')));
-    openModal(document.getElementById('cancelInterviewModal'));
+    openViewInterviewModalFromRow(activeViewInterviewRow);
+    copyInterviewHistoryIntoModal();
 }
 
-function closeCancelInterviewModal() {
-    pendingCancelRow = null;
-    closeModal(document.getElementById('cancelInterviewModal'));
+function openViewInterviewModal(button) {
+    activeViewInterviewRow = button ? button.closest('.interview-row') : null;
+    openViewInterviewModalFromRow(activeViewInterviewRow);
+    copyInterviewHistoryIntoModal();
 }
 
-function confirmCancelInterview() {
-    var row = pendingCancelRow;
-
+function openViewInterviewModalFromRow(row) {
     if (!row) {
-        closeCancelInterviewModal();
+        showToast('Unable to find interview details.', 'error');
         return;
     }
 
-    row.setAttribute('data-status', 'Cancelled');
-    var badge = row.querySelector('.status-badge');
-    if (badge) {
-        badge.className = 'status-badge status-cancelled';
-        badge.textContent = 'Cancelled';
-    }
+    var status = row.getAttribute('data-status') || '-';
+    var result = row.getAttribute('data-result') || 'Pending';
+    var feedback = row.getAttribute('data-feedback') || '';
 
-    closeCancelInterviewModal();
-    applyInterviewFilters(false);
-    showToast('Interview cancelled in this view. Connect a backend cancel action when available.', 'success');
-}
-
-function openViewInterviewModal(name, email, job, date, time, mode, interviewer, status, result, feedback) {
-    setText('viewCandidateName', name || 'Candidate');
-    setText('viewCandidateEmail', email || '');
-    setText('viewJobTitle', job || 'Job title');
-    setText('viewInterviewDate', date || '-');
-    setText('viewInterviewTime', time || '-');
-    setText('viewInterviewMode', mode || '-');
-    setText('viewInterviewerName', interviewer || '-');
-    setText('viewInterviewStatus', status || '-');
-    setText('viewInterviewResult', result || 'Pending');
-    setText('viewModeSummary', mode || '-');
-    setText('viewStatusSummary', status || '-');
-    setText('viewResultSummary', result || 'Pending');
+    setText('viewCandidateName', row.getAttribute('data-candidate') || 'Candidate');
+    setText('viewCandidateEmail', row.getAttribute('data-email') || '');
+    setText('viewJobTitle', row.getAttribute('data-job') || 'Job title');
+    setText('viewInterviewDate', row.getAttribute('data-date') || '-');
+    setText('viewInterviewTime', row.getAttribute('data-time') || '-');
+    setText('viewInterviewMode', row.getAttribute('data-mode') || '-');
+    setText('viewInterviewerName', row.getAttribute('data-interviewer') || '-');
+    setText('viewInterviewStatus', status);
+    setText('viewInterviewResult', result);
+    setText('viewModeSummary', row.getAttribute('data-mode') || '-');
+    setText('viewStatusSummary', status);
+    setText('viewResultSummary', result);
     setText('viewFeedback', feedback || 'No feedback provided yet');
-    setText('viewCandidateAvatar', getInitial(name));
+    setText('viewCandidateAvatar', getInitial(row.getAttribute('data-candidate')));
+    toggleCurrentDecisionSections(status, result, feedback);
     openModal(document.getElementById('viewInterviewModal'));
+}
+
+function toggleCurrentDecisionSections(status, result, feedback) {
+    var completed = isCompletedStatus(status);
+    var hasFinalResult = isFinalResult(result);
+    var hasFeedback = hasUsefulFeedback(feedback);
+
+    toggleElement('viewResultSummaryCard', completed && hasFinalResult);
+    toggleElement('viewInterviewResultRow', completed && hasFinalResult);
+    toggleElement('viewFeedbackSection', completed && hasFeedback);
+}
+
+function copyInterviewHistoryIntoModal() {
+    var source = document.getElementById('viewInterviewHistoryMarkup');
+    var target = document.getElementById('viewHistoryList');
+    var currentInterviewId = activeViewInterviewRow ? activeViewInterviewRow.getAttribute('data-interview-id') : '';
+    var items;
+    var wrapper;
+
+    if (!target) {
+        return;
+    }
+
+    if (!source || !source.innerHTML.trim()) {
+        target.innerHTML = '<p class="history-empty">No past interview history yet.</p>';
+        return;
+    }
+
+    target.innerHTML = '';
+    wrapper = document.createElement('div');
+    wrapper.className = 'history-stack';
+
+    items = Array.prototype.slice.call(source.querySelectorAll('.history-item')).reverse();
+    items.forEach(function (item) {
+        var historyInterviewId = item.getAttribute('data-history-interview-id') || '';
+        var clone = item.cloneNode(true);
+
+        if (currentInterviewId && historyInterviewId === currentInterviewId) {
+            return;
+        }
+
+        decorateHistoryItem(clone, 'Past history');
+        wrapper.appendChild(clone);
+    });
+
+    if (!wrapper.children.length) {
+        target.innerHTML = '<p class="history-empty">No past interview history yet.</p>';
+        return;
+    }
+
+    target.appendChild(wrapper);
+}
+
+function decorateHistoryItem(item, label) {
+    var labelNode = item ? item.querySelector('.history-label') : null;
+    var status = item ? (item.getAttribute('data-history-status') || '') : '';
+    var result = item ? (item.getAttribute('data-history-result') || 'Pending') : 'Pending';
+    var feedback = item ? (item.getAttribute('data-history-feedback') || '') : '';
+    var resultNode = item ? item.querySelector('.history-result') : null;
+    var feedbackNode = item ? item.querySelector('.history-feedback') : null;
+    var completed = isCompletedStatus(status);
+
+    if (labelNode) {
+        labelNode.textContent = label || 'Interview record';
+    }
+
+    if (resultNode && (!completed || !isFinalResult(result))) {
+        resultNode.remove();
+    }
+
+    if (feedbackNode && (!completed || !hasUsefulFeedback(feedback))) {
+        feedbackNode.remove();
+    }
+
+    if (item) {
+        item.setAttribute('aria-label', 'Past interview history: ' + status);
+    }
+}
+
+function isCompletedStatus(status) {
+    return normalizeText(status) === 'completed';
+}
+
+function isFinalResult(result) {
+    var value = normalizeText(result);
+    return value === 'selected' || value === 'rejected';
+}
+
+function hasUsefulFeedback(feedback) {
+    var value = normalizeText(feedback);
+    return value && value !== 'no feedback provided' && value !== 'no feedback provided yet';
+}
+
+function toggleElement(id, show) {
+    var el = document.getElementById(id);
+    if (el) {
+        el.style.display = show ? '' : 'none';
+    }
 }
 
 function closeViewInterviewModal() {
     closeModal(document.getElementById('viewInterviewModal'));
 }
 
-function openConductInterviewModal(event) {
-    if (event && event.status && event.status !== 'success') return;
+function openCalendarPanel() {
+    var list = document.getElementById('calendarList');
 
-    var data = document.getElementById('conductInterviewData');
-    var name = data ? data.getAttribute('data-name') : '';
-    var job = data ? data.getAttribute('data-job') : '';
-    var feedback = data ? data.getAttribute('data-feedback') : '';
-    var result = data ? data.getAttribute('data-result') : '';
+    var rows = getInterviewRows()
+            .map(function (row) {
+                return {
+                    row: row,
+                    dateObj: parseInterviewDateTime(row)
+                };
+            })
+            .filter(function (item) {
+                return isCalendarInterviewStatus(item.row.getAttribute('data-status'));
+            })
+            .sort(function (a, b) {
+                if (!a.dateObj && !b.dateObj) {
+                    return 0;
+                }
+                if (!a.dateObj) {
+                    return 1;
+                }
+                if (!b.dateObj) {
+                    return -1;
+                }
+                return a.dateObj.getTime() - b.dateObj.getTime();
+            });
 
-    setText('conductCandidateName', name || 'Candidate');
-    setText('conductJobTitle', job || 'Job title');
-    setText('conductCandidateAvatar', getInitial(name));
-    setValue('feedbackTextarea', feedback || '');
-    setValue('resultSelect', result || 'Pending');
+    if (list) {
+        list.innerHTML = '';
 
-    openModal(document.getElementById('conductInterviewModal'));
+        if (!rows.length) {
+            list.innerHTML = '<div class="table-empty-state"><h3>No scheduled interviews</h3><p>Scheduled and rescheduled interviews will appear here.</p></div>';
+        } else {
+            rows.forEach(function (itemData) {
+                var row = itemData.row;
+                var dateObj = itemData.dateObj;
+                var item = document.createElement('div');
+
+                item.className = 'calendar-item';
+                item.innerHTML =
+                        '<div class="calendar-date-tile"><strong>' + escapeHtml(getCalendarDay(row, dateObj)) + '</strong><span>' + escapeHtml(getCalendarMonth(row, dateObj)) + '</span></div>' +
+                        '<div class="calendar-item-main"><strong>' + escapeHtml(row.getAttribute('data-candidate') || 'Candidate') + '</strong>' +
+                        '<span>' + escapeHtml(row.getAttribute('data-job') || 'Job position') + '</span>' +
+                        '<small>' + escapeHtml((row.getAttribute('data-date') || '') + ' ' + (row.getAttribute('data-time') || '')) + '</small></div>' +
+                        '<div class="calendar-item-side"><span class="mode-badge mode-' + normalizeText(row.getAttribute('data-mode')) + '">' + escapeHtml(row.getAttribute('data-mode') || 'Mode') + '</span>' +
+                        '<span class="status-badge status-' + normalizeText(row.getAttribute('data-status')) + '">' + escapeHtml(row.getAttribute('data-status') || 'Scheduled') + '</span></div>';
+
+                list.appendChild(item);
+            });
+        }
+    }
+
+    openModal(document.getElementById('calendarPanel'));
 }
-
 function closeConductInterviewModal() {
     closeModal(document.getElementById('conductInterviewModal'));
 }
 
 function submitConductInterview() {
-    var feedback = (document.getElementById('feedbackTextarea') && document.getElementById('feedbackTextarea').value || '').trim();
-    var result = document.getElementById('resultSelect') ? document.getElementById('resultSelect').value : 'Pending';
+    var feedback = (getValue('feedbackTextarea') || '').trim();
+    var result = getValue('resultSelect') || 'Pending';
 
     if (!feedback) {
         showToast('Please enter interview feedback.', 'error');
@@ -312,27 +479,23 @@ function submitConductInterview() {
 function handleConductSubmitEvent(event) {
     if (!event || event.status === 'success') {
         closeConductInterviewModal();
-        showToast('Interview result saved successfully.', 'success');
-        setTimeout(initInterviewPage, 250);
+        showToast('Interview result saved.', 'success');
+        setTimeout(initInterviewPage, 120);
     }
 }
 
 function openRescheduleModal(event) {
-    if (event && event.status && event.status !== 'success') return;
+    if (event && event.status && event.status !== 'success')
+        return;
 
-    var nameEl = document.getElementById('interviewForm:rescheduleCandidateNameHidden');
-    var jobEl = document.getElementById('interviewForm:rescheduleJobTitleHidden');
-    var dateEl = document.getElementById('interviewForm:rescheduleNewDateTime');
-    var modeEl = document.getElementById('interviewForm:rescheduleNewMode');
-    var interviewerEl = document.getElementById('interviewForm:rescheduleNewInterviewer');
-    var name = nameEl ? nameEl.value : '';
-
+    var name = getValue('interviewForm:rescheduleCandidateNameHidden');
     setText('rescheduleCandidateName', name || 'Candidate');
-    setText('rescheduleJobTitle', jobEl ? jobEl.value : 'Job title');
+    setText('rescheduleJobTitle', getValue('interviewForm:rescheduleJobTitleHidden') || 'Job title');
     setText('rescheduleCandidateAvatar', getInitial(name));
-    setValue('rescheduleDateTime', dateEl ? dateEl.value : '');
-    setValue('rescheduleMode', modeEl ? modeEl.value : 'Online');
-    setValue('rescheduleInterviewer', interviewerEl ? interviewerEl.value : '');
+    setValue('rescheduleDateTime', getValue('interviewForm:rescheduleNewDateTime') || '');
+    setValue('rescheduleMode', getValue('interviewForm:rescheduleNewMode') || 'Online');
+    setValue('rescheduleInterviewer', getValue('interviewForm:rescheduleNewInterviewer') || '');
+    setMinDateTime('rescheduleDateTime');
 
     openModal(document.getElementById('rescheduleModal'));
 }
@@ -342,9 +505,9 @@ function closeRescheduleModal() {
 }
 
 function submitReschedule() {
-    var date = document.getElementById('rescheduleDateTime') ? document.getElementById('rescheduleDateTime').value : '';
-    var mode = document.getElementById('rescheduleMode') ? document.getElementById('rescheduleMode').value : 'Online';
-    var interviewer = (document.getElementById('rescheduleInterviewer') && document.getElementById('rescheduleInterviewer').value || '').trim();
+    var date = getValue('rescheduleDateTime');
+    var mode = getValue('rescheduleMode') || 'Online';
+    var interviewer = (getValue('rescheduleInterviewer') || '').trim();
 
     if (!date) {
         showToast('Please select a new date and time.', 'error');
@@ -365,13 +528,55 @@ function submitReschedule() {
 function handleRescheduleSubmitEvent(event) {
     if (!event || event.status === 'success') {
         closeRescheduleModal();
-        showToast('Interview rescheduled successfully.', 'success');
-        setTimeout(initInterviewPage, 250);
+        showToast('Interview rescheduled.', 'success');
+        setTimeout(initInterviewPage, 120);
+    }
+}
+
+function confirmCancelInterviewAction(button) {
+    if (allowCancelSubmit) {
+        allowCancelSubmit = false;
+        return true;
+    }
+
+    pendingCancelButton = button;
+    var row = button ? button.closest('.interview-row') : null;
+    if (row) {
+        setText('cancelCandidateName', row.getAttribute('data-candidate') || 'Candidate');
+        setText('cancelJobTitle', row.getAttribute('data-job') || 'Job title');
+        setText('cancelCandidateAvatar', getInitial(row.getAttribute('data-candidate')));
+    }
+    openModal(document.getElementById('cancelInterviewModal'));
+    return false;
+}
+
+function closeCancelInterviewModal() {
+    pendingCancelButton = null;
+    allowCancelSubmit = false;
+    closeModal(document.getElementById('cancelInterviewModal'));
+}
+
+function submitCancelInterview() {
+    var button = pendingCancelButton;
+    closeModal(document.getElementById('cancelInterviewModal'));
+    pendingCancelButton = null;
+    if (button) {
+        allowCancelSubmit = true;
+        button.click();
+    }
+}
+
+function handleCancelAjaxEvent(event) {
+    if (!event || event.status === 'success') {
+        closeCancelInterviewModal();
+        showToast('Interview cancelled.', 'success');
+        setTimeout(initInterviewPage, 120);
     }
 }
 
 function openModal(overlay) {
-    if (!overlay) return;
+    if (!overlay)
+        return;
     overlay.style.display = 'flex';
     window.requestAnimationFrame(function () {
         overlay.classList.add('open');
@@ -380,7 +585,8 @@ function openModal(overlay) {
 }
 
 function closeModal(overlay) {
-    if (!overlay) return;
+    if (!overlay)
+        return;
     overlay.classList.remove('open');
     overlay.style.display = 'none';
     document.body.style.overflow = '';
@@ -388,17 +594,25 @@ function closeModal(overlay) {
 
 function setText(id, value) {
     var el = document.getElementById(id);
-    if (el) el.textContent = value || '';
+    if (el)
+        el.textContent = value || '';
+}
+
+function getValue(id) {
+    var el = document.getElementById(id);
+    return el ? el.value : '';
 }
 
 function setValue(id, value) {
     var el = document.getElementById(id);
-    if (el) el.value = value || '';
+    if (el)
+        el.value = value || '';
 }
 
 function clickById(id) {
     var el = document.getElementById(id);
-    if (el) el.click();
+    if (el)
+        el.click();
 }
 
 function getInitial(name) {
@@ -408,15 +622,20 @@ function getInitial(name) {
 
 function escapeHtml(value) {
     return String(value || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
 }
 
 function showToast(message, type) {
+    var existing = document.getElementById('qhToast');
+    if (existing)
+        existing.remove();
+
     var toast = document.createElement('div');
+    toast.id = 'qhToast';
     toast.className = 'qh-toast qh-toast-' + (type || 'info');
     toast.textContent = message;
     document.body.appendChild(toast);
@@ -428,9 +647,89 @@ function showToast(message, type) {
     setTimeout(function () {
         toast.classList.remove('show');
         setTimeout(function () {
-            if (toast.parentNode) toast.parentNode.removeChild(toast);
+            if (toast.parentNode)
+                toast.parentNode.removeChild(toast);
         }, 260);
-    }, 2800);
+    }, 2400);
+}
+
+function setMinDateTime(id) {
+    var input = document.getElementById(id);
+    if (!input)
+        return;
+    var now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    input.min = now.toISOString().slice(0, 16);
+}
+
+function isCalendarInterviewStatus(status) {
+    var value = normalizeText(status);
+    return value === 'scheduled' || value === 'rescheduled';
+}
+
+function startOfToday() {
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+}
+
+function parseInterviewDateTime(row) {
+    var dateText = row ? (row.getAttribute('data-date') || '') : '';
+    var timeText = row ? (row.getAttribute('data-time') || '') : '';
+    var parts = dateText.trim().split(/\s+/);
+    var timeMatch = timeText.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    var months = {
+        jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+        jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11
+    };
+    var day;
+    var month;
+    var year;
+    var hour;
+    var minute;
+    var ampm;
+
+    if (parts.length < 3 || !timeMatch) {
+        return null;
+    }
+
+    day = parseInt(parts[0], 10);
+    month = months[parts[1].toLowerCase().slice(0, 3)];
+    year = parseInt(parts[2], 10);
+    hour = parseInt(timeMatch[1], 10);
+    minute = parseInt(timeMatch[2], 10);
+    ampm = timeMatch[3].toUpperCase();
+
+    if (isNaN(day) || month === undefined || isNaN(year) || isNaN(hour) || isNaN(minute)) {
+        return null;
+    }
+
+    if (ampm === 'PM' && hour < 12) {
+        hour += 12;
+    }
+    if (ampm === 'AM' && hour === 12) {
+        hour = 0;
+    }
+
+    return new Date(year, month, day, hour, minute, 0, 0);
+}
+
+function getCalendarDay(row, parsedDate) {
+    if (parsedDate) {
+        return String(parsedDate.getDate());
+    }
+    var text = row ? row.getAttribute('data-date') : '';
+    var match = (text || '').match(/\b(\d{1,2})\b/);
+    return match ? match[1] : '--';
+}
+
+function getCalendarMonth(row, parsedDate) {
+    if (parsedDate) {
+        return parsedDate.toLocaleString('en-US', {month: 'short'});
+    }
+    var text = row ? row.getAttribute('data-date') : '';
+    var match = (text || '').match(/\b([A-Za-z]{3,})\b/);
+    return match ? match[1].slice(0, 3) : 'Date';
 }
 
 document.addEventListener('click', function (event) {
@@ -452,19 +751,3 @@ document.addEventListener('keydown', function (event) {
 window.addEventListener('load', function () {
     setTimeout(initInterviewPage, 150);
 });
-
-function getCalendarText(cell) {
-    return cell ? cell.innerText.replace(/\s+/g, ' ').trim() : '';
-}
-
-function getCalendarDay(cell) {
-    var text = getCalendarText(cell);
-    var match = text.match(/\b(\d{1,2})\b/);
-    return match ? match[1] : '--';
-}
-
-function getCalendarMonth(cell) {
-    var text = getCalendarText(cell);
-    var match = text.match(/\b([A-Za-z]{3,})\b/);
-    return match ? match[1].slice(0, 3) : 'Date';
-}

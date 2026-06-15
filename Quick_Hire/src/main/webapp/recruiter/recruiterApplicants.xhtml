@@ -8,9 +8,10 @@
       xmlns:p="http://xmlns.jcp.org/jsf/passthrough">
     <f:view>
         <h:head>
-            <title>Applicants - QuickHire</title>
             <h:outputStylesheet library="css" name="/recruiter/recruiter.css" />
             <h:outputStylesheet library="css" name="/recruiter/recruiterApplicants.css" />
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/primeicons/3.0.0/primeicons.css" />            <title>Applicants - QuickHire</title>
+
         </h:head>
 
         <h:body>
@@ -34,7 +35,8 @@
                             <h:commandLink value="📋 View Jobs" action="recruiterViewJobs?faces-redirect=true" styleClass="menu-link" />
                             <h:commandLink value="👥 Applicants" styleClass="menu-link active"/>
                             <h:commandLink value="📅 Interviews" action="recruiterInterview?faces-redirect=true" styleClass="menu-link" />
-                            <h:commandLink value="📊 Notification" styleClass="menu-link" />
+                            <h:commandLink value="📊 Notification" action="recruiterNotification?faces-redirect=true" styleClass="menu-link" />
+
                         </h:form>
                     </div>
 
@@ -59,8 +61,17 @@
                     <div class="quick-strip">
                         <div class="quick-strip-card">
                             <span class="quick-strip-label">Top Candidate</span>
-                            <strong>#{recruiterApplicationInterviewCDIBean.totalApplicationsCount}</strong>
-                            <small>Applications received across active job postings</small>
+
+                            <strong>
+                                #{recruiterApplicationInterviewCDIBean.topCandidateName}
+                                <span style="font-size:16px;">
+                                    #{recruiterApplicationInterviewCDIBean.topCandidateScoreDisplay}
+                                </span>
+                            </strong>
+
+                            <small>
+                                Applied for #{recruiterApplicationInterviewCDIBean.topCandidateJob}
+                            </small>
                         </div>
 
                         <div class="quick-strip-card">
@@ -71,22 +82,22 @@
 
                         <div class="quick-strip-card">
                             <span class="quick-strip-label">Shortlisted</span>
-                            <strong>#{recruiterApplicationInterviewCDIBean.shortlistedCount}</strong>
+                            <strong id="quickShortlistedCountText">#{recruiterApplicationInterviewCDIBean.shortlistedCount}</strong>
                             <small>Candidates currently under recruiter review</small>
                         </div>
                     </div>
 
                     <div class="applicant-stats">
                         <div class="astat-card">
-                            
+
                             <div>
-                                <strong>#{recruiterApplicationInterviewCDIBean.totalApplicationsCount}</strong>
+                                <strong id="totalCountText">#{recruiterApplicationInterviewCDIBean.totalApplicationsCount}</strong>
                                 <span>Total Applied</span>
                             </div>
                         </div>
 
                         <div class="astat-card astat-new">
-                           
+
                             <div>
                                 <strong>#{recruiterApplicationInterviewCDIBean.newTodayCount}</strong>
                                 <span>New Today</span>
@@ -94,66 +105,90 @@
                         </div>
 
                         <div class="astat-card astat-shortlisted">
-                            
+
                             <div>
-                                <strong>#{recruiterApplicationInterviewCDIBean.shortlistedCount}</strong>
+                                <strong id="shortlistedCountText">#{recruiterApplicationInterviewCDIBean.shortlistedCount}</strong>
                                 <span>Shortlisted</span>
                             </div>
                         </div>
 
                         <div class="astat-card astat-rejected">
-                           
+
                             <div>
-                                <strong>#{recruiterApplicationInterviewCDIBean.rejectedCount}</strong>
+                                <strong id="rejectedCountText">#{recruiterApplicationInterviewCDIBean.rejectedCount}</strong>
                                 <span>Rejected</span>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="filter-bar">
-                        <div class="filter-search-wrap">
-                            <span class="filter-search-icon">Search</span>
-                            <input type="text" id="searchInput" class="filter-search" placeholder="Search by candidate, email or job title" />
+                        <div class="astat-card astat-screened">
+                            <div>
+                                <strong id="scheduledInterviewCountText">
+                                    #{recruiterApplicationInterviewCDIBean.scheduledInterviewCount}
+                                </strong>
+                                <span>Interviews Scheduled</span>
+                            </div>
                         </div>
 
-                        <select id="jobFilter" class="filter-select">
-                            <option>All Jobs</option>
-                            <option>Senior Java Developer</option>
-                            <option>Frontend Engineer</option>
-                            <option>UI/UX Designer</option>
-                            <option>QA Analyst</option>
-                        </select>
-
-                        <select id="statusFilter" class="filter-select">
-                            <option>All Status</option>
-                            <option>Applied</option>
-                            <option>Screened</option>
-                            <option>Shortlisted</option>
-                            <option>Rejected</option>
-                            <option>Selected</option>
-                        </select>
-
-                        <select id="sortFilter" class="filter-select">
-                            <option>Newest First</option>
-                            <option>Oldest First</option>
-                            <option>Top Score First</option>
-                            <option>Lowest Score First</option>
-                        </select>
-
-                        <button type="button" class="filter-apply-btn" onclick="applyStaticFilters()">Apply Filters</button>
-                        <button type="button" class="filter-reset-btn" onclick="resetStaticFilters()">Reset</button>
-                    </div>
-
-                    <div class="active-filters">
-                        <span class="af-chip active">All applicants</span>
-                        <span class="af-chip">Newest First</span>
-                        <span class="af-chip muted">Live recruiter data</span>
                     </div>
 
                     <h:form id="applicantsForm">
-                        <h:messages id="messages" globalOnly="true" styleClass="form-messages" />
+                        <div class="filter-bar">
+                            <div class="filter-search-wrap">
+                                <h:inputText id="searchInput"
+                                             value="#{recruiterApplicationInterviewCDIBean.applicantSearchText}"
+                                             styleClass="filter-search"
+                                             p:placeholder="Search by candidate, email or job title" />
+                            </div>
 
-                        <div class="applicants-panel">
+                            <h:selectOneMenu id="jobFilter"
+                                             value="#{recruiterApplicationInterviewCDIBean.applicantJobFilter}"
+                                             styleClass="filter-select">
+                                <f:selectItem itemLabel="All Jobs" itemValue="All Jobs"/>
+                                <f:selectItems value="#{recruiterApplicationInterviewCDIBean.applicantJobOptions}"/>
+                            </h:selectOneMenu>
+
+                            <h:selectOneMenu id="statusFilter"
+                                             value="#{recruiterApplicationInterviewCDIBean.applicantStatusFilter}"
+                                             styleClass="filter-select">
+                                <f:selectItem itemLabel="All Status" itemValue="All Status"/>
+                                <f:selectItem itemLabel="Applied" itemValue="Applied"/>
+                                <f:selectItem itemLabel="Shortlisted" itemValue="Shortlisted"/>
+                                <f:selectItem itemLabel="Interview Scheduled" itemValue="Interview Scheduled"/>
+                                <f:selectItem itemLabel="Rejected" itemValue="Rejected"/>
+                                <f:selectItem itemLabel="Selected" itemValue="Selected"/>
+                            </h:selectOneMenu>
+
+                            <h:selectOneMenu id="sortFilter"
+                                             value="#{recruiterApplicationInterviewCDIBean.applicantSortFilter}"
+                                             styleClass="filter-select">
+                                <f:selectItem itemLabel="Newest First" itemValue="Newest First"/>
+                                <f:selectItem itemLabel="Oldest First" itemValue="Oldest First"/>
+                                <f:selectItem itemLabel="Top Score First" itemValue="Top Score First"/>
+                                <f:selectItem itemLabel="Lowest Score First" itemValue="Lowest Score First"/>
+                            </h:selectOneMenu>
+
+                            <h:commandButton value="Apply Filters"
+                                             styleClass="filter-apply-btn"
+                                             action="#{recruiterApplicationInterviewCDIBean.applyApplicantFilters}">
+                                <f:ajax execute="searchInput jobFilter statusFilter sortFilter"
+                                        render="applicantsTablePanel activeFilters"
+                                        onevent="afterApplicantTableAjax"/>
+                            </h:commandButton>
+
+                            <h:commandButton value="Reset"
+                                             styleClass="filter-reset-btn"
+                                             action="#{recruiterApplicationInterviewCDIBean.resetApplicantFilters}">
+                                <f:ajax execute="@this"
+                                        render="applicantsTablePanel activeFilters searchInput jobFilter statusFilter sortFilter"
+                                        onevent="afterApplicantTableAjax"/>
+                            </h:commandButton>
+                        </div>
+
+                        <h:panelGroup id="activeFilters" layout="block" styleClass="active-filters">
+                            <span class="af-chip active">#{recruiterApplicationInterviewCDIBean.applicantStatusFilter}</span>
+                            <span class="af-chip">#{recruiterApplicationInterviewCDIBean.applicantSortFilter}</span>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="applicantsTablePanel" layout="block" styleClass="applicants-panel">
 
                             <div class="applicants-table-wrap">
                                 <table class="applicants-table">
@@ -171,7 +206,22 @@
 
                                     <tbody>
                                         <ui:repeat value="#{recruiterApplicationInterviewCDIBean.recruiterApplicationList}" var="app" varStatus="loop">
-                                            <tr class="applicant-row">
+                                            <tr class="applicant-row" id="row_#{app.applicationId}"
+                                                data-app-id="#{app.applicationId}"
+                                                data-name="#{app.candidateId.userId.userName}"
+                                                data-email="#{app.candidateId.userId.userEmail}"
+                                                data-job="#{app.jobId.jobTitle}"
+                                                data-job-type="#{app.jobId.jobType}"
+                                                data-applied="#{recruiterApplicationInterviewCDIBean.formatApplicationDate(app.applicationAppliedDate)}"
+                                                data-experience="#{recruiterApplicationInterviewCDIBean.formatExperience(app.candidateId.candidateExperience)}"
+                                                data-score="#{recruiterApplicationInterviewCDIBean.getScoreDisplay(app.applicationId)}"
+                                                data-status="#{app.applicationStatus}"
+                                                data-display-status="#{recruiterApplicationInterviewCDIBean.getDisplayStatus(app)}"
+                                                data-location="#{recruiterApplicationInterviewCDIBean.getCandidateLocation(app)}"
+                                                data-skills="#{recruiterApplicationInterviewCDIBean.getCandidateSkillsText(app)}"
+                                                data-education="#{recruiterApplicationInterviewCDIBean.getCandidateEducationText(app)}"
+                                                data-notes="#{recruiterApplicationInterviewCDIBean.getCandidateProfileNotes(app)}"
+                                                data-resume-url="#{recruiterApplicationInterviewCDIBean.getCandidateResumeUrl(app)}">
                                                 <td>
                                                     <div class="cand-cell">
                                                         <div class="cand-avatar">
@@ -181,7 +231,7 @@
                                                         <div class="cand-info">
                                                             <span class="cand-name">#{app.candidateId.userId.userName}</span>
                                                             <span class="cand-email">#{app.candidateId.userId.userEmail}</span>
-                                                            <span class="cand-meta">#{app.candidateId.candidateCity} &#8226; Candidate</span>
+                                                            <span class="cand-meta">#{app.candidateId.candidateCity} </span>
                                                         </div>
                                                     </div>
                                                 </td>
@@ -225,26 +275,33 @@
                                                               #{app.applicationStatus eq 'Shortlisted' ? 'status-shortlisted' :
                                                                 app.applicationStatus eq 'Rejected' ? 'status-rejected' :
                                                                 app.applicationStatus eq 'Selected' ? 'status-selected' :
+                                                                app.applicationStatus eq 'Interview Scheduled' ? 'status-interview' :
                                                                 'status-applied'}">
-                                                              #{app.applicationStatus}
+                                                              #{recruiterApplicationInterviewCDIBean.getDisplayStatus(app)}
                                                         </span>
                                                     </h:panelGroup>
                                                 </td>
 
                                                 <td>
-                                                    <h:panelGroup id="actionsCell" layout="block" styleClass="action-btns">
+                                                    <h:panelGroup id="actionsCell" layout="block" styleClass="action-btns action-btn-group">
+
                                                         <button type="button"
-                                                                class="action-btn action-icon action-view"
+                                                                class="action-btn action-only-icon action-view"
                                                                 title="View Profile"
-                                                                onclick="openProfileDrawer(
-                                                                                '#{app.candidateId.userId.userName}',
-                                                                                '#{app.jobId.jobTitle}',
-                                                                                '#{recruiterApplicationInterviewCDIBean.formatExperience(app.candidateId.candidateExperience)}',
-                                                                                'Skills will be added later',
-                                                                                'Candidate profile details will be added later.',
-                                                                                '#{recruiterApplicationInterviewCDIBean.getScoreDisplay(app.applicationId)}%',
-                                                                                '#{app.applicationStatus}'
-                                                                                )">V</button>
+                                                                p:data-name="#{app.candidateId.userId.userName}"
+                                                                p:data-email="#{app.candidateId.userId.userEmail}"
+                                                                p:data-job="#{app.jobId.jobTitle}"
+                                                                p:data-experience="#{recruiterApplicationInterviewCDIBean.formatExperience(app.candidateId.candidateExperience)}"
+                                                                p:data-score="#{recruiterApplicationInterviewCDIBean.getScoreDisplay(app.applicationId)}"
+                                                                p:data-status="#{recruiterApplicationInterviewCDIBean.getDisplayStatus(app)}"
+                                                                p:data-location="#{recruiterApplicationInterviewCDIBean.getCandidateLocation(app)}"
+                                                                p:data-skills="#{recruiterApplicationInterviewCDIBean.getCandidateSkillsText(app)}"
+                                                                p:data-education="#{recruiterApplicationInterviewCDIBean.getCandidateEducationText(app)}"
+                                                                p:data-notes="#{recruiterApplicationInterviewCDIBean.getCandidateProfileNotes(app)}"
+                                                                p:data-resume-url="#{recruiterApplicationInterviewCDIBean.getCandidateResumeUrl(app)}"
+                                                                onclick="openProfileDrawerFromRow(this)">
+                                                            <i class="pi pi-user"></i>
+                                                        </button>
 
                                                         <h:commandButton value="Shortlist"
                                                                          id="shortlistBtn"
@@ -258,12 +315,21 @@
                                                                     onevent="handleShortlistAjaxEvent" />
                                                         </h:commandButton>
 
+                                                        <h:commandButton value="Reject"
+                                                                         id="rejectBtn"
+                                                                         styleClass="action-btn action-text action-reject"
+                                                                         title="Reject"
+                                                                         rendered="#{recruiterApplicationInterviewCDIBean.isRejectVisible(app)}"
+                                                                         action="#{recruiterApplicationInterviewCDIBean.rejectApplication(app.applicationId)}"
+                                                                         onclick="return confirmRejectAction(this);">
+                                                            <f:ajax execute="@this"
+                                                                    render="statusCell actionsCell"
+                                                                    onevent="handleRejectAjaxEvent" />
+                                                        </h:commandButton>
 
-
-                                                        <button type="button"
-                                                                class="action-btn action-icon action-reject"
-                                                                title="Reject"
-                                                                onclick="showToast('Reject action is not connected yet.', 'error')">X</button>
+                                                        <h:outputText value="Rejected"
+                                                                      styleClass="action-disabled-text"
+                                                                      rendered="#{recruiterApplicationInterviewCDIBean.isRejectedState(app)}" />
 
                                                         <h:commandButton value="Schedule"
                                                                          styleClass="action-btn action-text action-schedule"
@@ -274,16 +340,13 @@
                                                                     render=":applicantsForm:scheduleInterviewPanel"
                                                                     onevent="openScheduleInterviewAfterAjax" />
                                                         </h:commandButton>
-                                                        <h:panelGroup rendered="#{recruiterApplicationInterviewCDIBean.isInterviewAlreadyScheduled(app)}">
-                                                            <span class="action-selected-text">Interview Scheduled</span>
-                                                        </h:panelGroup>
-                                                        <h:panelGroup rendered="#{!recruiterApplicationInterviewCDIBean.canScheduleInterview(app)
-                                                                                  and !recruiterApplicationInterviewCDIBean.isInterviewAlreadyScheduled(app)}">
-                                                            <button type="button"
-                                                                    class="action-btn action-text action-schedule disabled"
-                                                                    disabled="disabled"
-                                                                    title="Shortlist first to schedule">Schedule</button>
-                                                        </h:panelGroup>
+
+                                                        <h:commandButton value="Scheduled"
+                                                                         styleClass="action-btn action-text action-schedule"
+                                                                         title="Interview already scheduled"
+                                                                         rendered="#{recruiterApplicationInterviewCDIBean.isScheduleInterviewDone(app)}"
+                                                                         disabled="true" />
+
                                                     </h:panelGroup>
                                                 </td>
                                             </tr>
@@ -307,7 +370,7 @@
                                             onclick="goApplicantsPage(1)">Next</button>
                                 </div>
                             </div>
-                        </div>
+                        </h:panelGroup>
 
 
                         <h:panelGroup id="scheduleInterviewPanel" layout="block">
@@ -341,6 +404,10 @@
 
                                     </div>
 
+                                    <h:messages id="scheduleMessages"
+                                                styleClass="form-messages"
+                                                globalOnly="false"/>
+
                                     <!-- FORM GRID -->
                                     <div class="schedule-form-grid">
 
@@ -349,14 +416,15 @@
 
                                             <h5>Interview Date &amp; Time</h5>
 
+                                            <!-- TO THIS — remove required + add min via JS on render -->
                                             <h:inputText
                                                 id="interviewDate"
                                                 value="#{recruiterApplicationInterviewCDIBean.interviewDateTime}"
                                                 styleClass="modal-input modal-input-large"
                                                 p:type="datetime-local"
+                                                p:id="interviewDateInput"
                                                 required="true"
                                                 requiredMessage="Interview date &amp; time is required"/>
-
                                             <h:message for="interviewDate"
                                                        styleClass="field-error"/>
 
@@ -440,7 +508,7 @@
                                             action="#{recruiterApplicationInterviewCDIBean.scheduleInterview}">
 
                                             <f:ajax execute="@form"
-                                                    render="@form messages"
+                                                    render=":applicantsForm:scheduleInterviewPanel"
                                                     onevent="closeScheduleInterviewAfterAjax"/>
 
                                         </h:commandButton>
@@ -482,7 +550,31 @@
                     </div>
                 </div>
             </div>
+            <!-- shortlistConfirmModal ends above, rejectConfirmModal starts below -->
 
+            <div id="rejectConfirmModal" class="modal-overlay">
+                <div class="modal-card">
+                    <div class="confirm-head">
+                        <div class="confirm-icon" style="background:#fee2e2;color:#dc2626;">&#10007;</div>
+                        <div>
+                            <h3>Reject this application?</h3>
+                            <p>The candidate will be notified that their application was not successful.</p>
+                        </div>
+                    </div>
+                    <div class="confirm-note">
+                        This action will update the application status to Rejected.
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button"
+                                class="btn-light"
+                                onclick="closeRejectConfirmModal()">Cancel</button>
+                        <button type="button"
+                                class="btn-main btn-main-large"
+                                style="background:#dc2626;"
+                                onclick="submitRejectConfirm()">Yes, reject</button>
+                    </div>
+                </div>
+            </div>
             <div id="profileDrawer" class="profile-drawer-overlay">
                 <div class="profile-drawer">
                     <div class="profile-drawer-header">
@@ -502,6 +594,10 @@
                         <div>
                             <h4 id="drawerName">Candidate</h4>
                             <p id="drawerRole">Job title</p>
+                            <div class="drawer-meta-line">
+                                <span id="drawerEmail">Email not provided</span>
+                                <span id="drawerLocation">Location not provided</span>
+                            </div>
                             <span class="drawer-score" id="drawerScore">--</span>
                         </div>
                     </div>
@@ -520,7 +616,12 @@
 
                     <div class="profile-section">
                         <h5>Skills</h5>
-                        <p id="drawerSkills">Skills will be added later.</p>
+                        <p id="drawerSkills">Skills not provided.</p>
+                    </div>
+
+                    <div class="profile-section">
+                        <h5>Education</h5>
+                        <p id="drawerEducation">Education not provided.</p>
                     </div>
 
                     <div class="profile-section">
@@ -530,8 +631,9 @@
 
                     <div class="profile-actions">
                         <button type="button"
+                                id="drawerResumeBtn"
                                 class="btn-light"
-                                onclick="showToast('Resume preview will be added later.', 'info')">View Resume</button>
+                                onclick="openDrawerResume()">View Resume</button>
                     </div>
                 </div>
             </div>

@@ -4,7 +4,6 @@
  */
 package CDIBean;
 
-import Client.JwtClientFilter;
 import jakarta.inject.Named;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.FacesMessage;
@@ -451,10 +450,20 @@ public class LoginCDIBean implements Serializable {
                     body
             );
 
-            FacesContext.getCurrentInstance()
-                    .getExternalContext()
-                    .getFlash()
-                    .setKeepMessages(true);
+//            FacesContext.getCurrentInstance()
+//                    .getExternalContext()
+//                    .getFlash()
+//                    .setKeepMessages(true);
+// change
+                if (FacesContext.getCurrentInstance() != null) {
+                    var flash = FacesContext.getCurrentInstance()
+                            .getExternalContext()
+                            .getFlash();
+
+                    if (flash != null) {
+                        flash.setKeepMessages(true);
+                    }
+                }
 
             FacesContext.getCurrentInstance().addMessage(
                     null,
@@ -526,10 +535,20 @@ public class LoginCDIBean implements Serializable {
 
             if (response.getStatus() == 200) {
 
-                FacesContext.getCurrentInstance()
-                        .getExternalContext()
-                        .getFlash()
-                        .setKeepMessages(true);
+//                FacesContext.getCurrentInstance()
+//                        .getExternalContext()
+//                        .getFlash()
+//                        .setKeepMessages(true);
+// change
+                if (FacesContext.getCurrentInstance() != null) {
+                    var flash = FacesContext.getCurrentInstance()
+                            .getExternalContext()
+                            .getFlash();
+
+                    if (flash != null) {
+                        flash.setKeepMessages(true);
+                    }
+                }
 
                 FacesContext.getCurrentInstance().addMessage(
                         null,
@@ -544,11 +563,21 @@ public class LoginCDIBean implements Serializable {
 
             } else {
 
-                FacesContext.getCurrentInstance()
-                        .getExternalContext()
-                        .getFlash()
-                        .setKeepMessages(true);
+//                FacesContext.getCurrentInstance()
+//                        .getExternalContext()
+//                        .getFlash()
+//                        .setKeepMessages(true);
 
+// change
+                if (FacesContext.getCurrentInstance() != null) {
+                    var flash = FacesContext.getCurrentInstance()
+                            .getExternalContext()
+                            .getFlash();
+
+                    if (flash != null) {
+                        flash.setKeepMessages(true);
+                    }
+                }
                 FacesContext.getCurrentInstance().addMessage(
                         null,
                         new jakarta.faces.application.FacesMessage(

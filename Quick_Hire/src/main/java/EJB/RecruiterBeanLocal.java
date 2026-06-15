@@ -23,9 +23,9 @@ public interface RecruiterBeanLocal {
 
     void updateProfile(Tblrecruiters recruiter);
 
-    // ================= COMPANY =================
-//    Tblcompany getCompanyDetails(int recruiterId);
+
     // ================= JOB MANAGEMENT =================
+
     void createJob(Tbljob job, Collection<Integer> skillIds, Collection<Integer> educationIds);
 
     Collection<Tbljob> getJobs(int recruiterId);
@@ -38,7 +38,6 @@ public interface RecruiterBeanLocal {
 
     public void closeExpiredJobs();
 
-    // ================= JOB SKILLS =========================================================
     Collection<Tblskills> getJobSkills(int jobId);
 
     public Collection<Tblskills> getAllSkills(Integer userId);
@@ -49,12 +48,18 @@ public interface RecruiterBeanLocal {
 
     public void addSkillAndOrCategory(String categoryName, Collection<String> skillNames, Integer existingCategoryId, Integer recruiterUserId);
 
+    long getJobApplicationCount(Integer jobId, String status);
+
     // ================= JOB Education =======================================================
     Collection<Tbleducation> getAllEducation();
 
     Collection<Tbleducation> getJobEducation(int jobId);
 
     // ================= CANDIDATE MANAGEMENT =================
+    public String getCandidateSkillsTextByApplication(int applicationId);
+
+    public String getCandidateEducationTextByApplication(int applicationId);
+
     public Collection<Tblapplication> getRecruiterApplications(int recruiterId);
 
     public double calculateAndSaveScreeningScore(int applicationId);
@@ -65,11 +70,16 @@ public interface RecruiterBeanLocal {
 
     void shortlistApplication(int applicationId);
 
-//    void selectApplication(int applicationId);
-    void scheduleInterview(Tblinterview interview);
+    public void rejectApplication(int applicationId);
+
+    public long getRejectedApplicationCount(int recruiterId);
 
     // ================= INTERVIEW =================
+    void scheduleInterview(Tblinterview interview);
+
     Collection<Tblinterview> getRecruiterInterviews(Integer recruiterId);
+
+    Collection<Tblinterview> getInterviewHistoryByApplication(Integer applicationId);
 
     Long getScheduledInterviewCount(Integer recruiterId);
 
@@ -81,39 +91,12 @@ public interface RecruiterBeanLocal {
 
     Long getTotalInterviewCount(Integer recruiterId);
 
-    void conductInterview(Integer interviewId,
-            String feedback,
-            String result);
+    void conductInterview(Integer interviewId, String feedback, String result);
 
-    void rescheduleInterview(Integer interviewId,
-            Date interviewDate,
-            String interviewerName,
-            String interviewerMode);
+    void rescheduleInterview(Integer interviewId, Date interviewDate, String interviewerName, String interviewerMode);
 
-//    // ================= APPLICATION =================
-//    Collection<Tblapplication> getApplications(int jobId);
-//    void updateApplicationStatus(int applicationId, String newStatus);
-//
-//    // ================= APPLICATION HISTORY =================
-//    void addApplicationStatusHistory(int applicationId, String oldStatus, String newStatus);
-//
-//    // ================= SCREENING =================
-//    void generateScreeningScore(int applicationId);
-//    Tblscreeningscore getScore(int applicationId);
-//
-//    // ================= SHORTLIST =================
-//    Collection<Tblapplication> getTopCandidates(int jobId);
-//    Collection<Tblapplication> filterCandidatesByScore(int jobId, double minScore);
-//
-//    // ================= INTERVIEW =================
-//    void scheduleInterview(Tblinterview interview);
-//    void updateInterview(Tblinterview interview);
-//    void updateInterviewFeedback(int interviewId, String feedback, String result);
-//
-//    // ================= NOTIFICATION =================
-//    void sendNotification(Tblnotification notification);
-//    Collection<Tblnotification> getRecruiterNotifications(int userId);
-//    
+    public void cancelInterview(Integer interviewId);
+
     // ================= DASHBOARD =================
     public long getTodayInterviewsCount(int recruiterId);
 
@@ -136,5 +119,12 @@ public interface RecruiterBeanLocal {
     Collection<Tblinterview> getDashboardUpcomingInterviews(int recruiterId);
 
     Collection<Tblnotification> getRecentActivities(int userId);
+
+    // ================= NOTIFICATION =================
+    Collection<Tblnotification> getNotifications(int userId);
+
+    void markNotificationAsRead(int notificationId, int userId);
+
+    void markAllNotificationsAsRead(int userId);
 
 }

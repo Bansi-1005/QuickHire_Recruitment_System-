@@ -11,6 +11,7 @@
             <title>Interviews - QuickHire</title>
             <h:outputStylesheet library="css" name="/recruiter/recruiter.css" />
             <h:outputStylesheet library="css" name="/recruiter/recruiterInterview.css" />
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/primeicons/3.0.0/primeicons.css" />
         </h:head>
 
         <h:body>
@@ -24,19 +25,26 @@
             <div class="dashboard-layout interview-layout">
                 <aside class="sidebar">
                     <div class="sidebar-title">Navigation</div>
-                      <h:form styleClass="menu-form">
-                            <h:commandLink value="🏠 Dashboard" action="recruiterDashboard?faces-redirect=true" styleClass="menu-link"/>
-                            <h:commandLink value="📋 Job Postings" action="recruiterPostJob?faces-redirect=true" styleClass="menu-link" />
-                            <h:commandLink value="📋 View Jobs" action="recruiterViewJobs?faces-redirect=true" styleClass="menu-link" />
-                            <h:commandLink value="👥 Applicants" action="recruiterApplicants?faces-redirect=true" styleClass="menu-link" />
-                            <h:commandLink value="📅 Interviews" styleClass="menu-link active"/>
-                            <h:commandLink value="📊 Notification" styleClass="menu-link" />
-                        </h:form>
+                    <h:form styleClass="menu-form">
+                        <h:commandLink value="🏠 Dashboard"
+                                       action="recruiterDashboard?faces-redirect=true"
+                                       styleClass="menu-link" />
+
+                        <h:commandLink value="📋 Job Postings"
+                                       action="recruiterPostJob?faces-redirect=true"
+                                       styleClass="menu-link" />
+                        <h:commandLink value="📋 View Jobs"
+                                       action="recruiterViewJobs?faces-redirect=true"
+                                       styleClass="menu-link" />
+                        <h:commandLink value="👥 Applicants" action="recruiterApplicants?faces-redirect=true" styleClass="menu-link" />
+                        <h:commandLink value="📅 Interviews" styleClass="menu-link active"/>
+                        <h:commandLink value="📊 Notification" 
+                                       action="recruiterNotification?faces-redirect=true" styleClass="menu-link" />
+                    </h:form>
 
                     <div class="sidebar-card interview-sidebar-card">
                         <h4>Interview Pipeline</h4>
                         <p>Track scheduled interviews, candidate decisions, and reschedules in one place.</p>
-                        <a href="#" class="sidebar-btn">View Overview</a>
                     </div>
                 </aside>
 
@@ -50,252 +58,301 @@
 
                         <div class="interview-hero-actions">
                             <button type="button" class="btn-light interview-icon-btn" onclick="exportInterviewsCsv()">
-                                <span class="btn-glyph" aria-hidden="true">&#8681;</span>
+                                <span class="pi pi-download" aria-hidden="true"></span>
                                 <span>Export</span>
                             </button>
                             <button type="button" class="btn-main interview-icon-btn" onclick="openCalendarPanel()">
-                                <span class="btn-glyph" aria-hidden="true">&#9638;</span>
+                                <span class="pi pi-calendar" aria-hidden="true"></span>
                                 <span>Calendar</span>
                             </button>
                         </div>
                     </div>
 
-                    <div class="interview-stats">
-                        <div class="interview-stat-card">
-                            <span class="interview-stat-icon">&#9638;</span>
-                            <div>
-                                <strong>#{recruiterApplicationInterviewCDIBean.scheduledInterviewCount}</strong>
-                                <span>Scheduled</span>
-                            </div>
-                        </div>
-                        <div class="interview-stat-card stat-completed">
-                            <span class="interview-stat-icon">&#10003;</span>
-                            <div>
-                                <strong>#{recruiterApplicationInterviewCDIBean.completedInterviewCount}</strong>
-                                <span>Completed</span>
-                            </div>
-                        </div>
-                        <div class="interview-stat-card stat-selected">
-                            <span class="interview-stat-icon">&#9673;</span>
-                            <div>
-                                <strong>#{recruiterApplicationInterviewCDIBean.selectedCount}</strong>
-                                <span>Selected</span>
-                            </div>
-                        </div>
-                        <div class="interview-stat-card stat-rejected">
-                            <span class="interview-stat-icon">&#10005;</span>
-                            <div>
-                                <strong>#{recruiterApplicationInterviewCDIBean.rejectedCount}</strong>
-                                <span>Rejected</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="filter-bar interview-filter-bar">
-                        <div class="filter-search-wrap">
-                            <span class="filter-search-icon">Search</span>
-                            <input type="text" id="interviewSearchInput" class="filter-search" placeholder="Search candidate, job, or interviewer" />
-                        </div>
-
-                        <select id="statusFilterSelect" class="filter-select">
-                            <option value="all">All Status</option>
-                            <option value="Scheduled">Scheduled</option>
-                            <option value="Completed">Completed</option>
-                            <option value="Cancelled">Cancelled</option>
-                            <option value="Rescheduled">Rescheduled</option>
-                        </select>
-
-                        <select id="resultFilterSelect" class="filter-select">
-                            <option value="all">All Results</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Selected">Selected</option>
-                            <option value="Rejected">Rejected</option>
-                        </select>
-
-                        <select id="modeFilterSelect" class="filter-select">
-                            <option value="all">All Modes</option>
-                            <option value="Online">Online</option>
-                            <option value="Offline">Offline</option>
-                            <option value="Phone">Phone</option>
-                        </select>
-
-                        <button type="button" class="filter-apply-btn" onclick="applyInterviewFilters()">Apply Filters</button>
-                        <button type="button" class="filter-reset-btn" onclick="resetInterviewFilters()">Reset</button>
-                    </div>
-
-                    <div class="active-filters">
-                        <span class="af-chip active">All interviews</span>
-                        <span class="af-chip">Live schedule</span>
-                        <span class="af-chip muted">Client-side filters</span>
-                    </div>
-
                     <h:form id="interviewForm">
-                        <h:messages id="interviewMessages" globalOnly="true" styleClass="form-messages" />
-
-                        <h:panelGroup id="conductInterviewPanel" layout="block">
-                            <div id="conductInterviewData"
-                                 data-name="#{recruiterApplicationInterviewCDIBean.interview.applicationId.candidateId.userId.userName}"
-                                 data-job="#{recruiterApplicationInterviewCDIBean.interview.applicationId.jobId.jobTitle}"
-                                 data-feedback="#{recruiterApplicationInterviewCDIBean.interview.feedback}"
-                                 data-result="#{recruiterApplicationInterviewCDIBean.interview.result}"
-                                 style="display:none;">
-                            </div>
-                            <h:inputHidden id="conductFeedback" value="#{recruiterApplicationInterviewCDIBean.interview.feedback}" />
-                            <h:inputHidden id="conductResult" value="#{recruiterApplicationInterviewCDIBean.interview.result}" />
+                        <h:panelGroup id="interviewMessages" layout="block" style="display:none;">
+                            <h:messages globalOnly="true" styleClass="form-messages" />
                         </h:panelGroup>
 
-                        <h:panelGroup id="rescheduleInterviewPanel" layout="block">
-                            <h:inputHidden id="rescheduleCandidateNameHidden" value="#{recruiterApplicationInterviewCDIBean.interview.applicationId.candidateId.userId.userName}" />
-                            <h:inputHidden id="rescheduleJobTitleHidden" value="#{recruiterApplicationInterviewCDIBean.interview.applicationId.jobId.jobTitle}" />
-                            <h:inputText id="rescheduleNewDateTime"
-                                         value="#{recruiterApplicationInterviewCDIBean.rescheduleDateTime}"
-                                         styleClass="hidden-input"
-                                         p:type="datetime-local" />
-                            <h:selectOneMenu id="rescheduleNewMode" value="#{recruiterApplicationInterviewCDIBean.interview.interviewerMode}" styleClass="hidden-input">
-                                <f:selectItem itemLabel="Online" itemValue="Online" />
-                                <f:selectItem itemLabel="Offline" itemValue="Offline" />
-                                <f:selectItem itemLabel="Phone" itemValue="Phone" />
-                            </h:selectOneMenu>
-                            <h:inputText id="rescheduleNewInterviewer"
-                                         value="#{recruiterApplicationInterviewCDIBean.interview.interviewerName}"
-                                         styleClass="hidden-input" />
-                        </h:panelGroup>
-
-                        <div class="interviews-panel">
-                            <div class="interviews-panel-head">
-                                <div>
-                                    <span class="quick-strip-label">Interview Queue</span>
-                                    <h2><strong id="totalInterviewCount">#{recruiterApplicationInterviewCDIBean.totalInterviewCount}</strong> interviews</h2>
+                        <h:panelGroup id="interviewContent" layout="block">
+                            <div class="interview-stats">
+                                <div class="interview-stat-card">
+                                    <span class="interview-stat-icon pi pi-calendar"></span>
+                                    <div>
+                                        <strong>#{recruiterApplicationInterviewCDIBean.scheduledInterviewCount}</strong>
+                                        <span>Scheduled</span>
+                                    </div>
                                 </div>
+                                <div class="interview-stat-card stat-completed">
+                                    <span class="interview-stat-icon pi pi-check"></span>
+                                    <div>
+                                        <strong>#{recruiterApplicationInterviewCDIBean.completedInterviewCount}</strong>
+                                        <span>Completed</span>
+                                    </div>
+                                </div>
+                                <div class="interview-stat-card stat-selected">
+                                    <span class="interview-stat-icon pi pi-user-plus"></span>
+                                    <div>
+                                        <strong>#{recruiterApplicationInterviewCDIBean.selectedCount}</strong>
+                                        <span>Selected</span>
+                                    </div>
+                                </div>
+                                <div class="interview-stat-card stat-rejected">
+                                    <span class="interview-stat-icon pi pi-times"></span>
+                                    <div>
+                                        <strong>#{recruiterApplicationInterviewCDIBean.interviewRejectedCount}</strong>
+                                        <span>Rejected</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="filter-bar interview-filter-bar">
+                                <div class="filter-search-wrap">
+                                    <span class="filter-search-icon pi pi-search"></span>
+                                    <input type="text" id="interviewSearchInput" class="filter-search" placeholder="Search candidate, job, or interviewer" />
+                                </div>
+
+                                <select id="statusFilterSelect" class="filter-select">
+                                    <option value="all">All Status</option>
+                                    <option value="Scheduled">Scheduled</option>
+                                    <option value="Rescheduled">Rescheduled</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                </select>
+
+                                <select id="resultFilterSelect" class="filter-select">
+                                    <option value="all">All Results</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Selected">Selected</option>
+                                    <option value="Rejected">Rejected</option>
+                                </select>
+
+                                <select id="modeFilterSelect" class="filter-select">
+                                    <option value="all">All Modes</option>
+                                    <option value="Online">Online</option>
+                                    <option value="Offline">Offline</option>
+                                    <option value="Phone">Phone</option>
+                                </select>
+
+                                <button type="button" class="filter-apply-btn" onclick="applyInterviewFilters()">Apply Filters</button>
+                                <button type="button" class="filter-reset-btn" onclick="resetInterviewFilters()">Reset</button>
+                            </div>
+
+                            <div class="active-filters">
+                                <span class="af-chip active">All interviews</span>
                                 <span class="af-chip muted" id="filterSummary">Showing all</span>
                             </div>
 
-                            <div class="interviews-table-wrap">
-                                <table class="interview-table" id="interviewTableMain">
-                                    <thead>
-                                        <tr>
-                                            <th>Candidate</th>
-                                            <th>Job Position</th>
-                                            <th>Schedule</th>
-                                            <th>Mode</th>
-                                            <th>Status</th>
-                                            <th>Result</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <ui:repeat value="#{recruiterApplicationInterviewCDIBean.recruiterInterviewList}" var="int">
-                                            <tr class="interview-row"
-                                                data-candidate="#{int.applicationId.candidateId.userId.userName}"
-                                                data-email="#{int.applicationId.candidateId.userId.userEmail}"
-                                                data-job="#{int.applicationId.jobId.jobTitle}"
-                                                data-interviewer="#{int.interviewerName}"
-                                                data-mode="#{int.interviewerMode}"
-                                                data-status="#{int.interviewStatus}"
-                                                data-result="#{empty int.result ? 'Pending' : int.result}">
-                                                <td>
-                                                    <div class="candidate-cell">
-                                                        <div class="candidate-avatar">
-                                                            #{recruiterApplicationInterviewCDIBean.getCandidateInitialForInterview(int)}
-                                                        </div>
-                                                        <div class="candidate-info">
-                                                            <span class="candidate-name">#{int.applicationId.candidateId.userId.userName}</span>
-                                                            <span class="candidate-email">#{int.applicationId.candidateId.userId.userEmail}</span>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <span class="job-title">#{int.applicationId.jobId.jobTitle}</span>
-                                                    <span class="job-type-badge">#{int.applicationId.jobId.jobType}</span>
-                                                </td>
-                                                <td>
-                                                    <div class="schedule-cell">
-                                                        <span class="schedule-date">#{recruiterApplicationInterviewCDIBean.formatInterviewDate(int.interviewDate)}</span>
-                                                        <span class="schedule-time">#{recruiterApplicationInterviewCDIBean.formatInterviewTime(int.interviewDate)}</span>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <span class="mode-badge mode-#{int.interviewerMode.toLowerCase()}">#{int.interviewerMode}</span>
-                                                </td>
-                                                <td>
-                                                    <span class="status-badge status-#{int.interviewStatus.toLowerCase()}">#{int.interviewStatus}</span>
-                                                </td>
-                                                <td>
-                                                    <span class="result-badge result-#{empty int.result ? 'pending' : int.result.toLowerCase()}">
-                                                        #{empty int.result ? 'Pending' : int.result}
+                            <h:panelGroup id="conductInterviewPanel" layout="block">
+                                <div id="conductInterviewData"
+                                     data-name="#{recruiterApplicationInterviewCDIBean.selectedInterviewCandidateName}"
+                                     data-job="#{recruiterApplicationInterviewCDIBean.selectedInterviewJobTitle}"
+                                     data-feedback="#{recruiterApplicationInterviewCDIBean.feedback}"
+                                     data-result="#{empty recruiterApplicationInterviewCDIBean.result ? 'Pending' : recruiterApplicationInterviewCDIBean.result}"
+                                     style="display:none;">
+                                </div>
+                                <h:inputHidden id="conductFeedback" value="#{recruiterApplicationInterviewCDIBean.feedback}" />
+                                <h:inputHidden id="conductResult" value="#{recruiterApplicationInterviewCDIBean.result}" />
+                            </h:panelGroup>
+
+                            <h:panelGroup id="rescheduleInterviewPanel" layout="block">
+                                <h:inputHidden id="rescheduleCandidateNameHidden" value="#{recruiterApplicationInterviewCDIBean.selectedInterview.applicationId.candidateId.userId.userName}" />
+                                <h:inputHidden id="rescheduleJobTitleHidden" value="#{recruiterApplicationInterviewCDIBean.selectedInterview.applicationId.jobId.jobTitle}" />
+                                <h:inputText id="rescheduleNewDateTime"
+                                             value="#{recruiterApplicationInterviewCDIBean.rescheduleDateTime}"
+                                             styleClass="hidden-input"
+                                             p:type="datetime-local" />
+                                <h:selectOneMenu id="rescheduleNewMode" value="#{recruiterApplicationInterviewCDIBean.selectedInterview.interviewerMode}" styleClass="hidden-input">
+                                    <f:selectItem itemLabel="Online" itemValue="Online" />
+                                    <f:selectItem itemLabel="Offline" itemValue="Offline" />
+                                    <f:selectItem itemLabel="Phone" itemValue="Phone" />
+                                </h:selectOneMenu>
+                                <h:inputText id="rescheduleNewInterviewer"
+                                             value="#{recruiterApplicationInterviewCDIBean.selectedInterview.interviewerName}"
+                                             styleClass="hidden-input" />
+                            </h:panelGroup>
+
+                            <h:panelGroup id="viewInterviewHistoryPanel" layout="block" styleClass="history-render-source">
+                                <div id="viewInterviewHistoryMarkup">
+                                    <ui:repeat value="#{recruiterApplicationInterviewCDIBean.selectedInterviewHistory}" var="hist">
+                                        <div class="history-item"
+                                             data-history-interview-id="#{hist.interviewId}"
+                                             data-history-status="#{hist.interviewStatus}"
+                                             data-history-result="#{empty hist.result ? 'Pending' : hist.result}"
+                                             data-history-date="#{recruiterApplicationInterviewCDIBean.formatInterviewDate(hist.interviewDate)}"
+                                             data-history-time="#{recruiterApplicationInterviewCDIBean.formatInterviewTime(hist.interviewDate)}"
+                                             data-history-mode="#{hist.interviewerMode}"
+                                             data-history-interviewer="#{hist.interviewerName}"
+                                             data-history-feedback="#{empty hist.feedback ? 'No feedback provided' : hist.feedback}">
+                                            <div class="history-dot #{recruiterApplicationInterviewCDIBean.getInterviewStatusClass(hist.interviewStatus)}"></div>
+                                            <div class="history-main">
+                                                <div class="history-label">Interview record</div>
+                                                <div class="history-head">
+                                                    <strong>#{hist.interviewStatus}</strong>
+                                                    <span class="result-badge history-result #{recruiterApplicationInterviewCDIBean.getInterviewResultClass(hist.result)}">
+                                                        #{empty hist.result ? 'Pending' : hist.result}
                                                     </span>
-                                                </td>
-                                                <td>
-                                                    <div class="action-buttons">
-                                                        <button type="button"
-                                                                class="action-btn action-text action-view"
-                                                                title="View Details"
-                                                                onclick="openViewInterviewModal(
-                                                                    '#{int.applicationId.candidateId.userId.userName}',
-                                                                    '#{int.applicationId.candidateId.userId.userEmail}',
-                                                                    '#{int.applicationId.jobId.jobTitle}',
-                                                                    '#{recruiterApplicationInterviewCDIBean.formatInterviewDate(int.interviewDate)}',
-                                                                    '#{recruiterApplicationInterviewCDIBean.formatInterviewTime(int.interviewDate)}',
-                                                                    '#{int.interviewerMode}',
-                                                                    '#{int.interviewerName}',
-                                                                    '#{int.interviewStatus}',
-                                                                    '#{empty int.result ? &apos;Pending&apos; : int.result}',
-                                                                    '#{int.feedback}'
-                                                                )"><span class="btn-glyph" aria-hidden="true">&#9673;</span> View</button>
+                                                </div>
+                                                <span>
+                                                    #{recruiterApplicationInterviewCDIBean.formatInterviewDate(hist.interviewDate)}
+                                                    #{recruiterApplicationInterviewCDIBean.formatInterviewTime(hist.interviewDate)}
+                                                </span>
+                                                <small>
+                                                    #{hist.interviewerMode} interview with #{hist.interviewerName}
+                                                </small>
+                                                <p class="history-feedback">
+                                                    #{empty hist.feedback ? 'No feedback provided' : hist.feedback}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </ui:repeat>
+                                </div>
+                            </h:panelGroup>
 
-                                                        <h:commandButton
-                                                            value="Conduct"
-                                                            styleClass="action-btn action-text action-conduct"
-                                                            rendered="#{recruiterApplicationInterviewCDIBean.isConductVisible(int)}"
-                                                            action="#{recruiterApplicationInterviewCDIBean.prepareConductInterview(int.interviewId)}">
-                                                            <f:ajax execute="@this"
-                                                                    render=":interviewForm:conductInterviewPanel"
-                                                                    onevent="openConductInterviewModal"/>
-                                                        </h:commandButton>
+                            <div class="interviews-panel">
+                                <div class="interviews-panel-head">
+                                    <div>
+                                        <span class="quick-strip-label">Interview Queue</span>
+                                        <h2><strong id="totalInterviewCount">#{recruiterApplicationInterviewCDIBean.totalInterviewCount}</strong> interviews</h2>
+                                    </div>
+                                </div>
 
-                                                        <h:commandButton
-                                                            value="Reschedule"
-                                                            styleClass="action-btn action-text action-schedule"
-                                                            action="#{recruiterApplicationInterviewCDIBean.prepareReschedule(int)}">
-                                                            <f:ajax execute="@this"
-                                                                    render=":interviewForm:rescheduleInterviewPanel"
-                                                                    onevent="openRescheduleModal"/>
-                                                        </h:commandButton>
-
-                                                        <button type="button"
-                                                                class="action-btn action-text action-reject"
-                                                                onclick="openCancelInterviewModal(this)"><span class="btn-glyph" aria-hidden="true">&#10005;</span> Cancel</button>
-                                                    </div>
-                                                </td>
+                                <div class="interviews-table-wrap">
+                                    <table class="interview-table" id="interviewTableMain">
+                                        <thead>
+                                            <tr>
+                                                <th>Candidate</th>
+                                                <th>Job Position</th>
+                                                <th>Schedule</th>
+                                                <th>Mode</th>
+                                                <th>Status</th>
+                                                <th>Result</th>
+                                                <th>Actions</th>
                                             </tr>
-                                        </ui:repeat>
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            <ui:repeat value="#{recruiterApplicationInterviewCDIBean.recruiterInterviewList}" var="int">
+                                                <tr class="interview-row"
+                                                    data-interview-id="#{int.interviewId}"
+                                                    data-application-id="#{int.applicationId.applicationId}"
+                                                    data-candidate="#{int.applicationId.candidateId.userId.userName}"
+                                                    data-email="#{int.applicationId.candidateId.userId.userEmail}"
+                                                    data-job="#{int.applicationId.jobId.jobTitle}"
+                                                    data-job-type="#{int.applicationId.jobId.jobType}"
+                                                    data-interviewer="#{int.interviewerName}"
+                                                    data-mode="#{int.interviewerMode}"
+                                                    data-status="#{int.interviewStatus}"
+                                                    data-result="#{empty int.result ? 'Pending' : int.result}"
+                                                    data-date="#{recruiterApplicationInterviewCDIBean.formatInterviewDate(int.interviewDate)}"
+                                                    data-time="#{recruiterApplicationInterviewCDIBean.formatInterviewTime(int.interviewDate)}"
+                                                    data-feedback="#{empty int.feedback ? 'No feedback provided yet' : int.feedback}">
+                                                    <td>
+                                                        <div class="candidate-cell">
+                                                            <div class="candidate-avatar">
+                                                                #{recruiterApplicationInterviewCDIBean.getCandidateInitialForInterview(int)}
+                                                            </div>
+                                                            <div class="candidate-info">
+                                                                <span class="candidate-name">#{int.applicationId.candidateId.userId.userName}</span>
+                                                                <span class="candidate-email">#{int.applicationId.candidateId.userId.userEmail}</span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span class="job-title">#{int.applicationId.jobId.jobTitle}</span>
+                                                        <span class="job-type-badge">#{int.applicationId.jobId.jobType}</span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="schedule-cell">
+                                                            <span class="schedule-date">#{recruiterApplicationInterviewCDIBean.formatInterviewDate(int.interviewDate)}</span>
+                                                            <span class="schedule-time">#{recruiterApplicationInterviewCDIBean.formatInterviewTime(int.interviewDate)}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span class="mode-badge #{recruiterApplicationInterviewCDIBean.getInterviewModeClass(int.interviewerMode)}">#{int.interviewerMode}</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="status-badge #{recruiterApplicationInterviewCDIBean.getInterviewStatusClass(int.interviewStatus)}">#{int.interviewStatus}</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="result-badge #{recruiterApplicationInterviewCDIBean.getInterviewResultClass(int.result)}">
+                                                            #{empty int.result ? 'Pending' : int.result}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="action-buttons">
+                                                            <h:commandLink
+                                                                styleClass="action-btn action-icon action-view"
+                                                                title="View details"
+                                                                onclick="rememberViewInterviewRow(this);"
+                                                                action="#{recruiterApplicationInterviewCDIBean.prepareViewInterviewHistory(int.applicationId.applicationId)}">
+                                                                <span class="pi pi-eye" aria-hidden="true"></span>
+                                                                <f:ajax execute="@this"
+                                                                        render=":interviewForm:viewInterviewHistoryPanel"
+                                                                        onevent="openViewInterviewModalAfterAjax"/>
+                                                            </h:commandLink>
+
+                                                            <h:commandButton
+                                                                value="Conduct"
+                                                                styleClass="action-btn action-text action-conduct"
+                                                                rendered="#{recruiterApplicationInterviewCDIBean.isConductVisible(int)}"
+                                                                action="#{recruiterApplicationInterviewCDIBean.prepareConductInterview(int.interviewId)}">
+                                                                <f:ajax execute="@this"
+                                                                        render=":interviewForm:conductInterviewPanel"
+                                                                        onevent="openConductInterviewModal"/>
+                                                            </h:commandButton>
+
+                                                            <h:commandButton
+                                                                value="Reschedule"
+                                                                styleClass="action-btn action-text action-schedule"
+                                                                rendered="#{recruiterApplicationInterviewCDIBean.isRescheduleVisible(int)}"
+                                                                action="#{recruiterApplicationInterviewCDIBean.prepareReschedule(int)}">
+                                                                <f:ajax execute="@this"
+                                                                        render=":interviewForm:rescheduleInterviewPanel"
+                                                                        onevent="openRescheduleModal"/>
+                                                            </h:commandButton>
+
+                                                            <h:commandLink
+                                                                styleClass="action-btn action-icon action-cancel"
+                                                                title="Cancel interview"
+                                                                rendered="#{recruiterApplicationInterviewCDIBean.isCancelVisible(int)}"
+                                                                action="#{recruiterApplicationInterviewCDIBean.cancelInterview(int.interviewId)}"
+                                                                onclick="return confirmCancelInterviewAction(this);">
+                                                                <span class="pi pi-times" aria-hidden="true"></span>
+                                                                <f:ajax execute="@this"
+                                                                        render=":interviewForm:interviewContent :interviewForm:interviewMessages"
+                                                                        onevent="handleCancelAjaxEvent"/>
+                                                            </h:commandLink>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </ui:repeat>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="table-empty-state" id="emptyState" style="display:none;">
+                                    <h3>No interviews found</h3>
+                                    <p>Try changing filters or search text.</p>
+                                </div>
                             </div>
 
-                            <div class="table-empty-state" id="emptyState" style="display:none;">
-                                <h3>No interviews found</h3>
-                                <p>Try changing filters or search text.</p>
+                            <div class="pagination-bar interview-pagination">
+                                <div class="pagination-text">
+                                    Showing <strong id="showingStart">0</strong>-<strong id="showingEnd">0</strong> of <strong id="totalShowing">0</strong>
+                                </div>
+                                <div class="paging-form">
+                                    <button type="button" class="page-btn" id="prevInterviewPageBtn" onclick="goInterviewPage(-1)">Prev</button>
+                                    <span id="pageInfo" class="page-info">Page 1 of 1</span>
+                                    <button type="button" class="page-btn" id="nextInterviewPageBtn" onclick="goInterviewPage(1)">Next</button>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="pagination-bar interview-pagination">
-                            <div class="pagination-text">
-                                Showing <strong id="showingStart">0</strong>-<strong id="showingEnd">0</strong> of <strong id="totalShowing">0</strong>
-                            </div>
-                            <div class="paging-form">
-                                <button type="button" class="page-btn" id="prevInterviewPageBtn" onclick="goInterviewPage(-1)">Prev</button>
-                                <span id="pageInfo" class="page-info">Page 1 of 1</span>
-                                <button type="button" class="page-btn" id="nextInterviewPageBtn" onclick="goInterviewPage(1)">Next</button>
-                            </div>
-                        </div>
+                        </h:panelGroup>
 
                         <h:commandButton id="submitConductBtn"
                                          value="submitConduct"
                                          styleClass="hidden-submit-btn"
                                          action="#{recruiterApplicationInterviewCDIBean.conductInterview}">
                             <f:ajax execute=":interviewForm:conductFeedback :interviewForm:conductResult @this"
-                                    render=":interviewForm :interviewForm:interviewMessages"
+                                    render=":interviewForm:interviewContent :interviewForm:interviewMessages"
                                     onevent="handleConductSubmitEvent"/>
                         </h:commandButton>
 
@@ -304,7 +361,7 @@
                                          styleClass="hidden-submit-btn"
                                          action="#{recruiterApplicationInterviewCDIBean.rescheduleInterview}">
                             <f:ajax execute=":interviewForm:rescheduleNewDateTime :interviewForm:rescheduleNewMode :interviewForm:rescheduleNewInterviewer @this"
-                                    render=":interviewForm :interviewForm:interviewMessages"
+                                    render=":interviewForm:interviewContent :interviewForm:interviewMessages"
                                     onevent="handleRescheduleSubmitEvent"/>
                         </h:commandButton>
                     </h:form>
@@ -315,10 +372,10 @@
                 <div class="modal-content modal-large">
                     <div class="modal-header modal-header-rich">
                         <div class="modal-title-group">
-                            <span class="modal-header-icon">&#9673;</span>
+                            <span class="modal-header-icon pi pi-eye"></span>
                             <div>
-                            <h2 class="modal-title">Interview Details</h2>
-                            <p class="modal-subtitle">Candidate, schedule, interviewer and result</p>
+                                <h2 class="modal-title">Interview Details</h2>
+                                <p class="modal-subtitle">Candidate, schedule, interviewer and result</p>
                             </div>
                         </div>
                         <button type="button" class="close-btn" onclick="closeViewInterviewModal()">X</button>
@@ -332,10 +389,14 @@
                                 <span class="job-type-badge" id="viewJobTitle">Job title</span>
                             </div>
                         </div>
+                        <div class="current-section-title">
+                            <span>Current Interview</span>
+                        </div>
+
                         <div class="modal-summary-strip">
                             <div><span>Mode</span><strong id="viewModeSummary">-</strong></div>
                             <div><span>Status</span><strong id="viewStatusSummary">-</strong></div>
-                            <div><span>Result</span><strong id="viewResultSummary">-</strong></div>
+                            <div id="viewResultSummaryCard"><span>Result</span><strong id="viewResultSummary">-</strong></div>
                         </div>
                         <div class="detail-grid detail-grid-rich">
                             <div class="detail-section">
@@ -348,12 +409,17 @@
                                 <h4>Decision</h4>
                                 <div class="detail-item"><span>Interviewer</span><strong id="viewInterviewerName">-</strong></div>
                                 <div class="detail-item"><span>Status</span><strong id="viewInterviewStatus">-</strong></div>
-                                <div class="detail-item"><span>Result</span><strong id="viewInterviewResult">-</strong></div>
+                                <div class="detail-item" id="viewInterviewResultRow"><span>Result</span><strong id="viewInterviewResult">-</strong></div>
                             </div>
                         </div>
-                        <div class="feedback-section">
+                        <div class="feedback-section" id="viewFeedbackSection">
                             <h4>Feedback</h4>
                             <p id="viewFeedback" class="feedback-text">No feedback provided yet</p>
+                        </div>
+                        <div class="feedback-section">
+                            <h4>Interview History</h4>
+                            <p class="history-note">Previous interview records for this candidate and job application.</p>
+                            <div id="viewHistoryList" class="history-list"></div>
                         </div>
                     </div>
                     <div class="modal-actions">
@@ -366,10 +432,10 @@
                 <div class="modal-content modal-conduct">
                     <div class="modal-header modal-header-rich">
                         <div class="modal-title-group">
-                            <span class="modal-header-icon">&#10003;</span>
+                            <span class="modal-header-icon pi pi-check"></span>
                             <div>
-                            <h2 class="modal-title">Conduct Interview</h2>
-                            <p class="modal-subtitle">Add feedback and select the final decision</p>
+                                <h2 class="modal-title">Conduct Interview</h2>
+                                <p class="modal-subtitle">Add feedback and select the final decision</p>
                             </div>
                         </div>
                         <button type="button" class="close-btn" onclick="closeConductInterviewModal()">X</button>
@@ -382,14 +448,10 @@
                                 <p id="conductJobTitle">Job title</p>
                             </div>
                         </div>
-                        <div class="decision-panel">
-                            <span>Final decision will use your existing backend action.</span>
-                            <strong>Review feedback carefully before submit.</strong>
-                        </div>
                         <div class="form-field rich-field">
                             <label for="feedbackTextarea">Interview Feedback</label>
                             <textarea id="feedbackTextarea" class="modal-input modal-textarea" rows="6"
-                                      placeholder="Enter detailed feedback about technical skills, communication, problem solving, and overall fit"></textarea>
+                                      placeholder="Enter feedback about skills, communication, problem solving, and overall fit"></textarea>
                         </div>
                         <div class="form-field rich-field">
                             <label for="resultSelect">Final Decision</label>
@@ -399,7 +461,6 @@
                                 <option value="Rejected">Rejected</option>
                             </select>
                         </div>
-                        <div class="confirm-note">Selected or Rejected may notify the candidate according to your existing backend logic.</div>
                     </div>
                     <div class="modal-actions">
                         <button type="button" class="btn-light" onclick="closeConductInterviewModal()">Cancel</button>
@@ -412,10 +473,10 @@
                 <div class="modal-content modal-large">
                     <div class="modal-header modal-header-rich">
                         <div class="modal-title-group">
-                            <span class="modal-header-icon">&#9638;</span>
+                            <span class="modal-header-icon pi pi-calendar"></span>
                             <div>
-                            <h2 class="modal-title">Reschedule Interview</h2>
-                            <p class="modal-subtitle">Update interview date, mode, and interviewer</p>
+                                <h2 class="modal-title">Reschedule Interview</h2>
+                                <p class="modal-subtitle">Update interview date, mode, and interviewer</p>
                             </div>
                         </div>
                         <button type="button" class="close-btn" onclick="closeRescheduleModal()">X</button>
@@ -446,7 +507,6 @@
                                 <input type="text" id="rescheduleInterviewer" class="modal-input" placeholder="Enter interviewer name" />
                             </div>
                         </div>
-                        <div class="confirm-note">The saved schedule is submitted through your existing reschedule backend method.</div>
                     </div>
                     <div class="modal-actions">
                         <button type="button" class="btn-light" onclick="closeRescheduleModal()">Cancel</button>
@@ -459,19 +519,15 @@
                 <div class="modal-content modal-large">
                     <div class="modal-header modal-header-rich">
                         <div class="modal-title-group">
-                            <span class="modal-header-icon">&#9638;</span>
+                            <span class="modal-header-icon pi pi-calendar"></span>
                             <div>
-                            <h2 class="modal-title">Interview Calendar</h2>
-                            <p class="modal-subtitle">Upcoming interviews from the current table</p>
+                                <h2 class="modal-title">Interview Calendar</h2>
+                                <p class="modal-subtitle">Upcoming scheduled and rescheduled interviews, sorted by nearest date</p>
                             </div>
                         </div>
                         <button type="button" class="close-btn" onclick="closeCalendarPanel()">X</button>
                     </div>
                     <div class="modal-body">
-                        <div class="calendar-toolbar">
-                            <span class="af-chip active">Current filters</span>
-                            <span class="af-chip muted">Schedule preview</span>
-                        </div>
                         <div id="calendarList" class="calendar-list"></div>
                     </div>
                 </div>
@@ -481,10 +537,10 @@
                 <div class="modal-content cancel-modal">
                     <div class="modal-header modal-header-rich">
                         <div class="modal-title-group">
-                            <span class="modal-header-icon danger-icon">&#10005;</span>
+                            <span class="modal-header-icon danger-icon pi pi-times"></span>
                             <div>
                                 <h2 class="modal-title">Cancel Interview</h2>
-                                <p class="modal-subtitle">Confirm before changing the interview status in this view.</p>
+                                <p class="modal-subtitle">The candidate will move back to Shortlisted.</p>
                             </div>
                         </div>
                         <button type="button" class="close-btn" onclick="closeCancelInterviewModal()">X</button>
@@ -500,13 +556,13 @@
                     </div>
                     <div class="modal-actions">
                         <button type="button" class="btn-light" onclick="closeCancelInterviewModal()">Keep Interview</button>
-                        <button type="button" class="btn-main danger-btn" onclick="confirmCancelInterview()">Cancel Interview</button>
+                        <button type="button" class="btn-main danger-btn" onclick="submitCancelInterview()">Cancel Interview</button>
                     </div>
                 </div>
             </div>
 
             <ui:include src="/common/footer.xhtml"/>
-            <h:outputScript library="js" name="/recruiter/recruiterInterview.js" />
+            <h:outputScript library="js" name="recruiter/recruiterInterview.js" target="body" />
         </h:body>
     </f:view>
 </html>

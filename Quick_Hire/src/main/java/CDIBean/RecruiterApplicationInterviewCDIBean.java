@@ -16,15 +16,20 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.ws.rs.core.Response;
+import java.io.File;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -37,15 +42,23 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
 
     private Tblrecruiters recruiter = new Tblrecruiters();
 
+    private List<Tblapplication> allRecruiterApplicationList = new ArrayList<>();
     private List<Tblapplication> recruiterApplicationList = new ArrayList<>();
+    private List<Tblinterview> selectedInterviewHistory = new ArrayList<>();
 
     private final RecruiterJerseyClient client = new RecruiterJerseyClient();
 
     private Map<Integer, BigDecimal> applicationScores = new HashMap<>();
     private Integer selectedApplicationId;
+    private Integer lastChangedApplicationId;
+    private String applicantSearchText;
+    private String applicantJobFilter = "All Jobs";
+    private String applicantStatusFilter = "All Status";
+    private String applicantSortFilter = "Newest First";
 
     private Tblinterview interview = new Tblinterview();
     private String interviewDateTime;
+    
     @Inject
     LoginCDIBean loginBean;
 
@@ -55,7 +68,7 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
     private String scheduledInterviewCount = "0";
     private String completedInterviewCount = "0";
     private String selectedCount = "0";
-    private String rejectedCount = "0";
+    private String interviewRejectedCount = "0";   // ← renamed
     private String totalInterviewCount = "0";
 
 // Conduct Interview Fields
@@ -98,15 +111,15 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
             recruiterApplicationList = applications != null
                     ? new ArrayList<>(applications)
                     : new ArrayList<>();
+            allRecruiterApplicationList = new ArrayList<>(recruiterApplicationList);
 
-            // STEP 1: Load all existing scores in ONE call
             loadAllScores();
 
-            // STEP 2: Generate scores only for unscored apps
             autoScreenAllOnLoad();
 
         } catch (Exception e) {
             e.printStackTrace();
+            allRecruiterApplicationList = new ArrayList<>();
             recruiterApplicationList = new ArrayList<>();
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR,
@@ -186,20 +199,6 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
         }
     }
 
-//    // Call this after loading applications to pre-fetch all scores
-//    public void loadAllScores() {
-//        applicationScores = new HashMap<>();
-//        for (Tblapplication app : recruiterApplicationList) {
-//            try {
-//                BigDecimal score = client.getScreeningScore(app.getApplicationId());
-//                if (score != null) {
-//                    applicationScores.put(app.getApplicationId(), score);
-//                }
-//            } catch (Exception e) {
-//                // no score yet for this application — skip
-//            }
-//        }
-//    }
     public void loadAllScores() {
         try {
             if (recruiter == null || recruiter.getRecruiterId() == null) {
@@ -297,13 +296,22 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
     }
 
     public int getTotalApplicationsCount() {
-        return recruiterApplicationList.size();
+        return allRecruiterApplicationList != null && !allRecruiterApplicationList.isEmpty()
+                ? allRecruiterApplicationList.size()
+                : recruiterApplicationList.size();
+    }
+
+    public int gettotalApplicationsCount() {
+        return getTotalApplicationsCount();
     }
 
     public long getNewTodayCount() {
         long count = 0;
         java.util.Calendar today = java.util.Calendar.getInstance();
-        for (Tblapplication app : recruiterApplicationList) {
+        List<Tblapplication> source = allRecruiterApplicationList != null && !allRecruiterApplicationList.isEmpty()
+                ? allRecruiterApplicationList
+                : recruiterApplicationList;
+        for (Tblapplication app : source) {
             if (app.getApplicationAppliedDate() != null) {
                 java.util.Calendar appDate = java.util.Calendar.getInstance();
                 appDate.setTime(app.getApplicationAppliedDate());
@@ -316,29 +324,40 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
         return count;
     }
 
-    public long getScreenedCount() {
-        return recruiterApplicationList.stream()
-                .filter(a -> "Screened".equalsIgnoreCase(a.getApplicationStatus())
-                || "Shortlisted".equalsIgnoreCase(a.getApplicationStatus())
-                || "Selected".equalsIgnoreCase(a.getApplicationStatus())
-                || "Rejected".equalsIgnoreCase(a.getApplicationStatus()))
-                .count();
-    }
-
     public long getShortlistedCount() {
-        return recruiterApplicationList.stream()
-                .filter(a -> "Shortlisted".equalsIgnoreCase(a.getApplicationStatus()))
-                .count();
+        try {
+            if (recruiter == null || recruiter.getRecruiterId() == null) {
+                return 0;
+            }
+            String count = client.getShortlisted(
+                    String.valueOf(recruiter.getRecruiterId()));
+            return Long.parseLong(count);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     public long getRejectedCount() {
-        return recruiterApplicationList.stream()
-                .filter(a -> "Rejected".equalsIgnoreCase(a.getApplicationStatus()))
-                .count();
+        try {
+            if (recruiter == null || recruiter.getRecruiterId() == null) {
+                return 0;
+            } else {
+                String count = client.getRejectedApplicationCount(
+                        String.valueOf(recruiter.getRecruiterId())
+                );
+                return Long.parseLong(count);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     public void shortlistApplication(Integer applicationId) {
-
+        System.out.println("SHORTLIST METHOD CALLED");
+        System.out.println("Application Id = " + applicationId);
         try {
 
             client.setToken(loginBean.getToken());
@@ -349,18 +368,8 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
                     );
 
             if (response.getStatus() == 200) {
-
-                FacesContext.getCurrentInstance().addMessage(
-                        null,
-                        new FacesMessage(
-                                FacesMessage.SEVERITY_INFO,
-                                "Success",
-                                "Applicant shortlisted successfully."
-                        )
-                );
-
-                refreshApplicationListOnly();
-
+                lastChangedApplicationId = applicationId;
+                updateLocalApplicationStatus(applicationId, "Shortlisted");
             } else {
 
                 FacesContext.getCurrentInstance().addMessage(
@@ -385,6 +394,37 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
                             "Unable to shortlist applicant."
                     )
             );
+        }
+    }
+
+    public boolean isScheduleInterviewDone(Tblapplication app) {
+        if (app == null) {
+            return false;
+        }
+        String s = app.getApplicationStatus();
+        return "Interview Scheduled".equalsIgnoreCase(s)
+                || "Selected".equalsIgnoreCase(s);
+    }
+
+    public void rejectApplication(Integer applicationId) {
+        try {
+            client.setToken(loginBean.getToken());
+
+            Response response = client.rejectApplication(applicationId);
+
+            if (response.getStatus() == 200) {
+                lastChangedApplicationId = applicationId;
+                updateLocalApplicationStatus(applicationId, "Rejected");
+            } else {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Error", response.readEntity(String.class)));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                            "Error", "Unable to reject application."));
         }
     }
 
@@ -450,21 +490,11 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
                     );
 
             if (response.getStatus() == 200) {
-
-                FacesContext.getCurrentInstance().addMessage(
-                        null,
-                        new FacesMessage(
-                                FacesMessage.SEVERITY_INFO,
-                                "Success",
-                                "Interview scheduled successfully."
-                        )
-                );
-
+                lastChangedApplicationId = selectedApplicationId;
+                updateLocalApplicationStatus(selectedApplicationId, "Interview Scheduled");
                 interview = new Tblinterview();
                 interviewDateTime = null;
-                selectedApplicationId = null;
                 loadInterviews();
-                getRecruiterApplications();
 
             } else {
 
@@ -501,6 +531,24 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
                             "Unable to schedule interview."
                     )
             );
+        }
+    }
+
+    public void prepareViewInterviewHistory(Integer applicationId) {
+        try {
+            client.setToken(loginBean.getToken());
+
+            Collection<Tblinterview> history
+                    = client.getInterviewHistoryByApplication(applicationId);
+
+            selectedInterviewHistory = history != null
+                    ? new ArrayList<>(history)
+                    : new ArrayList<>();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            selectedInterviewHistory = new ArrayList<>();
+            addError("Unable to load interview history.");
         }
     }
 
@@ -562,10 +610,7 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
                             recruiterId
                     );
 
-            rejectedCount
-                    = client.getRejectedCount(
-                            recruiterId
-                    );
+            interviewRejectedCount = client.getRejectedCount(recruiterId);
 
             totalInterviewCount
                     = client.getTotalInterviewCount(
@@ -578,128 +623,116 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
         }
     }
 
-    public void prepareConductInterview(
-            Integer interviewId) {
-
-        selectedInterviewId = interviewId;
-
-        feedback = null;
-        result = null;
-    }
-
-    public void conductInterview() {
-
-        try {
-
-            client.setToken(
-                    loginBean.getToken()
-            );
-
-            Response response
-                    = client.conductInterview(
-                            selectedInterviewId,
-                            feedback,
-                            result
-                    );
-
-            if (response.getStatus() == 200) {
-
-                FacesContext.getCurrentInstance()
-                        .addMessage(
-                                null,
-                                new FacesMessage(
-                                        FacesMessage.SEVERITY_INFO,
-                                        "Success",
-                                        "Interview completed."
-                                )
-                        );
-
-                loadInterviews();
-
-            } else {
-
-                FacesContext.getCurrentInstance()
-                        .addMessage(
-                                null,
-                                new FacesMessage(
-                                        FacesMessage.SEVERITY_ERROR,
-                                        "Error",
-                                        response.readEntity(String.class)
-                                )
-                        );
-            }
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
-    }
-
-    public void prepareReschedule(
-            Tblinterview interview) {
-
-        selectedInterview = interview;
-
-        if (interview.getInterviewDate() != null) {
-
-            rescheduleDateTime
-                    = new SimpleDateFormat(
-                            "yyyy-MM-dd'T'HH:mm"
-                    ).format(
-                            interview.getInterviewDate()
-                    );
-        }
-    }
-
-    public void rescheduleInterview() {
-
-        try {
-
-            client.setToken(
-                    loginBean.getToken()
-            );
-
-            Response response
-                    = client.rescheduleInterview(
-                            selectedInterview.getInterviewId(),
-                            selectedInterview.getInterviewerName(),
-                            selectedInterview.getInterviewerMode(),
-                            rescheduleDateTime
-                    );
-
-            if (response.getStatus() == 200) {
-
-                FacesContext.getCurrentInstance()
-                        .addMessage(
-                                null,
-                                new FacesMessage(
-                                        FacesMessage.SEVERITY_INFO,
-                                        "Success",
-                                        "Interview rescheduled."
-                                )
-                        );
-
-                loadInterviews();
-
-            } else {
-
-                FacesContext.getCurrentInstance()
-                        .addMessage(
-                                null,
-                                new FacesMessage(
-                                        FacesMessage.SEVERITY_ERROR,
-                                        "Error",
-                                        response.readEntity(String.class)
-                                )
-                        );
-            }
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
-    }
-
+//    public void conductInterview() {
+//
+//        try {
+//
+//            client.setToken(
+//                    loginBean.getToken()
+//            );
+//
+//            Response response
+//                    = client.conductInterview(
+//                            selectedInterviewId,
+//                            feedback,
+//                            result
+//                    );
+//
+//            if (response.getStatus() == 200) {
+//
+//                FacesContext.getCurrentInstance()
+//                        .addMessage(
+//                                null,
+//                                new FacesMessage(
+//                                        FacesMessage.SEVERITY_INFO,
+//                                        "Success",
+//                                        "Interview completed."
+//                                )
+//                        );
+//
+//                loadInterviews();
+//
+//            } else {
+//
+//                FacesContext.getCurrentInstance()
+//                        .addMessage(
+//                                null,
+//                                new FacesMessage(
+//                                        FacesMessage.SEVERITY_ERROR,
+//                                        "Error",
+//                                        response.readEntity(String.class)
+//                                )
+//                        );
+//            }
+//
+//        } catch (Exception e) {
+//
+//            e.printStackTrace();
+//        }
+//    }
+//    public void prepareReschedule(
+//            Tblinterview interview) {
+//
+//        selectedInterview = interview;
+//
+//        if (interview.getInterviewDate() != null) {
+//
+//            rescheduleDateTime
+//                    = new SimpleDateFormat(
+//                            "yyyy-MM-dd'T'HH:mm"
+//                    ).format(
+//                            interview.getInterviewDate()
+//                    );
+//        }
+//    }
+//    public void rescheduleInterview() {
+//
+//        try {
+//
+//            client.setToken(
+//                    loginBean.getToken()
+//            );
+//
+//            Response response
+//                    = client.rescheduleInterview(
+//                            selectedInterview.getInterviewId(),
+//                            selectedInterview.getInterviewerName(),
+//                            selectedInterview.getInterviewerMode(),
+//                            rescheduleDateTime
+//                    );
+//
+//            if (response.getStatus() == 200) {
+//
+//                FacesContext.getCurrentInstance()
+//                        .addMessage(
+//                                null,
+//                                new FacesMessage(
+//                                        FacesMessage.SEVERITY_INFO,
+//                                        "Success",
+//                                        "Interview rescheduled."
+//                                )
+//                        );
+//
+//                loadInterviews();
+//
+//            } else {
+//
+//                FacesContext.getCurrentInstance()
+//                        .addMessage(
+//                                null,
+//                                new FacesMessage(
+//                                        FacesMessage.SEVERITY_ERROR,
+//                                        "Error",
+//                                        response.readEntity(String.class)
+//                                )
+//                        );
+//            }
+//
+//        } catch (Exception e) {
+//
+//            e.printStackTrace();
+//        }
+//    }
     private void refreshApplicationListOnly() {
         try {
             Collection<Tblapplication> applications
@@ -707,6 +740,7 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
             recruiterApplicationList = applications != null
                     ? new ArrayList<>(applications)
                     : new ArrayList<>();
+            allRecruiterApplicationList = new ArrayList<>(recruiterApplicationList);
 
             loadAllScores();
         } catch (Exception e) {
@@ -714,18 +748,348 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
         }
     }
 
+    private void updateLocalApplicationStatus(Integer applicationId, String status) {
+        if (applicationId == null || status == null || recruiterApplicationList == null) {
+            return;
+        }
+        updateStatusInList(recruiterApplicationList, applicationId, status);
+        updateStatusInList(allRecruiterApplicationList, applicationId, status);
+    }
+
+    private void updateStatusInList(List<Tblapplication> list, Integer applicationId, String status) {
+        if (list == null) {
+            return;
+        }
+        for (Tblapplication app : list) {
+            if (app != null
+                    && app.getApplicationId() != null
+                    && app.getApplicationId().equals(applicationId)) {
+                app.setApplicationStatus(status);
+                app.setLastUpdatedDate(new Date());
+            }
+        }
+    }
+
+    public void applyApplicantFilters() {
+        reloadAllApplicationsFromDatabaseForFiltering();
+
+        List<Tblapplication> source = allRecruiterApplicationList != null
+                ? allRecruiterApplicationList
+                : new ArrayList<>();
+
+        String search = safeLower(applicantSearchText);
+        String job = applicantJobFilter != null ? applicantJobFilter.trim() : "All Jobs";
+        String status = applicantStatusFilter != null ? applicantStatusFilter.trim() : "All Status";
+
+        List<Tblapplication> filtered = new ArrayList<>();
+        for (Tblapplication app : source) {
+            if (matchesApplicantSearch(app, search)
+                    && matchesApplicantJob(app, job)
+                    && matchesApplicantStatus(app, status)) {
+                filtered.add(app);
+            }
+        }
+
+        sortApplicantList(filtered);
+        recruiterApplicationList = filtered;
+    }
+
+    public void resetApplicantFilters() {
+        reloadAllApplicationsFromDatabaseForFiltering();
+
+        applicantSearchText = null;
+        applicantJobFilter = "All Jobs";
+        applicantStatusFilter = "All Status";
+        applicantSortFilter = "Newest First";
+        recruiterApplicationList = allRecruiterApplicationList != null
+                ? new ArrayList<>(allRecruiterApplicationList)
+                : new ArrayList<>();
+        sortApplicantList(recruiterApplicationList);
+    }
+
+    private void reloadAllApplicationsFromDatabaseForFiltering() {
+        try {
+            if (recruiter == null || recruiter.getRecruiterId() == null) {
+                return;
+            }
+            client.setToken(loginBean.getToken());
+            Collection<Tblapplication> applications = client.getRecruiterApplications(recruiter.getRecruiterId());
+            allRecruiterApplicationList = applications != null
+                    ? new ArrayList<>(applications)
+                    : new ArrayList<>();
+            loadAllScores();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean matchesApplicantSearch(Tblapplication app, String search) {
+        if (search == null || search.isEmpty()) {
+            return true;
+        }
+        return safeLower(getCandidateName(app)).contains(search)
+                || safeLower(getCandidateEmail(app)).contains(search)
+                || safeLower(getJobTitle(app)).contains(search);
+    }
+
+    private boolean matchesApplicantJob(Tblapplication app, String selectedJob) {
+        if (selectedJob == null || selectedJob.isEmpty() || "All Jobs".equalsIgnoreCase(selectedJob)) {
+            return true;
+        }
+        return selectedJob.equalsIgnoreCase(getJobTitle(app));
+    }
+
+    private boolean matchesApplicantStatus(Tblapplication app, String selectedStatus) {
+        if (selectedStatus == null || selectedStatus.isEmpty() || "All Status".equalsIgnoreCase(selectedStatus)) {
+            return true;
+        }
+        String actual = normalizeStatus(app != null ? app.getApplicationStatus() : null);
+        return selectedStatus.equalsIgnoreCase(actual)
+                || ("Rejected Application".equalsIgnoreCase(selectedStatus) && "Rejected".equalsIgnoreCase(actual));
+    }
+
+    private void sortApplicantList(List<Tblapplication> list) {
+        if (list == null) {
+            return;
+        }
+        String sort = applicantSortFilter != null ? applicantSortFilter.trim() : "Newest First";
+        Comparator<Tblapplication> comparator;
+        if ("Top Score First".equalsIgnoreCase(sort) || "Lowest Score First".equalsIgnoreCase(sort)) {
+            comparator = Comparator.comparing(
+                    (Tblapplication app) -> getNumericScore(app),
+                    Comparator.nullsLast(Comparator.naturalOrder())
+            );
+            if ("Top Score First".equalsIgnoreCase(sort)) {
+                comparator = comparator.reversed();
+            }
+        } else {
+            comparator = Comparator.comparing(
+                    Tblapplication::getApplicationAppliedDate,
+                    Comparator.nullsLast(Comparator.naturalOrder())
+            );
+            if (!"Oldest First".equalsIgnoreCase(sort)) {
+                comparator = comparator.reversed();
+            }
+        }
+        list.sort(comparator);
+    }
+
+    private BigDecimal getNumericScore(Tblapplication app) {
+        if (app == null || app.getApplicationId() == null) {
+            return null;
+        }
+        return applicationScores.get(app.getApplicationId());
+    }
+
+    private String getCandidateName(Tblapplication app) {
+        try {
+            return app.getCandidateId().getUserId().getUserName();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    private String getCandidateEmail(Tblapplication app) {
+        try {
+            return app.getCandidateId().getUserId().getUserEmail();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    private String getJobTitle(Tblapplication app) {
+        try {
+            return app.getJobId().getJobTitle();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    private String safeLower(String value) {
+        return value == null ? "" : value.toLowerCase(Locale.ENGLISH).trim();
+    }
+
+    private String normalizeStatus(String status) {
+        if (status == null || status.trim().isEmpty()) {
+            return "Applied";
+        }
+        return status.trim().replaceAll("\\s+", " ");
+    }
+
+    public List<String> getApplicantJobOptions() {
+        List<String> jobs = new ArrayList<>();
+        if (allRecruiterApplicationList == null) {
+            return jobs;
+        }
+        for (Tblapplication app : allRecruiterApplicationList) {
+            String title = getJobTitle(app);
+            if (title != null && !title.trim().isEmpty() && !jobs.contains(title.trim())) {
+                jobs.add(title.trim());
+            }
+        }
+        jobs.sort(String::compareToIgnoreCase);
+        return jobs;
+    }
+
+    public String getDisplayStatus(Tblapplication app) {
+        if (app == null || app.getApplicationStatus() == null || app.getApplicationStatus().trim().isEmpty()) {
+            return "Applied";
+        }
+        String status = app.getApplicationStatus().trim();
+        if ("Rejected".equalsIgnoreCase(status)) {
+            return "Rejected Application";
+        }
+        return status;
+    }
+
+    public String getCandidateLocation(Tblapplication app) {
+        try {
+            String city = app.getCandidateId().getCandidateCity();
+            String state = app.getCandidateId().getCandidateState();
+            if (city != null && !city.trim().isEmpty() && state != null && !state.trim().isEmpty()) {
+                return city + ", " + state;
+            }
+            if (city != null && !city.trim().isEmpty()) {
+                return city;
+            }
+            if (state != null && !state.trim().isEmpty()) {
+                return state;
+            }
+        } catch (Exception e) {
+            // Keep profile drawer resilient if optional candidate fields are null.
+        }
+        return "Location not provided";
+    }
+
+    public String getCandidateSkillsText(Tblapplication app) {
+        try {
+            if (app == null || app.getApplicationId() == null) {
+                return "Skills not provided";
+            }
+
+            client.setToken(loginBean.getToken());
+
+            String skills = client.getCandidateSkillsText(app.getApplicationId());
+
+            if (skills == null || skills.trim().isEmpty()) {
+                return "Skills not provided";
+            }
+
+            return skills;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Skills not provided";
+        }
+    }
+
+    public String getCandidateEducationText(Tblapplication app) {
+        try {
+            if (app == null || app.getApplicationId() == null) {
+                return "Education not provided";
+            }
+
+            client.setToken(loginBean.getToken());
+
+            String education = client.getCandidateEducationText(app.getApplicationId());
+
+            if (education == null || education.trim().isEmpty()) {
+                return "Education not provided";
+            }
+
+            return education;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Education not provided";
+        }
+    }
+
+    public String getCandidateProfileNotes(Tblapplication app) {
+        StringBuilder notes = new StringBuilder();
+        notes.append("Applied for ").append(app.getJobId().getJobTitle());
+        notes.append(" on ").append(formatApplicationDate(app.getApplicationAppliedDate()));
+        notes.append(". Location: ").append(getCandidateLocation(app)).append(".");
+        return notes.toString();
+    }
+
+    public String getCandidateResumeUrl(Tblapplication app) {
+        String fileName = getActiveResumeFileName(app);
+        if (fileName == null || fileName.trim().isEmpty()) {
+            return "";
+        }
+        try {
+            String encoded = URLEncoder.encode(fileName, "UTF-8");
+            return FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath()
+                    + "/resume?file=" + encoded;
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    private String getActiveResumeFileName(Tblapplication app) {
+        try {
+            if (app == null) {
+                return "";
+            }
+
+            if (app.getResumeId() != null && app.getResumeId().getResumeFile() != null) {
+                return onlyFileName(app.getResumeId().getResumeFile());
+            }
+
+            Object candidate = app.getCandidateId();
+            Collection<Object> resumes = (Collection<Object>) candidate.getClass()
+                    .getMethod("getTblresumeCollection")
+                    .invoke(candidate);
+
+            if (resumes == null || resumes.isEmpty()) {
+                return "";
+            }
+
+            Object fallback = null;
+            for (Object resume : resumes) {
+                if (resume == null) {
+                    continue;
+                }
+                fallback = resume;
+                Object activeValue = resume.getClass().getMethod("getIsActive").invoke(resume);
+                if (Boolean.TRUE.equals(activeValue)) {
+                    return onlyFileName((String) resume.getClass().getMethod("getResumeFile").invoke(resume));
+                }
+            }
+
+            if (fallback != null) {
+                return onlyFileName((String) fallback.getClass().getMethod("getResumeFile").invoke(fallback));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    private String onlyFileName(String path) {
+        if (path == null || path.trim().isEmpty()) {
+            return "";
+        }
+        String normalized = path.replace("\\", "/");
+        return new File(normalized).getName();
+    }
+
     public boolean isScheduleInterviewDisabled(Tblapplication app) {
         return app == null
                 || !"Shortlisted".equalsIgnoreCase(app.getApplicationStatus());
     }
-
 
     public boolean isInterviewAlreadyScheduled(Tblapplication app) {
         if (app == null || app.getApplicationId() == null) {
             return false;
         }
 
-        if ("Interview Scheduled".equalsIgnoreCase(app.getApplicationStatus())) {
+        String status = app.getApplicationStatus();
+
+        if ("Interview Scheduled".equalsIgnoreCase(status)
+                || "Selected".equalsIgnoreCase(status)
+                || "Rejected".equalsIgnoreCase(status)) {
             return true;
         }
 
@@ -746,12 +1110,45 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
         return false;
     }
 
+    public boolean isRejectVisible(Tblapplication app) {
+        if (app == null) {
+            return false;
+        }
+        String s = app.getApplicationStatus();
+        if (s == null) {
+            return true;
+        }
+        s = s.trim();  // ADD THIS
+        return !"Rejected".equalsIgnoreCase(s)
+                && !"Shortlisted".equalsIgnoreCase(s)
+                && !"Selected".equalsIgnoreCase(s)
+                && !"Interview Scheduled".equalsIgnoreCase(s);
+    }
+
     public boolean isShortlistVisible(Tblapplication app) {
-        return app != null
-                && !isInterviewAlreadyScheduled(app)
-                && !"Shortlisted".equalsIgnoreCase(app.getApplicationStatus())
-                && !"Selected".equalsIgnoreCase(app.getApplicationStatus())
-                && !"Rejected".equalsIgnoreCase(app.getApplicationStatus());
+        if (app == null) {
+            return false;
+        }
+        String s = app.getApplicationStatus();
+        if (s == null) {
+            return true;
+        }
+        s = s.trim();  // ADD THIS
+        return !"Shortlisted".equalsIgnoreCase(s)
+                && !"Selected".equalsIgnoreCase(s)
+                && !"Rejected".equalsIgnoreCase(s)
+                && !"Interview Scheduled".equalsIgnoreCase(s);
+    }
+
+    public boolean isRejectedState(Tblapplication app) {
+        if (app == null) {
+            return false;
+        }
+        String s = app.getApplicationStatus();
+        if (s == null) {
+            return false;
+        }
+        return "Rejected".equalsIgnoreCase(s.trim());  // ADD TRIM
     }
 
     public boolean canScheduleInterview(Tblapplication app) {
@@ -759,7 +1156,6 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
                 && "Shortlisted".equalsIgnoreCase(app.getApplicationStatus())
                 && !isInterviewAlreadyScheduled(app);
     }
-
 
     public boolean isSelectedButtonVisible(Tblapplication app) {
 
@@ -814,13 +1210,313 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
         return "?";
     }
 
-    public boolean isConductVisible(
-            Tblinterview interview) {
+    public void prepareConductInterview(Integer interviewId) {
+        selectedInterviewId = interviewId;
+        selectedInterview = findInterviewById(interviewId);
+        feedback = selectedInterview != null ? selectedInterview.getFeedback() : null;
+        result = selectedInterview != null && selectedInterview.getResult() != null
+                ? selectedInterview.getResult()
+                : "Pending";
+    }
 
-        return interview != null
-                && "Scheduled".equalsIgnoreCase(
-                        interview.getInterviewStatus()
-                );
+    public void conductInterview() {
+        try {
+            if (selectedInterviewId == null || selectedInterviewId <= 0) {
+                addError("Please select an interview.");
+                return;
+            }
+            if (feedback == null || feedback.trim().isEmpty()) {
+                addError("Feedback is required.");
+                return;
+            }
+            if (result == null || result.trim().isEmpty() || "Pending".equalsIgnoreCase(result)) {
+                addError("Please select Selected or Rejected.");
+                return;
+            }
+
+            client.setToken(loginBean.getToken());
+            Response response = client.conductInterview(selectedInterviewId, feedback.trim(), result.trim());
+
+            if (response.getStatus() == 200) {
+                addInfo("Interview completed.");
+                selectedInterviewId = null;
+                selectedInterview = null;
+                feedback = null;
+                result = null;
+                loadInterviews();
+                getRecruiterApplications();
+            } else {
+                addError(response.readEntity(String.class));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            addError("Unable to complete interview.");
+        }
+    }
+
+    public void prepareReschedule(Tblinterview interview) {
+        selectedInterview = interview;
+        if (interview != null && interview.getInterviewDate() != null) {
+            rescheduleDateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm").format(interview.getInterviewDate());
+        } else {
+            rescheduleDateTime = null;
+        }
+    }
+
+    public void rescheduleInterview() {
+        try {
+            if (selectedInterview == null || selectedInterview.getInterviewId() == null) {
+                addError("Please select an interview.");
+                return;
+            }
+            if (rescheduleDateTime == null || rescheduleDateTime.trim().isEmpty()) {
+                addError("Please select a new date and time.");
+                return;
+            }
+            if (selectedInterview.getInterviewerName() == null
+                    || selectedInterview.getInterviewerName().trim().isEmpty()) {
+                addError("Interviewer name is required.");
+                return;
+            }
+            if (selectedInterview.getInterviewerMode() == null
+                    || selectedInterview.getInterviewerMode().trim().isEmpty()) {
+                addError("Interview mode is required.");
+                return;
+            }
+
+            client.setToken(loginBean.getToken());
+            Response response = client.rescheduleInterview(
+                    selectedInterview.getInterviewId(),
+                    selectedInterview.getInterviewerName().trim(),
+                    selectedInterview.getInterviewerMode().trim(),
+                    rescheduleDateTime.trim()
+            );
+
+            if (response.getStatus() == 200) {
+                addInfo("Interview rescheduled.");
+                selectedInterview = null;
+                rescheduleDateTime = null;
+                loadInterviews();
+                getRecruiterApplications();
+            } else {
+                addError(response.readEntity(String.class));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            addError("Unable to reschedule interview.");
+        }
+    }
+
+    public void cancelInterview(Integer interviewId) {
+        try {
+            if (interviewId == null || interviewId <= 0) {
+                addError("Invalid interview.");
+                return;
+            }
+
+            client.setToken(loginBean.getToken());
+            Response response = client.cancelInterview(interviewId);
+
+            if (response.getStatus() == 200) {
+                addInfo("Interview cancelled.");
+                loadInterviews();
+                getRecruiterApplications();
+            } else {
+                addError(response.readEntity(String.class));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            addError("Unable to cancel interview.");
+        }
+    }
+
+    private Tblinterview findInterviewById(Integer interviewId) {
+        if (interviewId == null || recruiterInterviewList == null) {
+            return null;
+        }
+        for (Tblinterview item : recruiterInterviewList) {
+            if (item != null && interviewId.equals(item.getInterviewId())) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    public boolean isConductVisible(Tblinterview interview) {
+        if (interview == null) {
+            return false;
+        }
+        String status = normalizeInterviewValue(interview.getInterviewStatus());
+        String result = normalizeInterviewValue(interview.getResult());
+        return ("Scheduled".equalsIgnoreCase(status) || "Rescheduled".equalsIgnoreCase(status))
+                && (result.isEmpty() || "Pending".equalsIgnoreCase(result));
+    }
+
+    public boolean isRescheduleVisible(Tblinterview interview) {
+        if (interview == null) {
+            return false;
+        }
+        String status = normalizeInterviewValue(interview.getInterviewStatus());
+        return "Scheduled".equalsIgnoreCase(status) || "Rescheduled".equalsIgnoreCase(status);
+    }
+
+    public boolean isCancelVisible(Tblinterview interview) {
+        return isRescheduleVisible(interview);
+    }
+
+    public String getInterviewModeClass(String mode) {
+        String value = normalizeInterviewValue(mode).toLowerCase(Locale.ENGLISH);
+        if ("offline".equals(value)) {
+            return "mode-offline";
+        }
+        if ("phone".equals(value)) {
+            return "mode-phone";
+        }
+        return "mode-online";
+    }
+
+    public String getInterviewStatusClass(String status) {
+        String value = normalizeInterviewValue(status).toLowerCase(Locale.ENGLISH);
+        if ("completed".equals(value)) {
+            return "status-completed";
+        }
+        if ("cancelled".equals(value)) {
+            return "status-cancelled";
+        }
+        if ("rescheduled".equals(value)) {
+            return "status-rescheduled";
+        }
+        return "status-scheduled";
+    }
+
+    public String getInterviewResultClass(String result) {
+        String value = normalizeInterviewValue(result).toLowerCase(Locale.ENGLISH);
+        if ("selected".equals(value)) {
+            return "result-selected";
+        }
+        if ("rejected".equals(value)) {
+            return "result-rejected";
+        }
+        return "result-pending";
+    }
+
+    private String normalizeInterviewValue(String value) {
+        return value == null ? "" : value.trim().replaceAll("\\s+", " ");
+    }
+
+    private void addInfo(String message) {
+        FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", message));
+    }
+
+    private void addError(String message) {
+        FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", message));
+    }
+
+    public Tblapplication getTopCandidateApplication() {
+        Tblapplication topApp = null;
+        BigDecimal topScore = null;
+
+        if (recruiterApplicationList == null || recruiterApplicationList.isEmpty()) {
+            return null;
+        }
+
+        for (Tblapplication app : recruiterApplicationList) {
+            if (app == null || app.getApplicationId() == null) {
+                continue;
+            }
+
+            BigDecimal score = applicationScores.get(app.getApplicationId());
+
+            if (score == null) {
+                continue;
+            }
+
+            if (topScore == null || score.compareTo(topScore) > 0) {
+                topScore = score;
+                topApp = app;
+            }
+        }
+
+        return topApp;
+    }
+
+    public String getTopCandidateName() {
+        Tblapplication app = getTopCandidateApplication();
+
+        if (app == null
+                || app.getCandidateId() == null
+                || app.getCandidateId().getUserId() == null
+                || app.getCandidateId().getUserId().getUserName() == null) {
+            return "No scored candidate";
+        }
+
+        return app.getCandidateId().getUserId().getUserName();
+    }
+
+    public String getTopCandidateJob() {
+        Tblapplication app = getTopCandidateApplication();
+
+        if (app == null || app.getJobId() == null || app.getJobId().getJobTitle() == null) {
+            return "No job available";
+        }
+
+        return app.getJobId().getJobTitle();
+    }
+
+    public String getTopCandidateScoreDisplay() {
+        Tblapplication app = getTopCandidateApplication();
+
+        if (app == null || app.getApplicationId() == null) {
+            return "--";
+        }
+
+        BigDecimal score = applicationScores.get(app.getApplicationId());
+
+        if (score == null) {
+            return "--";
+        }
+
+        return score.setScale(0, RoundingMode.HALF_UP).toPlainString() + "%";
+    }
+
+    public String getSelectedInterviewCandidateName() {
+        try {
+            if (selectedInterview == null
+                    || selectedInterview.getApplicationId() == null
+                    || selectedInterview.getApplicationId().getCandidateId() == null
+                    || selectedInterview.getApplicationId().getCandidateId().getUserId() == null
+                    || selectedInterview.getApplicationId().getCandidateId().getUserId().getUserName() == null) {
+                return "";
+            }
+
+            return selectedInterview.getApplicationId()
+                    .getCandidateId()
+                    .getUserId()
+                    .getUserName();
+
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    public String getSelectedInterviewJobTitle() {
+        try {
+            if (selectedInterview == null
+                    || selectedInterview.getApplicationId() == null
+                    || selectedInterview.getApplicationId().getJobId() == null
+                    || selectedInterview.getApplicationId().getJobId().getJobTitle() == null) {
+                return "";
+            }
+
+            return selectedInterview.getApplicationId()
+                    .getJobId()
+                    .getJobTitle();
+
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     public Tblinterview getInterview() {
@@ -869,6 +1565,42 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
 
     public void setSelectedApplicationId(Integer selectedApplicationId) {
         this.selectedApplicationId = selectedApplicationId;
+    }
+
+    public Integer getLastChangedApplicationId() {
+        return lastChangedApplicationId;
+    }
+
+    public String getApplicantSearchText() {
+        return applicantSearchText;
+    }
+
+    public void setApplicantSearchText(String applicantSearchText) {
+        this.applicantSearchText = applicantSearchText;
+    }
+
+    public String getApplicantJobFilter() {
+        return applicantJobFilter;
+    }
+
+    public void setApplicantJobFilter(String applicantJobFilter) {
+        this.applicantJobFilter = applicantJobFilter;
+    }
+
+    public String getApplicantStatusFilter() {
+        return applicantStatusFilter;
+    }
+
+    public void setApplicantStatusFilter(String applicantStatusFilter) {
+        this.applicantStatusFilter = applicantStatusFilter;
+    }
+
+    public String getApplicantSortFilter() {
+        return applicantSortFilter;
+    }
+
+    public void setApplicantSortFilter(String applicantSortFilter) {
+        this.applicantSortFilter = applicantSortFilter;
     }
 
     public List<Tblinterview> getRecruiterInterviewList() {
@@ -928,6 +1660,23 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
     public void setRescheduleDateTime(
             String rescheduleDateTime) {
         this.rescheduleDateTime = rescheduleDateTime;
+    }
+
+    // Change this getter if it exists, or add it:
+    public String getInterviewRejectedCount() {
+        return interviewRejectedCount;
+    }
+
+    public void setInterviewRejectedCount(String interviewRejectedCount) {
+        this.interviewRejectedCount = interviewRejectedCount;
+    }
+
+    public List<Tblinterview> getSelectedInterviewHistory() {
+        return selectedInterviewHistory;
+    }
+
+    public void setSelectedInterviewHistory(List<Tblinterview> selectedInterviewHistory) {
+        this.selectedInterviewHistory = selectedInterviewHistory;
     }
 
 }

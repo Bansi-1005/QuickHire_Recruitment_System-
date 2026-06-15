@@ -33,7 +33,9 @@ import jakarta.faces.component.UIComponent;
 import jakarta.faces.validator.ValidatorException;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  *
@@ -124,6 +126,9 @@ public class RecruiterCDIBean implements Serializable {
 
     private String skillActionType;
 
+    private Map<Integer, Integer> jobApplicationTotalCounts = new HashMap<>();
+    private Map<Integer, Map<String, Integer>> jobApplicationStatusCounts = new HashMap<>();
+
     // RecruiterCDIBean
     public RecruiterCDIBean() {
     }
@@ -167,10 +172,46 @@ public class RecruiterCDIBean implements Serializable {
     }
 
     // initializeJobForm
+//    public void initializeJobForm() {
+//
+//        try {
+//
+//            client.setToken(loginBean.getToken());
+//
+//            if (recruiter == null || recruiter.getRecruiterId() == 0) {
+//                loadProfile();
+//            }
+//
+//            loadSkills();
+//            loadSkillCategories();
+//            loadEducation();
+//
+//            selectedSkillCategory = 0;
+//            filteredSkills = new ArrayList<>(allSkills);
+//
+//            if (editJobId != null && editJobId > 0) {
+//                loadJobForEdit();
+//            } else {
+//                editMode = false;
+//                job = new Tbljob();
+//
+//                selectedSkillIds = new ArrayList<>();
+//                selectedEducationIds = new ArrayList<>();
+//
+//                selectedState = null;
+//                selectedCity = null;
+//                availableCities = new ArrayList<>();
+//
+//                expYears = null;
+//                expMonths = null;
+//            }
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
     public void initializeJobForm() {
-
         try {
-
             client.setToken(loginBean.getToken());
 
             if (recruiter == null || recruiter.getRecruiterId() == 0) {
@@ -184,26 +225,46 @@ public class RecruiterCDIBean implements Serializable {
             selectedSkillCategory = 0;
             filteredSkills = new ArrayList<>(allSkills);
 
-            if (editJobId != null && editJobId > 0) {
+            String jobIdParam = FacesContext.getCurrentInstance()
+                    .getExternalContext()
+                    .getRequestParameterMap()
+                    .get("jobId");
+
+            if (jobIdParam != null && !jobIdParam.trim().isEmpty()) {
+                editJobId = Integer.valueOf(jobIdParam.trim());
                 loadJobForEdit();
-            } else {
-                editMode = false;
-                job = new Tbljob();
-
-                selectedSkillIds = new ArrayList<>();
-                selectedEducationIds = new ArrayList<>();
-
-                selectedState = null;
-                selectedCity = null;
-                availableCities = new ArrayList<>();
-
-                expYears = null;
-                expMonths = null;
+                return;
             }
+
+            clearPostJobFormState();
 
         } catch (Exception e) {
             e.printStackTrace();
+            clearPostJobFormState();
         }
+    }
+
+    private void clearPostJobFormState() {
+        editJobId = null;
+        editMode = false;
+
+        job = new Tbljob();
+
+        selectedSkillIds = new ArrayList<>();
+        selectedEducationIds = new ArrayList<>();
+
+        selectedState = null;
+        selectedCity = null;
+        availableCities = new ArrayList<>();
+
+        expYears = null;
+        expMonths = null;
+
+        skillInput = "";
+        selectedSkillCategory = 0;
+        modalActionType = null;
+        newCategoryName = null;
+        newSkillName = null;
     }
 
     // onSkillCategoryChange
@@ -1588,7 +1649,7 @@ public class RecruiterCDIBean implements Serializable {
 
     // resetJobForm
     public String resetJobForm() {
-
+        clearPostJobFormState();
         return "recruiterPostJob?faces-redirect=true";
     }
 
@@ -1658,6 +1719,7 @@ public class RecruiterCDIBean implements Serializable {
                     : new ArrayList<>();
 
             recalculateViewJobStats();
+            loadJobApplicationCounts();
 
             System.out.println("Loaded Jobs: " + jobList.size());
 
@@ -1667,6 +1729,58 @@ public class RecruiterCDIBean implements Serializable {
 
             jobList = new ArrayList<>();
         }
+    }
+
+    private void loadJobApplicationCounts() {
+        jobApplicationTotalCounts = new HashMap<>();
+        jobApplicationStatusCounts = new HashMap<>();
+
+        if (jobList == null || jobList.isEmpty()) {
+            return;
+        }
+
+        client.setToken(loginBean.getToken());
+
+        for (Tbljob item : jobList) {
+            if (item == null || item.getJobId() == null) {
+                continue;
+            }
+
+            Integer jobId = item.getJobId();
+
+            jobApplicationTotalCounts.put(
+                    jobId,
+                    parseInteger(client.getJobApplicationCount(jobId, null))
+            );
+
+            Map<String, Integer> statusCounts = new HashMap<>();
+            statusCounts.put("Applied", parseInteger(client.getJobApplicationCount(jobId, "Applied")));
+            statusCounts.put("Shortlisted", parseInteger(client.getJobApplicationCount(jobId, "Shortlisted")));
+            statusCounts.put("Rejected", parseInteger(client.getJobApplicationCount(jobId, "Rejected")));
+            statusCounts.put("Selected", parseInteger(client.getJobApplicationCount(jobId, "Selected")));
+
+            jobApplicationStatusCounts.put(jobId, statusCounts);
+        }
+    }
+
+    public int getJobApplicationTotalCount(Integer jobId) {
+        if (jobId == null) {
+            return 0;
+        }
+        return jobApplicationTotalCounts.getOrDefault(jobId, 0);
+    }
+
+    public int getJobApplicationStatusCount(Integer jobId, String status) {
+        if (jobId == null || status == null) {
+            return 0;
+        }
+
+        Map<String, Integer> statusCounts = jobApplicationStatusCounts.get(jobId);
+        if (statusCounts == null) {
+            return 0;
+        }
+
+        return statusCounts.getOrDefault(status, 0);
     }
 
     // loadSkills

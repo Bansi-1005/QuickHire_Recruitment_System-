@@ -5,6 +5,7 @@
 package Client;
 
 import Entity.Tblapplication;
+import Entity.Tblcompany;
 import Entity.Tbleducation;
 import Entity.Tblinterview;
 import Entity.Tbljob;
@@ -76,9 +77,6 @@ public class RecruiterJerseyClient {
         return resource.request(jakarta.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
     }
 
-//    public Response updateJob(Object requestEntity) throws ClientErrorException {
-//        return webTarget.path("updateJob").request(jakarta.ws.rs.core.MediaType.APPLICATION_JSON).put(jakarta.ws.rs.client.Entity.entity(requestEntity, jakarta.ws.rs.core.MediaType.APPLICATION_JSON), Response.class);
-//    }
     public <T> T filterCandidates(Class<T> responseType, String jobId, String score) throws ClientErrorException {
         WebTarget resource = webTarget;
         if (jobId != null) {
@@ -289,21 +287,6 @@ public class RecruiterJerseyClient {
                 .put(Entity.text(""));
     }
 
-//    public Response sendNotification(Object requestEntity) throws ClientErrorException {
-//        return webTarget.path("sendNotification").request(jakarta.ws.rs.core.MediaType.APPLICATION_JSON).post(jakarta.ws.rs.client.Entity.entity(requestEntity, jakarta.ws.rs.core.MediaType.APPLICATION_JSON), Response.class);
-//    }
-//
-//    public Response deleteJob() throws ClientErrorException {
-//        return webTarget.path("deleteJob").request().delete(Response.class);
-//    }
-//    public <T> T getJobs(Class<T> responseType, String recruiterId) throws ClientErrorException {
-//        WebTarget resource = webTarget;
-//        if (recruiterId != null) {
-//            resource = resource.queryParam("recruiterId", recruiterId);
-//        }
-//        resource = resource.path("getJobs");
-//        return resource.request(jakarta.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
-//    }
     public <T> T getJobs(Class<T> responseType, String recruiterId) {
 
         WebTarget resource = webTarget.path("getJobs");
@@ -336,41 +319,24 @@ public class RecruiterJerseyClient {
                 .get(responseType);
     }
 
-//    public Response updateJobStatus() throws ClientErrorException {
-//        return webTarget.path("updateJobStatus").request().put(null, Response.class);
-//    }
-//
-//    public Response updateApplicationStatus() throws ClientErrorException {
-//        return webTarget.path("updateApplicationStatus").request().put(null, Response.class);
-//    }
-//    public Response updateInterview(Object requestEntity) throws ClientErrorException {
-//        return webTarget.path("updateInterview").request(jakarta.ws.rs.core.MediaType.APPLICATION_JSON).put(jakarta.ws.rs.client.Entity.entity(requestEntity, jakarta.ws.rs.core.MediaType.APPLICATION_JSON), Response.class);
-//    }
-//
-//    public <T> T getCompany(Class<T> responseType, String recruiterId) throws ClientErrorException {
-//        WebTarget resource = webTarget;
-//        if (recruiterId != null) {
-//            resource = resource.queryParam("recruiterId", recruiterId);
-//        }
-//        resource = resource.path("getCompany");
-//        return resource.request(jakarta.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
-//    }
-//
-//    public Response addApplicationHistory() throws ClientErrorException {
-//        return webTarget.path("addApplicationHistory").request().post(null, Response.class);
-//    }
-//
-//    public Response scheduleInterview(Object requestEntity) throws ClientErrorException {
-//        return webTarget.path("scheduleInterview").request(jakarta.ws.rs.core.MediaType.APPLICATION_JSON).post(jakarta.ws.rs.client.Entity.entity(requestEntity, jakarta.ws.rs.core.MediaType.APPLICATION_JSON), Response.class);
-//    }
-//    public <T> T getJobSkills(Class<T> responseType, String jobId) throws ClientErrorException {
-//        WebTarget resource = webTarget;
-//        if (jobId != null) {
-//            resource = resource.queryParam("jobId", jobId);
-//        }
-//        resource = resource.path("getJobSkills");
-//        return resource.request(jakarta.ws.rs.core.MediaType.APPLICATION_JSON).get(responseType);
-//    }
+    public String getJobApplicationCount(Integer jobId, String status) {
+        WebTarget resource = webTarget.path("jobApplicationCount");
+
+        if (jobId != null && jobId > 0) {
+            resource = resource.queryParam("jobId", jobId);
+        }
+
+        if (status != null && !status.trim().isEmpty()) {
+            resource = resource.queryParam("status", status.trim());
+        }
+
+        return resource
+                .request(MediaType.TEXT_PLAIN)
+                .header("Authorization", "Bearer " + token)
+                .get(String.class);
+    }
+
+
     public Collection<Tblskills> getJobSkills(String jobId)
             throws ClientErrorException {
 
@@ -559,6 +525,22 @@ public class RecruiterJerseyClient {
     }
 
     //==============CANDIDATE MANAGEMENT ====================
+    public String getCandidateSkillsText(Integer applicationId) {
+        return webTarget.path("candidateSkillsText")
+                .queryParam("applicationId", applicationId)
+                .request(MediaType.TEXT_PLAIN)
+                .header("Authorization", "Bearer " + token)
+                .get(String.class);
+    }
+
+    public String getCandidateEducationText(Integer applicationId) {
+        return webTarget.path("candidateEducationText")
+                .queryParam("applicationId", applicationId)
+                .request(MediaType.TEXT_PLAIN)
+                .header("Authorization", "Bearer " + token)
+                .get(String.class);
+    }
+
     public Collection<Tblapplication> getRecruiterApplications(
             Integer recruiterId)
             throws ClientErrorException {
@@ -654,33 +636,6 @@ public class RecruiterJerseyClient {
                         Entity.text("")
                 );
     }
-//
-//    public Response selectApplication(
-//            Integer applicationId)
-//            throws ClientErrorException {
-//
-//        WebTarget resource = webTarget
-//                .path("selectApplication");
-//
-//        if (applicationId != null
-//                && applicationId > 0) {
-//
-//            resource = resource.queryParam(
-//                    "applicationId",
-//                    applicationId
-//            );
-//        }
-//
-//        return resource
-//                .request(MediaType.TEXT_PLAIN)
-//                .header(
-//                        "Authorization",
-//                        "Bearer " + token
-//                )
-//                .put(
-//                        Entity.text("")
-//                );
-//    }
 
     public Response scheduleInterview(
             Tblinterview interview)
@@ -758,6 +713,64 @@ public class RecruiterJerseyClient {
                         ),
                         Response.class
                 );
+    }
+
+    public Collection<Tblinterview> getInterviewHistoryByApplication(Integer applicationId)
+            throws ClientErrorException {
+
+        WebTarget resource = webTarget.path("interviewHistoryByApplication");
+
+        if (applicationId != null && applicationId > 0) {
+            resource = resource.queryParam("applicationId", applicationId);
+        }
+
+        return resource
+                .request(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + token)
+                .get(new GenericType<Collection<Tblinterview>>() {
+                });
+    }
+
+    // ================= REJECT APPLICATION =================
+    public Response rejectApplication(Integer applicationId)
+            throws ClientErrorException {
+
+        WebTarget resource = webTarget.path("rejectApplication");
+
+        if (applicationId != null && applicationId > 0) {
+            resource = resource.queryParam("applicationId", applicationId);
+        }
+
+        return resource
+                .request(MediaType.TEXT_PLAIN)
+                .header("Authorization", "Bearer " + token)
+                .put(Entity.text(""));
+    }
+
+// ================= CANCEL INTERVIEW =================
+    public Response cancelInterview(Integer interviewId)
+            throws ClientErrorException {
+
+        WebTarget resource = webTarget.path("cancelInterview");
+
+        if (interviewId != null && interviewId > 0) {
+            resource = resource.queryParam("interviewId", interviewId);
+        }
+
+        return resource
+                .request(MediaType.TEXT_PLAIN)
+                .header("Authorization", "Bearer " + token)
+                .put(Entity.text(""));
+    }
+
+// ================= REJECTED APPLICATION COUNT =================
+    public String getRejectedApplicationCount(String recruiterId) {
+
+        return webTarget.path("rejectedApplicationCount")
+                .queryParam("recruiterId", recruiterId)
+                .request(MediaType.TEXT_PLAIN)
+                .header("Authorization", "Bearer " + token)
+                .get(String.class);
     }
 
     // ================= INTERVIEW MANAGEMENT =================
@@ -1118,6 +1131,33 @@ public class RecruiterJerseyClient {
 
             return null;
         }
+    }
+
+    public <T> T getNotifications(GenericType<T> responseType, String userId) throws ClientErrorException {
+        WebTarget resource = webTarget.path("getNotifications");
+        if (userId != null && !userId.trim().isEmpty()) {
+            resource = resource.queryParam("userId", userId);
+        }
+        return resource.request(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + token)
+                .get(responseType);
+    }
+
+    public Response markNotificationRead(Integer notificationId, Integer userId) {
+        return webTarget.path("markNotificationRead")
+                .queryParam("notificationId", notificationId)
+                .queryParam("userId", userId)
+                .request(MediaType.TEXT_PLAIN)
+                .header("Authorization", "Bearer " + token)
+                .put(Entity.text(""));
+    }
+
+    public Response markAllNotificationsRead(Integer userId) {
+        return webTarget.path("markAllNotificationsRead")
+                .queryParam("userId", userId)
+                .request(MediaType.TEXT_PLAIN)
+                .header("Authorization", "Bearer " + token)
+                .put(Entity.text(""));
     }
 
     public void close() {

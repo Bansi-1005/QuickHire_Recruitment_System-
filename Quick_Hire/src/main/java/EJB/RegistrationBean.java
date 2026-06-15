@@ -11,6 +11,8 @@ import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.security.enterprise.identitystore.Pbkdf2PasswordHash;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -117,4 +119,20 @@ public class RegistrationBean implements RegistrationBeanLocal {
             e.printStackTrace();
         }
      }
+    
+    
+        // ================= COMPANY =================
+    @Override
+    public Collection<Tblcompany> getAllCompanies() {
+        try {
+            return em.createQuery(
+                    "SELECT c FROM Tblcompany c ORDER BY c.companyName",
+                    Tblcompany.class)
+                    .getResultList();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
 }

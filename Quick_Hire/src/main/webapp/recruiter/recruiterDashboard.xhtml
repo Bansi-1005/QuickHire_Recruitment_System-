@@ -34,7 +34,8 @@
                             <h:commandLink value="📋 View Jobs" action="recruiterViewJobs?faces-redirect=true" styleClass="menu-link" />
                             <h:commandLink value="👥 Applicants" action="recruiterApplicants?faces-redirect=true" styleClass="menu-link" />
                             <h:commandLink value="📅 Interviews" action="recruiterInterview?faces-redirect=true" styleClass="menu-link" />
-                            <h:commandLink value="📊 Notifications" styleClass="menu-link" />
+                            <h:commandLink value="📊 Notification" action="recruiterNotification?faces-redirect=true" styleClass="menu-link" />
+
                         </h:form>
 
                         <div class="sidebar-card">
@@ -135,8 +136,11 @@
                             <div class="panel recent-activity-panel">
 
                                 <div class="panel-header">
-                                    <h3>Top Candidates</h3>
-                                    <a href="#" class="panel-link">See all</a>
+                                    <h3>Top Candidates</h3><h:form styleClass="panel-link-form">
+                                        <h:commandLink value="See all"
+                                                       action="recruiterApplicants?faces-redirect=true"
+                                                       styleClass="panel-link" />
+                                    </h:form>
                                 </div>
 
                                 <ui:repeat value="#{recruiterCDIBean.topCandidateslist}" var="c">
@@ -181,7 +185,11 @@
 
                                 <div class="panel-header">
                                     <h3>Upcoming Interviews</h3>
-                                    <a href="#" class="panel-link">Schedule</a>
+                                    <h:form styleClass="panel-link-form">
+                                        <h:commandLink value="Schedule"
+                                                       action="recruiterInterview?faces-redirect=true"
+                                                       styleClass="panel-link" />
+                                    </h:form>
                                 </div>
 
                                 <ui:repeat value="#{recruiterCDIBean.interviewList}" var="i">
@@ -201,7 +209,6 @@
                                                 </h4>
 
                                                 <p>
-                                                    #{i.interviewRoundName}
                                                     •
                                                     #{i.interviewerMode}
                                                 </p>
@@ -238,15 +245,17 @@
                                     </div>
 
                                     <h:form styleClass="activity-header-actions">
-                                        <a href="#" class="panel-link">View All</a>
+                                            <h:commandLink value="View All"
+                                                           action="recruiterNotification?faces-redirect=true"
+                                                           styleClass="panel-link" />
 
-                                        <h:commandButton
-                                            value="↻ Refresh"
-                                            action="#{recruiterCDIBean.loadDashboardData}"
-                                            styleClass="refresh-btn">
-                                            <f:ajax render="@form activityPanel"/>
-                                        </h:commandButton>
-                                    </h:form>
+                                            <h:commandButton
+                                                value="↻ Refresh"
+                                                action="#{recruiterCDIBean.loadDashboardData}"
+                                                styleClass="refresh-btn">
+                                                <f:ajax render="@form activityPanel"/>
+                                            </h:commandButton>
+                                        </h:form>
                                 </div>
 
                                 <h:panelGroup id="activityPanel" layout="block">

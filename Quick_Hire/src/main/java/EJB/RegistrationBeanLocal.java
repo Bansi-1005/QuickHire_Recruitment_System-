@@ -6,6 +6,7 @@ package EJB;
 
 import Entity.*;
 import jakarta.ejb.Local;
+import java.util.Collection;
 
 /**
  *
@@ -14,4 +15,6 @@ import jakarta.ejb.Local;
 @Local
 public interface RegistrationBeanLocal {
     void registerUser(Tblusers user, Tblrolemaster role, Tblcandidates candidate, Tblrecruiters recruiter);
+        public Collection<Tblcompany> getAllCompanies();
+
 }

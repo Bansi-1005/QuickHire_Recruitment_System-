@@ -8,11 +8,14 @@ import EJB.RegistrationBeanLocal;
 import Entity.*;
 import jakarta.ejb.EJB;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -21,9 +24,10 @@ import java.util.Map;
  */
 @Path("registration")
 public class RegistrationResource {
+
     @EJB
     RegistrationBeanLocal ejb;
-    
+
 //    @POST
 //    @Path("registerUser")
 //    @Consumes(MediaType.APPLICATION_JSON)
@@ -71,7 +75,6 @@ public class RegistrationResource {
 //            return Response.status(500).entity(e.getMessage()).build();
 //        }
 //    }
-    
     @POST
     @Path("registerUser")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -89,15 +92,15 @@ public class RegistrationResource {
             if (activeObj != null) {
                 user.setUserIsActive((Boolean) activeObj);
             }
-            
+
             // ================= ROLE =================
             Map<String, Object> roleMap = (Map<String, Object>) body.get("roleId");
-            
+
             if (roleMap == null || roleMap.get("roleId") == null) {
                 return Response.status(Response.Status.BAD_REQUEST)
-                               .entity("Role is missing").build();
+                        .entity("Role is missing").build();
             }
-            
+
             Tblrolemaster role = new Tblrolemaster();
             role.setRoleId(((Number) roleMap.get("roleId")).intValue());
 
@@ -118,7 +121,7 @@ public class RegistrationResource {
                     candidate.setCandidatePhone((String) candMap.get("candidatePhone"));
                     candidate.setCandidateArea((String) candMap.get("candidateArea"));
                     candidate.setCandidateCity((String) candMap.get("candidateCity"));
-                    candidate.setCandidateState((String) candMap.get("candidateState"));                    
+                    candidate.setCandidateState((String) candMap.get("candidateState"));
                     candidate.setCandidateGender((String) candMap.get("candidateGender"));
                     Object expObj = candMap.get("candidateExperience");
 
@@ -134,9 +137,8 @@ public class RegistrationResource {
                     }
                     System.out.println("Candidate Map: " + candMap);
                 }
-            }
-            else if(role.getRoleId() == 3){
-                
+            } else if (role.getRoleId() == 3) {
+
                 Map<String, Object> recMap = (Map<String, Object>) body.get("recruiter");
 
                 recruiter = new Tblrecruiters();
@@ -147,34 +149,57 @@ public class RegistrationResource {
 
                 if (recMap.get("companyId") != null) {
 
-                Map<String, Object> compMap = (Map<String, Object>) recMap.get("companyId");
+                    Map<String, Object> compMap = (Map<String, Object>) recMap.get("companyId");
 
-                if (compMap != null && compMap.get("companyId") != null) {
+                    if (compMap != null && compMap.get("companyId") != null) {
 
-                    Tblcompany company = new Tblcompany();
-                    company.setCompanyId(((Number) compMap.get("companyId")).intValue());
+                        Tblcompany company = new Tblcompany();
+                        company.setCompanyId(((Number) compMap.get("companyId")).intValue());
 
-                    recruiter.setCompanyId(company);
+                        recruiter.setCompanyId(company);
 
-                } else {
-                    return Response.status(400)
-                            .entity("Company ID is missing or invalid")
-                            .build();
+                    } else {
+                        return Response.status(400)
+                                .entity("Company ID is missing or invalid")
+                                .build();
+                    }
                 }
             }
-        }
-            
+
             // ================= CALL EJB =================
             ejb.registerUser(user, role, candidate, recruiter);
 
             return Response.ok("User Registered Successfully").build();
-            
-            
 
         } catch (Exception e) {
             e.printStackTrace();
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
+
+    // ================= COMPANY =================
+    @GET
+    @Path("getAllCompanies")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllCompanies() {
+
+        try {
+
+            Collection<Tblcompany> companies = ejb.getAllCompanies();
+
+            if (companies == null) {
+                companies = new ArrayList<>();
+            }
+
+            return Response.ok(companies).build();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error fetching companies")
+                    .build();
+        }
+    }
 }
- 

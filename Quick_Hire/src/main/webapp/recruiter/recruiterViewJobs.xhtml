@@ -41,7 +41,7 @@
                                            styleClass="menu-link active" />
                             <h:commandLink value="👥 Applicants" action="recruiterApplicants?faces-redirect=true" styleClass="menu-link" />
                             <h:commandLink value="📅 Interviews" action="recruiterInterview?faces-redirect=true" styleClass="menu-link" />
-                            <h:commandLink value="📊 Notification" styleClass="menu-link" />
+                            <h:commandLink value="📊 Notification" action="recruiterNotification?faces-redirect=true" styleClass="menu-link" />
                         </h:form>
                        
 
@@ -307,11 +307,11 @@
                                                         data-compensation-max="#{j.jobCompensationMax}"
                                                         data-compensation-period="#{j.jobCompensationPeriod}"
                                                         data-compensation-display="#{recruiterCDIBean.getFormattedCompensation(j)}"
-                                                        data-applications-total="16"
-                                                        data-applications-applied="8"
-                                                        data-applications-shortlisted="4"
-                                                        data-applications-rejected="3"
-                                                        data-applications-selected="1">
+                                                        data-applications-total="#{recruiterCDIBean.getJobApplicationTotalCount(j.jobId)}"
+                                                        data-applications-applied="#{recruiterCDIBean.getJobApplicationStatusCount(j.jobId, 'Applied')}"
+                                                        data-applications-shortlisted="#{recruiterCDIBean.getJobApplicationStatusCount(j.jobId, 'Shortlisted')}"
+                                                        data-applications-rejected="#{recruiterCDIBean.getJobApplicationStatusCount(j.jobId, 'Rejected')}"
+                                                        data-applications-selected="#{recruiterCDIBean.getJobApplicationStatusCount(j.jobId, 'Selected')}">
 
                                                         <td class="viewjobs-title-cell">
                                                             <div class="viewjobs-job-main">
@@ -352,7 +352,7 @@
                                                         </td>
 
                                                         <td class="viewjobs-center-cell">
-                                                            <span class="viewjobs-application-count">16</span>
+                                                            <span class="viewjobs-application-count">#{recruiterCDIBean.getJobApplicationTotalCount(j.jobId)}</span>
                                                         </td>
 
                                                         <td>
@@ -468,11 +468,11 @@
                                                  data-compensation-max="#{j.jobCompensationMax}"
                                                  data-compensation-period="#{j.jobCompensationPeriod}"
                                                  data-compensation-display="#{recruiterCDIBean.getFormattedCompensation(j)}"
-                                                 data-applications-total="16"
-                                                 data-applications-applied="8"
-                                                 data-applications-shortlisted="4"
-                                                 data-applications-rejected="3"
-                                                 data-applications-selected="1">
+                                                 data-applications-total="#{recruiterCDIBean.getJobApplicationTotalCount(j.jobId)}"
+                                                 data-applications-applied="#{recruiterCDIBean.getJobApplicationStatusCount(j.jobId, 'Applied')}"
+                                                 data-applications-shortlisted="#{recruiterCDIBean.getJobApplicationStatusCount(j.jobId, 'Shortlisted')}"
+                                                 data-applications-rejected="#{recruiterCDIBean.getJobApplicationStatusCount(j.jobId, 'Rejected')}"
+                                                 data-applications-selected="#{recruiterCDIBean.getJobApplicationStatusCount(j.jobId, 'Selected')}">
 
                                                 <div class="viewjobs-job-card-top">
                                                     <div>
@@ -511,7 +511,7 @@
                                                         <span class="viewjobs-info-chip">#{j.jobType}</span>
                                                         <span class="viewjobs-info-chip">Exp: #{recruiterCDIBean.formatExperience(j.experienceRequired)}</span>
                                                         <span class="viewjobs-info-chip">#{j.jobVacancies} vacancies</span>
-                                                        <span class="viewjobs-info-chip">Applications: 16</span>
+                                                        <span class="viewjobs-info-chip">Applications: #{recruiterCDIBean.getJobApplicationTotalCount(j.jobId)}</span>
                                                         <span class="viewjobs-info-chip">Posted: #{recruiterCDIBean.formatJobDate(j.jobPostedDate)}</span>
                                                         <span class="viewjobs-info-chip">Expires: #{recruiterCDIBean.formatJobDate(j.jobExpiryDate)}</span>
                                                     </div>
@@ -633,10 +633,7 @@
                                         <div class="viewjobs-modal-value" id="modalStatusText">-</div>
                                     </div>
 
-                                    <div class="viewjobs-modal-info-box viewjobs-modal-info-box-wide">
-                                        <span class="viewjobs-modal-label">Location</span>
-                                        <div class="viewjobs-modal-value" id="modalLocationText2">-</div>
-                                    </div>
+
                                 </div>
                             </div>
 
