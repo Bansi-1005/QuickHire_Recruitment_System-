@@ -362,7 +362,6 @@ public class Tbljob implements Serializable {
     }
 
     @XmlTransient
-    @JsonbTransient
     public Collection<Tbleducation> getTbleducationCollection() {
         return tbleducationCollection;
     }

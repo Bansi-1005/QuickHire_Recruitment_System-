@@ -208,28 +208,51 @@
 
             <!-- SECTION 4: UPCOMING INTERVIEWS + NOTIFICATIONS (1-row) -->
             <div class="dashboard-grid secondary-grid">
-                <section class="dashboard-panel">
-                    <div class="panel-header">
-                        <h2>Upcoming Interviews</h2>
-                    </div>
-                    <h:panelGroup rendered="#{empty candidateCDIBean.interviewList}">
-                        <div class="empty-state">No interviews scheduled</div>
-                    </h:panelGroup>
-                    <ui:repeat value="#{candidateCDIBean.interviewList}" var="interview">
-                        <div class="dashboard-item">
-                            <div class="item-info">
-                                <h3>#{interview.applicationId.jobId.jobTitle}</h3>
-                                <p>
-                                    <h:outputText value="#{interview.interviewDate}">
-                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm a"/>
-                                    </h:outputText>
-                                </p>
-                                <small>#{interview.interviewerMode}</small>
-                            </div>
-                            <span class="status-badge shortlisted">Scheduled</span>
-                        </div>
-                    </ui:repeat>
-                </section>
+<section class="dashboard-panel interview-panel">
+    <div class="panel-header">
+        <h2>Upcoming Interviews</h2>
+        <h:link outcome="/candidate/interviews" styleClass="panel-link">View All</h:link>
+    </div>
+
+    <h:panelGroup rendered="#{empty candidateCDIBean.upcomingInterviews}">
+        <div class="empty-state">
+            <i class="fa-solid fa-calendar-xmark empty-icon"></i>
+            <h3>No interviews scheduled</h3>
+            <p>Your interview updates will appear here.</p>
+        </div>
+    </h:panelGroup>
+
+    <ui:repeat value="#{candidateCDIBean.upcomingInterviews}" var="interview">
+        <div class="interview-row">
+            <div class="interview-main">
+                <div class="interview-title">
+                    <h3>#{interview.applicationId.jobId.jobTitle}</h3>
+                </div>
+
+                <div class="interview-info-line">
+                    <span class="info-label">Company:</span>
+                    <span class="info-value">#{interview.applicationId.jobId.recruiterId.companyId.companyName}</span>
+                </div>
+
+                <div class="interview-info-line">
+                    <span class="info-label">Date &amp; Time:</span>
+                    <span class="info-value">
+                        <h:outputText value="#{interview.interviewDate}">
+                            <f:convertDateTime pattern="dd MMM yyyy, hh:mm a" />
+                        </h:outputText>
+                    </span>
+                </div>
+
+                <div class="interview-info-line">
+                    <span class="info-label">Interviewer:</span>
+                    <span class="info-value">#{interview.interviewerName}</span>
+                </div>
+            </div>
+
+            <span class="status-badge mode-badge">#{interview.interviewerMode}</span>
+        </div>
+    </ui:repeat>
+</section>
 
                 <section class="dashboard-panel notification-mini-panel">
                     <div class="panel-header">
@@ -343,7 +366,7 @@
                                 <div class="job-info-grid">
                                     <div class="info-item">
                                         <span class="info-label">Experience</span>
-                                        <span class="info-value"><i class="fa-solid fa-briefcase"></i> #{job.experienceRequired}+ Years</span>
+                                        <span class="info-value"><i class="fa-solid fa-briefcase"></i> #{job.experienceRequired}+ Months</span>
                                     </div>
                                     <div class="info-item">
                                         <span class="info-label">Openings</span>
@@ -377,6 +400,20 @@
                                     <div class="skills-wrap">
                                         <ui:repeat value="#{job.tblskillsCollection}" var="skill">
                                             <span class="badge">#{skill.skillName}</span>
+                                        </ui:repeat>
+                                    </div>
+                                </div>
+                                
+                                <!-- Required Education (NEW) -->
+                                <div class="education-section">
+                                    <div class="section-mini-title">Required Education</div>
+                                    <div class="education-wrap">
+                                        <h:panelGroup rendered="#{empty job.tbleducationCollection}">
+                                            <span class="badge-education badge-none">Not specified</span>
+                                        </h:panelGroup>
+
+                                        <ui:repeat value="#{job.tbleducationCollection}" var="edu">
+                                            <span class="badge-education">#{edu.educationName}</span>
                                         </ui:repeat>
                                     </div>
                                 </div>

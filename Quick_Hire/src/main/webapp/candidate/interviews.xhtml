@@ -96,46 +96,105 @@
                             <thead>
                                 <tr>
                                     <th>Job Title</th>
+                                    <th>Company</th>
                                     <th>Round</th>
+                                    <th>Interviewer</th>
                                     <th>Mode</th>
                                     <th>Date</th>
                                     <th>Status</th>
+                                    <th>Result</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <ui:repeat value="#{candidateCDIBean.interviewList}"
-                                           var="i">
+
+                                <ui:repeat value="#{candidateCDIBean.interviewList}" var="i">
+
                                     <tr class="interview-row">
+
+                                        <!-- Job Title -->
                                         <td class="cell-title">
                                             <div class="title-wrapper">
-                                                <i class="fa-solid fa-microphone title-icon"></i>
-                                                <span class="job-title-text">#{i.applicationId.jobId.jobTitle}</span>
+                                                <i class="fa-solid fa-briefcase title-icon"></i>
+                                                <span class="job-title-text">
+                                                    #{i.applicationId.jobId.jobTitle}
+                                                </span>
                                             </div>
                                         </td>
-                                        <td class="cell-round">
-                                            <i class="fa-solid fa-layer-group round-icon"></i>
-                                            Round #{i.interviewRoundName}
+
+                                        <!-- Company -->
+                                        <td class="cell-company">
+                                            <div class="company-wrapper">
+                                                <i class="fa-solid fa-building company-icon"></i>
+                                                #{i.applicationId.jobId.recruiterId.companyId.companyName}
+                                            </div>
                                         </td>
+
+                                        <!-- Round -->
+                                        <td class="cell-round">
+                                            <div class="round-wrapper">
+                                                <small>#{i.interviewRoundName}</small>
+                                            </div>
+                                        </td>
+
+                                        <!-- Interviewer -->
+                                        <td class="cell-interviewer">
+                                            <i class="fa-solid fa-user-tie"></i>
+                                            #{i.interviewerName}
+                                        </td>
+
+                                        <!-- Mode -->
                                         <td class="cell-mode">
                                             <span class="mode-badge mode-#{i.interviewerMode eq 'Online' ? 'online' : 'offline'}">
+
                                                 <i class="fa-solid #{i.interviewerMode eq 'Online' ? 'fa-laptop' : 'fa-building'}"></i>
+
                                                 #{i.interviewerMode}
+
                                             </span>
                                         </td>
+
+                                        <!-- Date -->
                                         <td class="cell-date">
                                             <i class="fa-solid fa-calendar date-icon"></i>
+
                                             <h:outputText value="#{i.interviewDate}">
-                                                <f:convertDateTime pattern="dd MMM yyyy hh:mm a"/>
+                                                <f:convertDateTime pattern="dd MMM yyyy"/>
                                             </h:outputText>
                                         </td>
+
+                                        <!-- Status -->
                                         <td class="cell-status">
-                                            <span class="status-badge status-scheduled">
-                                                <i class="fa-solid fa-circle-check"></i>
-                                                Scheduled
+
+                                            <span class="status-badge
+                                                  #{i.interviewStatus eq 'Scheduled' ? 'status-scheduled' :
+                                                    i.interviewStatus eq 'Completed' ? 'status-completed' :
+                                                    i.interviewStatus eq 'Cancelled' ? 'status-cancelled' :
+                                                    'status-pending'}">
+
+                                                #{i.interviewStatus}
+
                                             </span>
+
+                                        </td>
+
+                                        <!-- Result -->
+                                        <td class="cell-result">
+
+                                            <span class="result-badge
+                                                  #{i.result eq 'Pass' ? 'result-pass' :
+                                                    i.result eq 'Fail' ? 'result-fail' :
+                                                    i.result eq 'Selected' ? 'result-selected' :
+                                                    'result-pending'}">
+
+                                                #{empty i.result ? 'Pending' : i.result}
+
+                                            </span>
+
                                         </td>
                                     </tr>
+
                                 </ui:repeat>
+
                             </tbody>
                         </table>
                     </div>

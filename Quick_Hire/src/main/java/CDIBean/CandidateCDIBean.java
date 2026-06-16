@@ -29,9 +29,12 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -1550,7 +1553,21 @@ public class CandidateCDIBean implements Serializable {
         }
     }
     
-    
+    public List<Tblinterview> getUpcomingInterviews() {
+
+        if (interviewList == null) {
+            return new ArrayList<>();
+        }
+
+        Date now = new Date();
+
+        return interviewList.stream()
+                .filter(i -> i.getInterviewDate() != null
+                        && i.getInterviewDate().after(now))
+                .sorted(Comparator.comparing(Tblinterview::getInterviewDate))
+                .limit(2)
+                .collect(Collectors.toList());
+    }
     
     
     
