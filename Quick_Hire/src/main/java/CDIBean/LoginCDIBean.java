@@ -341,7 +341,7 @@ public class LoginCDIBean implements Serializable {
             System.out.println("COOKIE TOKEN = " + token);
             System.out.println("COOKIE ROLE = " + role);
             System.out.println("COOKIE USERID = " + userId);
-           
+
         }
     }
 
@@ -455,15 +455,15 @@ public class LoginCDIBean implements Serializable {
 //                    .getFlash()
 //                    .setKeepMessages(true);
 // change
-                if (FacesContext.getCurrentInstance() != null) {
-                    var flash = FacesContext.getCurrentInstance()
-                            .getExternalContext()
-                            .getFlash();
+            if (FacesContext.getCurrentInstance() != null) {
+                var flash = FacesContext.getCurrentInstance()
+                        .getExternalContext()
+                        .getFlash();
 
-                    if (flash != null) {
-                        flash.setKeepMessages(true);
-                    }
+                if (flash != null) {
+                    flash.setKeepMessages(true);
                 }
+            }
 
             FacesContext.getCurrentInstance().addMessage(
                     null,
@@ -535,20 +535,19 @@ public class LoginCDIBean implements Serializable {
 
             if (response.getStatus() == 200) {
 
-//                FacesContext.getCurrentInstance()
-//                        .getExternalContext()
-//                        .getFlash()
-//                        .setKeepMessages(true);
+                FacesContext.getCurrentInstance()
+                        .getExternalContext()
+                        .getFlash()
+                        .setKeepMessages(true);
 // change
-                if (FacesContext.getCurrentInstance() != null) {
-                    var flash = FacesContext.getCurrentInstance()
-                            .getExternalContext()
-                            .getFlash();
-
-                    if (flash != null) {
-                        flash.setKeepMessages(true);
-                    }
-                }
+//                FacesContext.getCurrentInstance().addMessage(
+//                        null,
+//                        new FacesMessage(
+//                                FacesMessage.SEVERITY_INFO,
+//                                "OTP send successfully to your email",
+//                                null
+//                        )
+//                );
 
                 FacesContext.getCurrentInstance().addMessage(
                         null,
@@ -567,7 +566,6 @@ public class LoginCDIBean implements Serializable {
 //                        .getExternalContext()
 //                        .getFlash()
 //                        .setKeepMessages(true);
-
 // change
                 if (FacesContext.getCurrentInstance() != null) {
                     var flash = FacesContext.getCurrentInstance()

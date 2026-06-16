@@ -1,5 +1,30 @@
+:root {
+    --scrollbar-track: transparent;
+    --scrollbar-thumb: rgba(41, 98, 255, 0.0);
+    --scrollbar-thumb-hover: rgba(41, 98, 255, 0.0);
+}
+
 * {
     box-sizing: border-box;
+}
+
+/* ============================================================
+   GLOBAL SCROLLBAR HIDING
+   Applies to every element on this page: modals (.modal-content),
+   the table wrapper (.interviews-table-wrap), textareas, the
+   calendar list, etc. Scrolling still works the same way, the
+   browser just stops drawing the scrollbar track/thumb so no
+   visible line shows up anywhere.
+   ============================================================ */
+* {
+    scrollbar-width: none;       /* Firefox */
+    -ms-overflow-style: none;    /* old Edge / IE 10+ */
+}
+
+*::-webkit-scrollbar {
+    display: none;                /* Chrome, Safari, new Edge */
+    width: 0;
+    height: 0;
 }
 
 .interview-layout {

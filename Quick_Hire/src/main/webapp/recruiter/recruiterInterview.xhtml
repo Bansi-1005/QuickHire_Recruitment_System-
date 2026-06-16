@@ -12,6 +12,7 @@
             <h:outputStylesheet library="css" name="/recruiter/recruiter.css" />
             <h:outputStylesheet library="css" name="/recruiter/recruiterInterview.css" />
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/primeicons/3.0.0/primeicons.css" />
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"/>
         </h:head>
 
         <h:body>
@@ -284,14 +285,13 @@
                                                                 title="View details"
                                                                 onclick="rememberViewInterviewRow(this);"
                                                                 action="#{recruiterApplicationInterviewCDIBean.prepareViewInterviewHistory(int.applicationId.applicationId)}">
-                                                                <span class="pi pi-eye" aria-hidden="true"></span>
-                                                                <f:ajax execute="@this"
-                                                                        render=":interviewForm:viewInterviewHistoryPanel"
-                                                                        onevent="openViewInterviewModalAfterAjax"/>
+                                                                <i class="fas fa-address-card"></i>                                                                <f:ajax execute="@this"
+                                                                                                                                                                           render=":interviewForm:viewInterviewHistoryPanel"
+                                                                                                                                                                           onevent="openViewInterviewModalAfterAjax"/>
                                                             </h:commandLink>
 
                                                             <h:commandButton
-                                                                value="Conduct"
+                                                                value="Evaluate"
                                                                 styleClass="action-btn action-text action-conduct"
                                                                 rendered="#{recruiterApplicationInterviewCDIBean.isConductVisible(int)}"
                                                                 action="#{recruiterApplicationInterviewCDIBean.prepareConductInterview(int.interviewId)}">

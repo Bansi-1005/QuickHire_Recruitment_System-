@@ -49,23 +49,22 @@ public class CandidateCDIBean implements Serializable {
     private Part resumeFile;
     private Collection<Tblresume> resumeList = new ArrayList<>();
     private Part profilePhoto;
-    
+
     private Integer experienceYears;
     private Integer experienceMonths;
 
-        
     // ================= JOBS =================
     private Tbljob selectedJob;
     private String searchTitle;
     private String searchLocation;
     private Integer searchSkillId;
     private String searchJobType;
-    
+
     private Collection<Tbljob> allJobs = new ArrayList<>();
     private Collection<Tbljob> jobList = new ArrayList<>();
     private Collection<Tbljob> recommendedJobs = new ArrayList<>();
     private Collection<String> jobTypeList = new ArrayList<>();
-    
+
     // ================= APPLICATIONS =================
     private Integer selectedResumeId;
     private Integer selectedJobId;
@@ -76,64 +75,56 @@ public class CandidateCDIBean implements Serializable {
     // ================= NOTIFICATIONS =================
     private List<Tblnotification> notificationList = new ArrayList<>();
     private String notificationFilter = "ALL";
-    
-    
+
     // ================= SKILLS =================
     private Collection<Tblskills> allSkills = new ArrayList<>();
     private Integer selectedSkillId;
-    private Collection<Tblskills> candidateSkills = new ArrayList<>(); 
+    private Collection<Tblskills> candidateSkills = new ArrayList<>();
     private Integer selectedCategoryId;
     private Collection<Tblskillcategory> allCategories = new ArrayList<>();
     private Collection<Tblskills> filteredSkills = new ArrayList<>();
-   
+
     // ================= Education =================
     private Collection<Tblcandidateeducation> educationList = new ArrayList<>();
     private Tblcandidateeducation selectedEducation = new Tblcandidateeducation();
     private Integer editEducationId;
-    
-    
+
     // ================= INTERVIEWS =================
     private Collection<Tblinterview> interviewList = new ArrayList<>();
 
     // ================= API =================
     private final String BASE_URL = "http://localhost:8080/Quick_Hire/resources/candidate";
-    @Inject private LoginCDIBean loginBean;
-    
-    
-    
-    
+    @Inject
+    private LoginCDIBean loginBean;
+
     // ================= INIT METHOD ========================== 
     @PostConstruct
     public void init() {
         loadJobs();
         loadJobTypes();
         loadAllCategories();
-        loadAllSkills(); 
+        loadAllSkills();
         loadUserData();
         generateRecommendedJobs();
     }
-    
-    
+
     public void reloadAfterRememberMe() {
         loadUserData();
         loadJobs();
         loadJobTypes();
         loadAllCategories();
-        loadAllSkills(); 
+        loadAllSkills();
         generateRecommendedJobs();
     }
-    
-    
-    
+
     // ================= AUTH METHODS ==========================
-    
     // ------ CREATE CLIENT WITH JWT ------
     private Client getClient() {
         return ClientBuilder.newBuilder()
                 .register(new JwtClientFilter(loginBean.getToken())) // ✅ FIX: attach token
                 .build();
     }
-    
+
     // ------- GET SESSION USER ------
     private int fetchUserIdFromSession() {
         HttpSession session = (HttpSession) FacesContext
@@ -147,11 +138,11 @@ public class CandidateCDIBean implements Serializable {
 
         return 0;
     }
-    
+
     public int getLoggedInCandidateId() {
         return fetchUserIdFromSession();
     }
-    
+
     // ----- LOAD USER DATA ----------
     public void loadUserData() {
 
@@ -165,23 +156,17 @@ public class CandidateCDIBean implements Serializable {
 
                 loadApplications(candidateId);
                 loadCandidateSkills();
-                loadInterviews(); 
+                loadInterviews();
                 loadResumes();
-                loadEducation(); 
+                loadEducation();
             }
 
             notificationList = loadAllNotifications(userId);
-            generateRecommendedJobs(); 
+            generateRecommendedJobs();
         }
     }
-    
-    
-    
-    
-    
+
     // ================= PROFILE METHODS =======================
-    
-    
     // ----- LOAD PROFILE -------
     public void loadCandidateProfile(int userId) {
         try {
@@ -194,23 +179,22 @@ public class CandidateCDIBean implements Serializable {
             if (c != null) {
                 this.candidateObj = c;
                 this.candidateId = c.getCandidateId();
-                
-                 // Convert DB months → Years + Months
 
+                // Convert DB months → Years + Months
                 if (c.getCandidateExperience() != null) {
 
-                    experienceYears =
-                            c.getCandidateExperience() / 12;
+                    experienceYears
+                            = c.getCandidateExperience() / 12;
 
-                    experienceMonths =
-                            c.getCandidateExperience() % 12;
+                    experienceMonths
+                            = c.getCandidateExperience() % 12;
 
                 } else {
 
                     experienceYears = 0;
                     experienceMonths = 0;
                 }
-                
+
                 System.out.println("Candidate ID = " + candidateId);
             }
 
@@ -218,23 +202,22 @@ public class CandidateCDIBean implements Serializable {
             e.printStackTrace();
         }
     }
-    
+
     // -------- UPDATE PROFILE -------------
-        
     public void updateProfile() {
 
         try {
-            int years =
-                experienceYears == null ? 0 : experienceYears;
+            int years
+                    = experienceYears == null ? 0 : experienceYears;
 
-            int months =
-                    experienceMonths == null ? 0 : experienceMonths;
+            int months
+                    = experienceMonths == null ? 0 : experienceMonths;
 
-            int totalMonths =
-                    (years * 12) + months;
+            int totalMonths
+                    = (years * 12) + months;
 
             candidateObj.setCandidateExperience(totalMonths);
-            
+
             // ================= API CALL =================
             WebTarget target = getClient()
                     .target(BASE_URL + "/updateCandidateProfile");
@@ -289,8 +272,7 @@ public class CandidateCDIBean implements Serializable {
                     );
         }
     }
-    
-    
+
     public String getFormattedExperience() {
 
         if (candidateObj == null
@@ -299,8 +281,8 @@ public class CandidateCDIBean implements Serializable {
             return "0 Months";
         }
 
-        int totalMonths =
-                candidateObj.getCandidateExperience();
+        int totalMonths
+                = candidateObj.getCandidateExperience();
 
         int years = totalMonths / 12;
         int months = totalMonths % 12;
@@ -317,7 +299,7 @@ public class CandidateCDIBean implements Serializable {
 
         return months + " Months";
     }
-    
+
     public void uploadProfilePhoto() {
 
         try {
@@ -336,13 +318,13 @@ public class CandidateCDIBean implements Serializable {
                 return;
             }
 
-            String basePath =
-                    "D:/QuickHireUploads/profilephotos/";
+            String basePath
+                    = "D:/QuickHireUploads/profilephotos/";
 
             Files.createDirectories(Paths.get(basePath));
 
-            String fileName =
-                    Paths.get(
+            String fileName
+                    = Paths.get(
                             profilePhoto.getSubmittedFileName())
                             .getFileName()
                             .toString();
@@ -364,21 +346,21 @@ public class CandidateCDIBean implements Serializable {
                 return;
             }
 
-            String uniqueName =
-                    System.currentTimeMillis()
+            String uniqueName
+                    = System.currentTimeMillis()
                     + "_PHOTO_"
                     + fileName;
 
-            InputStream input =
-                    profilePhoto.getInputStream();
+            InputStream input
+                    = profilePhoto.getInputStream();
 
             Files.copy(
                     input,
                     Paths.get(basePath + uniqueName),
                     StandardCopyOption.REPLACE_EXISTING);
 
-            int userId =
-                    candidateObj.getUserId().getUserId();
+            int userId
+                    = candidateObj.getUserId().getUserId();
 
             Response response = getClient()
                     .target(BASE_URL + "/uploadProfilePhoto")
@@ -428,12 +410,12 @@ public class CandidateCDIBean implements Serializable {
                                     null));
         }
     }
-    
+
     public String getProfilePhotoPath() {
 
         try {
 
-            if(candidateObj != null
+            if (candidateObj != null
                     && candidateObj.getUserId() != null
                     && candidateObj.getUserId().getProfilePhoto() != null
                     && !candidateObj.getUserId().getProfilePhoto().isEmpty()) {
@@ -441,16 +423,17 @@ public class CandidateCDIBean implements Serializable {
                 return candidateObj.getUserId().getProfilePhoto();
             }
 
-        } catch(Exception e) {
+        } catch (Exception e) {
         }
 
         return "default-user.png";
     }
 
-     
     public int getProfileCompletion() {
 
-        if (candidateObj == null) return 0;
+        if (candidateObj == null) {
+            return 0;
+        }
 
         int score = 0;
 
@@ -499,8 +482,7 @@ public class CandidateCDIBean implements Serializable {
 
         return Math.min(score, 100);
     }
-    
-    
+
     public List<String> getProfileMissingItems() {
 
         List<String> missing = new ArrayList<>();
@@ -527,23 +509,17 @@ public class CandidateCDIBean implements Serializable {
             missing.add("Upload resume");
         }
 
-        if (candidateObj.getUserId() != null &&
-            (candidateObj.getUserId().getProfilePhoto() == null
-            || candidateObj.getUserId().getProfilePhoto().isEmpty())) {
+        if (candidateObj.getUserId() != null
+                && (candidateObj.getUserId().getProfilePhoto() == null
+                || candidateObj.getUserId().getProfilePhoto().isEmpty())) {
 
             missing.add("Upload profile photo");
         }
 
         return missing;
     }
-    
-    
 
-    
-    
-    
     // ================= RESUME METHODS ========================
-    
     // ----- LOAD RESUMES ------
     public void loadResumes() {
 
@@ -568,7 +544,8 @@ public class CandidateCDIBean implements Serializable {
                     .queryParam("candidateId", candidateId);
 
             resumeList = target.request(MediaType.APPLICATION_JSON)
-                    .get(new GenericType<Collection<Tblresume>>() {});
+                    .get(new GenericType<Collection<Tblresume>>() {
+                    });
 
             System.out.println("Resume Loaded = " + resumeList.size());
 
@@ -576,7 +553,7 @@ public class CandidateCDIBean implements Serializable {
             e.printStackTrace();
         }
     }
-    
+
     // ---- UPLOAD RESUME -------
     public void uploadResume() {
 
@@ -592,8 +569,8 @@ public class CandidateCDIBean implements Serializable {
                         resumeFile.getSubmittedFileName()
                 ).getFileName().toString();
 
-                String uniqueName =
-                        System.currentTimeMillis() + "_RESUME_" + fileName;
+                String uniqueName
+                        = System.currentTimeMillis() + "_RESUME_" + fileName;
 
                 InputStream input = resumeFile.getInputStream();
 
@@ -622,7 +599,7 @@ public class CandidateCDIBean implements Serializable {
             e.printStackTrace();
         }
     }
-    
+
     // ---------- DELETE RESUME -----------
     public void deleteResume(int resumeId) {
 
@@ -666,28 +643,23 @@ public class CandidateCDIBean implements Serializable {
             e.printStackTrace();
         }
     }
-     
-        
-    
-    
-    
-    
+
     // ================= JOB METHODS ===========================
-    
     // ------- LOAD JOBS ------
     public void loadJobs() {
         try {
             WebTarget target = getClient().target(BASE_URL + "/getAllJobs");
 
             allJobs = target.request(MediaType.APPLICATION_JSON)
-                    .get(new GenericType<Collection<Tbljob>>() {});
+                    .get(new GenericType<Collection<Tbljob>>() {
+                    });
 
             jobList = new ArrayList<>(allJobs);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     public void loadJobDetails(Integer jobId) {
         try {
 
@@ -695,7 +667,7 @@ public class CandidateCDIBean implements Serializable {
                     BASE_URL + "/getJobByJobId/" + jobId);
 
             selectedJob = target.request(MediaType.APPLICATION_JSON)
-                                .get(Tbljob.class);
+                    .get(Tbljob.class);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -703,7 +675,6 @@ public class CandidateCDIBean implements Serializable {
     }
 
     // ---------- LOAD JOB TYPES -----------
-    
     public void loadJobTypes() {
 
         try {
@@ -728,7 +699,6 @@ public class CandidateCDIBean implements Serializable {
     }
 
     // ------- SEARCH JOB ---------
-  
     public void searchJobs() {
 
         try {
@@ -736,7 +706,7 @@ public class CandidateCDIBean implements Serializable {
             // LOAD ALL IF EMPTY
             if ((searchTitle == null || searchTitle.trim().isEmpty())
                     && (searchLocation == null || searchLocation.trim().isEmpty())
-                    && (searchSkillId == null )
+                    && (searchSkillId == null)
                     && (searchJobType == null || searchJobType.trim().isEmpty())) {
 
                 jobList = new ArrayList<>(allJobs);
@@ -755,8 +725,8 @@ public class CandidateCDIBean implements Serializable {
                 // TITLE
                 if (searchTitle != null && !searchTitle.trim().isEmpty()) {
 
-                    matchTitle =
-                            job.getJobTitle() != null
+                    matchTitle
+                            = job.getJobTitle() != null
                             && job.getJobTitle()
                                     .toLowerCase()
                                     .contains(searchTitle.toLowerCase());
@@ -765,8 +735,8 @@ public class CandidateCDIBean implements Serializable {
                 // LOCATION
                 if (searchLocation != null && !searchLocation.trim().isEmpty()) {
 
-                    matchLocation =
-                            job.getJobLocation() != null
+                    matchLocation
+                            = job.getJobLocation() != null
                             && job.getJobLocation()
                                     .toLowerCase()
                                     .contains(searchLocation.toLowerCase());
@@ -775,12 +745,11 @@ public class CandidateCDIBean implements Serializable {
                 // JOB TYPE
                 if (searchJobType != null && !searchJobType.trim().isEmpty()) {
 
-                    matchType =
-                            job.getJobType() != null
+                    matchType
+                            = job.getJobType() != null
                             && job.getJobType()
                                     .equalsIgnoreCase(searchJobType);
                 }
-                
 
                 // SKILL
                 if (searchSkillId != null) {
@@ -799,7 +768,6 @@ public class CandidateCDIBean implements Serializable {
                         }
                     }
                 }
-                
 
                 // FINAL MATCH
                 if (matchTitle && matchLocation && matchSkillId && matchType) {
@@ -814,7 +782,7 @@ public class CandidateCDIBean implements Serializable {
             e.printStackTrace();
         }
     }
-        
+
     // -------- RESET ---------
     public void resetSearch() {
 
@@ -825,7 +793,7 @@ public class CandidateCDIBean implements Serializable {
 
         jobList = new ArrayList<>(allJobs);
     }
-    
+
     // -------- GENERATE RECOMMENDED JOBS ----------
     public void generateRecommendedJobs() {
 
@@ -924,14 +892,8 @@ public class CandidateCDIBean implements Serializable {
                 .map(Map.Entry::getKey)
                 .toList();
     }
-    
 
-    
-    
-    
-    
     // ================= APPLICATION METHODS ===================
-        
     public void loadApplications(int candidateId) {
         try {
             WebTarget target = getClient()
@@ -939,7 +901,8 @@ public class CandidateCDIBean implements Serializable {
                     .queryParam("candidateId", candidateId);
 
             applicationList = target.request(MediaType.APPLICATION_JSON)
-                    .get(new GenericType<Collection<Tblapplication>>() {});
+                    .get(new GenericType<Collection<Tblapplication>>() {
+                    });
 
             // ✅ CLEAR OLD DATA
             applicationStatusMap.clear();
@@ -948,7 +911,6 @@ public class CandidateCDIBean implements Serializable {
             for (Tblapplication app : applicationList) {
 
                 //String status = getApplicationStatusAPI(app.getApplicationId());
-
                 applicationStatusMap.put(app.getApplicationId(), app.getApplicationStatus());
             }
 
@@ -956,16 +918,14 @@ public class CandidateCDIBean implements Serializable {
             e.printStackTrace();
         }
     }
-    
-     public List<Tblapplication> getRecentApplications() {
+
+    public List<Tblapplication> getRecentApplications() {
 
         return applicationList.stream()
                 .limit(5)
                 .toList();
     }
-    
-    
-    
+
     public String getApplicationStatus(int applicationId) {
 
         try {
@@ -982,7 +942,7 @@ public class CandidateCDIBean implements Serializable {
             return "Unknown";
         }
     }
-    
+
     public void deleteApplication(int applicationId) {
         try {
 
@@ -998,9 +958,8 @@ public class CandidateCDIBean implements Serializable {
             e.printStackTrace();
         }
     }
-    
-    // ================= APPLICATION VALIDATION =================
 
+    // ================= APPLICATION VALIDATION =================
     private boolean validateJobApplication() {
 
         FacesContext context = FacesContext.getCurrentInstance();
@@ -1052,7 +1011,7 @@ public class CandidateCDIBean implements Serializable {
                                 result));
 
                 loadUserData();
-                
+
                 selectedJobId = null;
                 selectedResumeId = null;
                 selectedJob = null;
@@ -1103,7 +1062,7 @@ public class CandidateCDIBean implements Serializable {
 
         return false;
     }
-    
+
     public int getApplicationsByStatus(String status) {
         int count = 0;
 
@@ -1123,13 +1082,7 @@ public class CandidateCDIBean implements Serializable {
 
         return count;
     }
-    
-    
-    
-    
-    
-    
-    
+
     // ================= SKILL METHODS =========================
     public void loadAllSkills() {
 
@@ -1140,7 +1093,8 @@ public class CandidateCDIBean implements Serializable {
 
             allSkills = target
                     .request(MediaType.APPLICATION_JSON)
-                    .get(new GenericType<Collection<Tblskills>>() {});
+                    .get(new GenericType<Collection<Tblskills>>() {
+                    });
 
         } catch (Exception e) {
 
@@ -1148,9 +1102,8 @@ public class CandidateCDIBean implements Serializable {
             allSkills = new ArrayList<>();
         }
     }
-    
+
     // -------- LOAD CANDIDATE SKILLS ---------
-    
     public void loadAllCategories() {
 
         try {
@@ -1161,14 +1114,15 @@ public class CandidateCDIBean implements Serializable {
             allCategories = target
                     .request(MediaType.APPLICATION_JSON)
                     .get(new GenericType<
-                            Collection<Tblskillcategory>>() {});
+                            Collection<Tblskillcategory>>() {
+                    });
 
         } catch (Exception e) {
 
             e.printStackTrace();
         }
     }
-    
+
     public void loadSkillsByCategory() {
 
         try {
@@ -1188,14 +1142,15 @@ public class CandidateCDIBean implements Serializable {
 
             filteredSkills = target
                     .request(MediaType.APPLICATION_JSON)
-                    .get(new GenericType<Collection<Tblskills>>() {});
+                    .get(new GenericType<Collection<Tblskills>>() {
+                    });
 
         } catch (Exception e) {
 
             e.printStackTrace();
         }
     }
-    
+
     public void loadCandidateSkills() {
 
         try {
@@ -1229,7 +1184,8 @@ public class CandidateCDIBean implements Serializable {
             if (response.getStatus() == 200) {
 
                 candidateSkills = response.readEntity(
-                        new GenericType<Collection<Tblskills>>() {}
+                        new GenericType<Collection<Tblskills>>() {
+                }
                 );
 
                 System.out.println("Candidate Skills Loaded: "
@@ -1246,9 +1202,9 @@ public class CandidateCDIBean implements Serializable {
 
             e.printStackTrace();
         }
-        
+
     }
-   
+
     // ------ ADD SKILL -----
     public void addSkill() {
 
@@ -1360,17 +1316,8 @@ public class CandidateCDIBean implements Serializable {
             e.printStackTrace();
         }
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     // ================= CANDIDATE EDUCATION METHODS =========================
-    
     public void loadEducation() {
         try {
             WebTarget target = getClient()
@@ -1381,7 +1328,8 @@ public class CandidateCDIBean implements Serializable {
 
             if (response.getStatus() == 200) {
                 educationList = response.readEntity(
-                        new GenericType<Collection<Tblcandidateeducation>>() {}
+                        new GenericType<Collection<Tblcandidateeducation>>() {
+                }
                 );
             } else {
                 educationList = new ArrayList<>();
@@ -1392,8 +1340,7 @@ public class CandidateCDIBean implements Serializable {
             e.printStackTrace();
         }
     }
-    
-    
+
     public void saveEducation() {
 
         try {
@@ -1421,8 +1368,7 @@ public class CandidateCDIBean implements Serializable {
                                 selectedEducation,
                                 MediaType.APPLICATION_JSON));
 
-            }
-            // ================= ADD =================
+            } // ================= ADD =================
             else {
 
                 target = getClient()
@@ -1481,8 +1427,7 @@ public class CandidateCDIBean implements Serializable {
             }
         }
     }
-    
-    
+
     public void deleteEducation(int id) {
         try {
             WebTarget target = getClient()
@@ -1496,14 +1441,8 @@ public class CandidateCDIBean implements Serializable {
             e.printStackTrace();
         }
     }
-    
-    
-    
-    
-    
-    
+
     // ================= INTERVIEW METHODS =====================
-    
     // ------- LOAD INTERVIEWS -------
     public void loadInterviews() {
         try {
@@ -1521,7 +1460,8 @@ public class CandidateCDIBean implements Serializable {
 
                     Collection<Tblinterview> temp = target
                             .request(MediaType.APPLICATION_JSON)
-                            .get(new GenericType<Collection<Tblinterview>>() {});
+                            .get(new GenericType<Collection<Tblinterview>>() {
+                            });
 
                     // ADD UNIQUE INTERVIEWS ONLY
                     if (temp != null && !temp.isEmpty()) {
@@ -1552,7 +1492,7 @@ public class CandidateCDIBean implements Serializable {
             e.printStackTrace();
         }
     }
-    
+
     public List<Tblinterview> getUpcomingInterviews() {
 
         if (interviewList == null) {
@@ -1563,17 +1503,13 @@ public class CandidateCDIBean implements Serializable {
 
         return interviewList.stream()
                 .filter(i -> i.getInterviewDate() != null
-                        && i.getInterviewDate().after(now))
+                && i.getInterviewDate().after(now))
                 .sorted(Comparator.comparing(Tblinterview::getInterviewDate))
                 .limit(2)
                 .collect(Collectors.toList());
     }
-    
-    
-    
-    
+
     // ================= NOTIFICATION METHODS ==================
-    
     public void loadNotificationsPage() {
 
         int userId = getLoggedInCandidateId();
@@ -1594,13 +1530,13 @@ public class CandidateCDIBean implements Serializable {
                     .target(BASE_URL + "/getCandidateNotifications")
                     .queryParam("userId", userId)
                     .request(MediaType.APPLICATION_JSON)
-                    .get(new GenericType<List<Tblnotification>>() {});
+                    .get(new GenericType<List<Tblnotification>>() {
+                    });
         } catch (Exception e) {
             e.printStackTrace();
             return new ArrayList<>();
         }
     }
-    
 
     public List<Tblnotification> loadUnreadNotifications(int userId) {
 
@@ -1609,14 +1545,14 @@ public class CandidateCDIBean implements Serializable {
                     .target(BASE_URL + "/getUnreadNotifications")
                     .queryParam("userId", userId)
                     .request(MediaType.APPLICATION_JSON)
-                    .get(new GenericType<List<Tblnotification>>() {});
+                    .get(new GenericType<List<Tblnotification>>() {
+                    });
         } catch (Exception e) {
             e.printStackTrace();
             return new ArrayList<>();
         }
     }
-    
-    
+
     public List<Tblnotification> loadApplicationNotifications(int userId) {
 
         try {
@@ -1624,13 +1560,14 @@ public class CandidateCDIBean implements Serializable {
                     .target(BASE_URL + "/getApplicationNotifications")
                     .queryParam("userId", userId)
                     .request(MediaType.APPLICATION_JSON)
-                    .get(new GenericType<List<Tblnotification>>() {});
+                    .get(new GenericType<List<Tblnotification>>() {
+                    });
         } catch (Exception e) {
             e.printStackTrace();
             return new ArrayList<>();
         }
     }
-    
+
     public List<Tblnotification> loadInterviewNotifications(int userId) {
 
         try {
@@ -1638,7 +1575,8 @@ public class CandidateCDIBean implements Serializable {
                     .target(BASE_URL + "/getInterviewNotifications")
                     .queryParam("userId", userId)
                     .request(MediaType.APPLICATION_JSON)
-                    .get(new GenericType<List<Tblnotification>>() {});
+                    .get(new GenericType<List<Tblnotification>>() {
+                    });
         } catch (Exception e) {
             e.printStackTrace();
             return new ArrayList<>();
@@ -1652,17 +1590,20 @@ public class CandidateCDIBean implements Serializable {
                     .target(BASE_URL + "/getProfileNotifications")
                     .queryParam("userId", userId)
                     .request(MediaType.APPLICATION_JSON)
-                    .get(new GenericType<List<Tblnotification>>() {});
+                    .get(new GenericType<List<Tblnotification>>() {
+                    });
         } catch (Exception e) {
             e.printStackTrace();
             return new ArrayList<>();
         }
     }
-    
+
     public void applyFilter(String filter) {
 
         int userId = getLoggedInCandidateId();
-        if (userId == 0) return;
+        if (userId == 0) {
+            return;
+        }
 
         notificationFilter = filter;
 
@@ -1692,7 +1633,6 @@ public class CandidateCDIBean implements Serializable {
                 notificationList = loadAllNotifications(userId);
         }
     }
-    
 
     public void markNotificationAsRead(int notificationId) {
 
@@ -1715,27 +1655,30 @@ public class CandidateCDIBean implements Serializable {
         }
     }
 
-
     public List<Tblnotification> getRecentNotifications() {
-        if (notificationList == null) return new ArrayList<>();
+        if (notificationList == null) {
+            return new ArrayList<>();
+        }
         return notificationList.stream().limit(5).toList();
     }
-    
+
     public int getUnreadNotificationCount() {
-        if (notificationList == null) return 0;
+        if (notificationList == null) {
+            return 0;
+        }
 
         return (int) notificationList.stream()
                 .filter(n -> n != null && !n.getIsRead())
                 .count();
     }
-    
+
     public String getNormalizedType(Tblnotification n) {
         if (n == null || n.getNotificationType() == null) {
             return "UNKNOWN";
         }
         return n.getNotificationType().toUpperCase();
     }
-    
+
     public String getNotificationBadge(Tblnotification n) {
 
         if (n == null || n.getNotificationType() == null) {
@@ -1744,35 +1687,26 @@ public class CandidateCDIBean implements Serializable {
 
         String type = n.getNotificationType().toUpperCase();
 
-        if (type.contains("APPLICATION")) return "application";
-        if (type.contains("INTERVIEW")) return "interview";
-        if (type.contains("PROFILE")) return "profile";
-        if (type.contains("MESSAGE")) return "message";
+        if (type.contains("APPLICATION")) {
+            return "application";
+        }
+        if (type.contains("INTERVIEW")) {
+            return "interview";
+        }
+        if (type.contains("PROFILE")) {
+            return "profile";
+        }
+        if (type.contains("MESSAGE")) {
+            return "message";
+        }
 
         return "alert";
     }
 
-   
-
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 //    // ================= Validation =================
-    
     public void validateStartYear(FacesContext context,
-                              UIComponent component,
-                              Object value) {
+            UIComponent component,
+            Object value) {
 
         Integer startYear = (Integer) value;
 
@@ -1780,36 +1714,58 @@ public class CandidateCDIBean implements Serializable {
                 && startYear > selectedEducation.getEndYear()) {
 
             throw new ValidatorException(
-                new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Start Year cannot be greater than End Year",
-                    null
-                )
+                    new FacesMessage(
+                            FacesMessage.SEVERITY_ERROR,
+                            "Start Year cannot be greater than End Year",
+                            null
+                    )
             );
         }
     }
-    
+
     public void validateEndYear(FacesContext context,
-                            UIComponent component,
-                            Object value) {
+            UIComponent component,
+            Object value) {
 
         Integer endYear = (Integer) value;
 
-        if(selectedEducation.getStartYear() != null
+        if (selectedEducation.getStartYear() != null
                 && endYear < selectedEducation.getStartYear()) {
 
             throw new ValidatorException(
-                new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "End Year cannot be less than Start Year",
-                    null
-                )
+                    new FacesMessage(
+                            FacesMessage.SEVERITY_ERROR,
+                            "End Year cannot be less than Start Year",
+                            null
+                    )
             );
         }
     }
-    
-    // ================= GETTERS & SETTERS =================
 
+    public String formatExperience(Integer totalMonths) {
+    if (totalMonths == null || totalMonths <= 0) {
+        return "Fresher";
+    }
+
+    int years = totalMonths / 12;
+    int months = totalMonths % 12;
+
+    StringBuilder sb = new StringBuilder();
+
+    if (years > 0) {
+        sb.append(years).append(years == 1 ? " year" : " years");
+    }
+
+    if (months > 0) {
+        if (sb.length() > 0) {
+            sb.append(" ");
+        }
+        sb.append(months).append(months == 1 ? " month" : " months");
+    }
+
+    return sb.toString();
+}
+    // ================= GETTERS & SETTERS =================
     public int getCandidateId() {
         return candidateId;
     }
@@ -1817,7 +1773,7 @@ public class CandidateCDIBean implements Serializable {
     public void setCandidateId(int candidateId) {
         this.candidateId = candidateId;
     }
-    
+
     public Tblcandidates getCandidateObj() {
         return candidateObj;
     }
@@ -1825,7 +1781,7 @@ public class CandidateCDIBean implements Serializable {
     public void setCandidateObj(Tblcandidates candidateObj) {
         this.candidateObj = candidateObj;
     }
-    
+
     public Part getResumeFile() {
         return resumeFile;
     }
@@ -1833,7 +1789,7 @@ public class CandidateCDIBean implements Serializable {
     public void setResumeFile(Part resumeFile) {
         this.resumeFile = resumeFile;
     }
-    
+
     public Collection<Tblresume> getResumeList() {
         return resumeList;
     }
@@ -1841,7 +1797,7 @@ public class CandidateCDIBean implements Serializable {
     public void setResumeList(Collection<Tblresume> resumeList) {
         this.resumeList = resumeList;
     }
-    
+
     public Part getProfilePhoto() {
         return profilePhoto;
     }
@@ -1849,7 +1805,7 @@ public class CandidateCDIBean implements Serializable {
     public void setProfilePhoto(Part profilePhoto) {
         this.profilePhoto = profilePhoto;
     }
-    
+
     public Integer getExperienceYears() {
         return experienceYears;
     }
@@ -1865,17 +1821,15 @@ public class CandidateCDIBean implements Serializable {
     public void setExperienceMonths(Integer experienceMonths) {
         this.experienceMonths = experienceMonths;
     }
-    
-    public Tbljob getSelectedJob()
-    {
+
+    public Tbljob getSelectedJob() {
         return selectedJob;
     }
 
-    public void setSelectedJob(Tbljob selectedJob)
-    {
+    public void setSelectedJob(Tbljob selectedJob) {
         this.selectedJob = selectedJob;
     }
-    
+
     public String getSearchTitle() {
         return searchTitle;
     }
@@ -1891,7 +1845,7 @@ public class CandidateCDIBean implements Serializable {
     public void setSearchLocation(String searchLocation) {
         this.searchLocation = searchLocation;
     }
-    
+
     public Integer getSearchSkillId() {
         return searchSkillId;
     }
@@ -1907,7 +1861,7 @@ public class CandidateCDIBean implements Serializable {
     public void setSearchJobType(String searchJobType) {
         this.searchJobType = searchJobType;
     }
-    
+
     public Collection<Tbljob> getAllJobs() {
         return allJobs;
     }
@@ -1915,11 +1869,11 @@ public class CandidateCDIBean implements Serializable {
     public void setAllJobs(Collection<Tbljob> allJobs) {
         this.allJobs = allJobs;
     }
-    
+
     public Collection<Tbljob> getJobList() {
         return jobList;
     }
-    
+
     public void setJobList(Collection<Tbljob> jobList) {
         this.jobList = jobList;
     }
@@ -1935,7 +1889,7 @@ public class CandidateCDIBean implements Serializable {
     public Collection<String> getJobTypeList() {
         return jobTypeList;
     }
-    
+
     public Integer getSelectedResumeId() {
         return selectedResumeId;
     }
@@ -1943,7 +1897,7 @@ public class CandidateCDIBean implements Serializable {
     public void setSelectedResumeId(Integer selectedResumeId) {
         this.selectedResumeId = selectedResumeId;
     }
-    
+
     public Integer getSelectedJobId() {
         return selectedJobId;
     }
@@ -1959,11 +1913,11 @@ public class CandidateCDIBean implements Serializable {
     public Collection<Tblapplication> getApplicationList() {
         return applicationList;
     }
-    
+
     public void setApplicationList(Collection<Tblapplication> applicationList) {
         this.applicationList = applicationList;
     }
-    
+
     public Map<Integer, String> getApplicationStatusMap() {
         return applicationStatusMap;
     }
@@ -1971,7 +1925,7 @@ public class CandidateCDIBean implements Serializable {
     public void setApplicationStatusMap(Map<Integer, String> applicationStatusMap) {
         this.applicationStatusMap = applicationStatusMap;
     }
-    
+
     public Collection<Tblskills> getAllSkills() {
         return allSkills;
     }
@@ -1979,7 +1933,7 @@ public class CandidateCDIBean implements Serializable {
     public void setAllSkills(Collection<Tblskills> allSkills) {
         this.allSkills = allSkills;
     }
-    
+
     public Integer getSelectedSkillId() {
         return selectedSkillId;
     }
@@ -1995,7 +1949,7 @@ public class CandidateCDIBean implements Serializable {
     public void setCandidateSkills(Collection<Tblskills> candidateSkills) {
         this.candidateSkills = candidateSkills;
     }
-    
+
     public Integer getSelectedCategoryId() {
         return selectedCategoryId;
     }
@@ -2043,7 +1997,7 @@ public class CandidateCDIBean implements Serializable {
     public void setEditEducationId(Integer editEducationId) {
         this.editEducationId = editEducationId;
     }
-    
+
     public Collection<Tblinterview> getInterviewList() {
         return interviewList;
     }
@@ -2051,8 +2005,8 @@ public class CandidateCDIBean implements Serializable {
     public void setInterviewList(Collection<Tblinterview> interviewList) {
         this.interviewList = interviewList;
     }
-    
-     public List<Tblnotification> getNotificationList() {
+
+    public List<Tblnotification> getNotificationList() {
         return notificationList;
     }
 

@@ -60,6 +60,7 @@ public class RecruiterBean implements RecruiterBeanLocal {
             Tblrecruiters existing = em.find(Tblrecruiters.class, recruiter.getRecruiterId());
 
             if (existing != null) {
+
                 if (recruiter.getDesignation() != null) {
                     existing.setDesignation(recruiter.getDesignation());
                 }
@@ -68,25 +69,11 @@ public class RecruiterBean implements RecruiterBeanLocal {
                     existing.setRecruiterPhone(recruiter.getRecruiterPhone());
                 }
 
-                if (recruiter.getUserId() != null) {
-                    Tblusers user = em.find(
-                            Tblusers.class,
-                            existing.getUserId().getUserId()
-                    );
-
-                    if (user != null) {
-                        user.setUserName(recruiter.getUserId().getUserName());
-                        user.setUserEmail(recruiter.getUserId().getUserEmail());
-                        em.merge(user);
-                    }
-                }
-
                 em.merge(existing);
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            throw e;
         }
     }
 
@@ -178,9 +165,13 @@ public class RecruiterBean implements RecruiterBeanLocal {
             notification.setSenderUserId(recruiter.getUserId());
             notification.setReceiverUserId(recruiter.getUserId());
 
-            notification.setNotificationTitle("Job Posted");
+            notification.setNotificationTitle("Job Published Successfully");
             notification.setNotificationMessage(
-                    "New job posted: " + job.getJobTitle()
+                    "Your job listing \""
+                    + job.getJobTitle()
+                    + "\" in "
+                    + job.getJobLocation()
+                    + " is now live on QuickHire. Candidates matching your requirements will be able to discover and apply to this role."
             );
 
             notification.setNotificationType("JOB_POSTED");
@@ -195,25 +186,20 @@ public class RecruiterBean implements RecruiterBeanLocal {
 
             if (recruiterUser != null) {
 
-                String email
-                        = recruiterUser.getUserEmail();
-
-                String subject
-                        = "Job Posted Successfully";
-
+                String email = recruiterUser.getUserEmail();
+                String subject = "Job Published Successfully — QuickHire";
                 String message
-                        = "Your job has been posted successfully.\n\n"
-                        + "Job Title: "
-                        + job.getJobTitle()
-                        + "\n"
-                        + "Location: "
-                        + job.getJobLocation();
+                        = "Hello " + recruiterUser.getUserName() + ",\n\n"
+                        + "Your job listing has been published successfully on QuickHire.\n\n"
+                        + "Job Details:\n"
+                        + "  Title    : " + job.getJobTitle() + "\n"
+                        + "  Location : " + job.getJobLocation() + "\n\n"
+                        + "Candidates matching your requirements can now discover and apply to this role.\n"
+                        + "You can manage this listing, review applications, and update job details from your recruiter dashboard.\n\n"
+                        + "Warm regards,\n"
+                        + "QuickHire Recruitment Team";
 
-                emailService.sendEmail(
-                        email,
-                        subject,
-                        message
-                );
+                emailService.sendEmail(email, subject, message);
             }
 
         } catch (Exception e) {
@@ -292,7 +278,7 @@ public class RecruiterBean implements RecruiterBeanLocal {
                 existingJob.setTblskillsCollection(managedSkills);
             }
 
-// ================= EDUCATION =================
+            // ================= EDUCATION =================
             Collection<Tbleducation> managedEducation = new ArrayList<>();
 
             if (educationIds != null) {
@@ -324,45 +310,28 @@ public class RecruiterBean implements RecruiterBeanLocal {
                 );
             }
 
-// ================= SAVE =================
+            // ================= SAVE =================
             em.merge(existingJob);
             em.flush();
 
-// ================= NOTIFICATION =================
+            // ================= NOTIFICATION =================
             Tblusers recruiterUser
                     = existingJob.getRecruiterId().getUserId();
 
             Tblnotification notification
                     = new Tblnotification();
 
-            notification.setSenderUserId(
-                    recruiterUser
-            );
-
-            notification.setReceiverUserId(
-                    recruiterUser
-            );
-
-            notification.setNotificationTitle(
-                    "Job Updated"
-            );
-
+            notification.setSenderUserId(recruiterUser);
+            notification.setReceiverUserId(recruiterUser);
+            notification.setNotificationTitle("Job Listing Updated");
             notification.setNotificationMessage(
-                    "Job updated: "
+                    "Your job listing \""
                     + existingJob.getJobTitle()
+                    + "\" has been updated successfully. The changes are now live on QuickHire."
             );
-
-            notification.setNotificationType(
-                    "JOB_UPDATED"
-            );
-
-            notification.setIsRead(
-                    false
-            );
-
-            notification.setCreatedDate(
-                    new Date()
-            );
+            notification.setNotificationType("JOB_UPDATED");
+            notification.setIsRead(false);
+            notification.setCreatedDate(new Date());
 
             em.persist(notification);
         } catch (Exception e) {
@@ -429,29 +398,19 @@ public class RecruiterBean implements RecruiterBeanLocal {
 
             notification.setSenderUserId(recruiterUser);
             notification.setReceiverUserId(recruiterUser);
-
-            notification.setNotificationTitle(
-                    "Job Status Updated"
-            );
-
+            notification.setNotificationTitle("Job Status Updated");
             notification.setNotificationMessage(
-                    "Job status changed from "
+                    "The status of your job listing \""
+                    + job.getJobTitle()
+                    + "\" has been changed from "
                     + oldStatus
                     + " to "
                     + newStatus
-                    + ": "
-                    + job.getJobTitle()
+                    + "."
             );
-
-            notification.setNotificationType(
-                    "JOB_STATUS"
-            );
-
+            notification.setNotificationType("JOB_STATUS");
             notification.setIsRead(false);
-
-            notification.setCreatedDate(
-                    new Date()
-            );
+            notification.setCreatedDate(new Date());
 
             em.persist(notification);
 
@@ -525,25 +484,16 @@ public class RecruiterBean implements RecruiterBeanLocal {
 
                 notification.setSenderUserId(recruiterUser);
                 notification.setReceiverUserId(recruiterUser);
-
-                notification.setNotificationTitle(
-                        "Job Auto Closed"
-                );
-
+                notification.setNotificationTitle("Job Listing Closed — Expiry Reached");
                 notification.setNotificationMessage(
-                        "Job auto-closed after expiry: "
+                        "Your job listing \""
                         + job.getJobTitle()
+                        + "\" has been automatically closed as it reached its expiry date. "
+                        + "You can reopen it by updating the expiry date from your dashboard."
                 );
-
-                notification.setNotificationType(
-                        "JOB_STATUS"
-                );
-
+                notification.setNotificationType("JOB_STATUS");
                 notification.setIsRead(false);
-
-                notification.setCreatedDate(
-                        new Date()
-                );
+                notification.setCreatedDate(new Date());
 
                 em.persist(notification);
             }
@@ -585,27 +535,12 @@ public class RecruiterBean implements RecruiterBeanLocal {
             return new ArrayList<>();
         }
     }
-//
-    // ================= JOB SKILLS ===========================================================================
 
+    // ================= JOB SKILLS ===========================================================================
     @Override
     public Collection<Tblskills> getAllSkills(Integer userId) {
 
         try {
-
-//            return em.createQuery(
-//                    "SELECT s FROM Tblskills s "
-//                    + "WHERE ("
-//                    + "s.skillStatus = 'APPROVED' "
-//                    + "OR "
-//                    + "(s.skillStatus = 'PENDING' "
-//                    + "AND s.createdByUserId = :userId)"
-//                    + ") "
-//                    + "ORDER BY s.skillName",
-//                    Tblskills.class
-//            )
-//                    .setParameter("userId", userId)
-//                    .getResultList();
             return em.createQuery(
                     "SELECT s FROM Tblskills s "
                     + "WHERE s.skillStatus = 'APPROVED' "
@@ -651,12 +586,6 @@ public class RecruiterBean implements RecruiterBeanLocal {
             )
                     .setParameter("userId", recruiterUserId)
                     .getResultList();
-//            return em.createQuery(
-//                    "SELECT c FROM Tblskillcategory c "
-//                    + "WHERE c.categoryStatus = 'APPROVED' "
-//                    + "ORDER BY c.categoryName",
-//                    Tblskillcategory.class)
-//                    .getResultList();
 
         } catch (Exception e) {
 
@@ -670,22 +599,6 @@ public class RecruiterBean implements RecruiterBeanLocal {
     public Collection<Tblskills> getSkillsByCategory(Integer categoryId, Integer userId) {
 
         try {
-
-//            return em.createQuery(
-//                    "SELECT s FROM Tblskills s "
-//                    + "WHERE s.categoryId.categoryId = :categoryId "
-//                    + "AND ("
-//                    + "s.skillStatus = 'APPROVED' "
-//                    + "OR "
-//                    + "(s.skillStatus = 'PENDING' "
-//                    + "AND s.createdByUserId = :userId)"
-//                    + ") "
-//                    + "ORDER BY s.skillName",
-//                    Tblskills.class
-//            )
-//                    .setParameter("categoryId", categoryId)
-//                    .setParameter("userId", userId)
-//                    .getResultList();
             return em.createQuery(
                     "SELECT s FROM Tblskills s "
                     + "WHERE s.categoryId.categoryId = :categoryId "
@@ -712,15 +625,12 @@ public class RecruiterBean implements RecruiterBeanLocal {
             Tblusers recruiterUser = em.find(Tblusers.class, recruiterUserId);
 
             if (recruiterUser == null) {
-
-                throw new RuntimeException(
-                        "Recruiter user not found"
-                );
+                throw new RuntimeException("Recruiter user not found");
             }
+
             // =====================================================
             // CREATE NEW CATEGORY
             // =====================================================
-
             if (categoryName != null && !categoryName.trim().isEmpty()) {
 
                 String trimmedCategory = categoryName.trim();
@@ -731,9 +641,7 @@ public class RecruiterBean implements RecruiterBeanLocal {
                         .getSingleResult();
 
                 if (catagoryCount > 0) {
-                    throw new RuntimeException(
-                            "This Category alredy exists."
-                    );
+                    throw new RuntimeException("This Category alredy exists.");
                 }
 
                 // CREATE CATEGORY
@@ -747,42 +655,24 @@ public class RecruiterBean implements RecruiterBeanLocal {
                 em.persist(category);
                 em.flush();
 
-                // NOTIFICATION FOR CATEGORY
-//                Tblnotification categoryNotification = new Tblnotification();
-//
-//                categoryNotification.setSenderUserId(recruiterUser);
-//                categoryNotification.setReceiverUserId(recruiterUser);
-//
-//                categoryNotification.setNotificationTitle(
-//                        "Category Approval Request"
-//                );
-//
-//                categoryNotification.setNotificationMessage(
-//                        "New category pending approval: "
-//                        + trimmedCategory
-//                );
-//
-//                categoryNotification.setNotificationType(
-//                        "CATEGORY_REQUEST"
-//                );
-//
-//                categoryNotification.setIsRead(false);
-//
-//                categoryNotification.setCreatedDate(
-//                        new Date()
-//                );
-//
-//                em.persist(categoryNotification);
                 saveNotification(recruiterUser, recruiterUser,
-                        "Category Request Submitted",
-                        "Your category request is pending admin approval: " + category.getCategoryName(),
+                        "Category Request Submitted — Pending Approval",
+                        "Your request to add the skill category \""
+                        + category.getCategoryName()
+                        + "\" has been submitted successfully. "
+                        + "It is currently pending review by the QuickHire admin team. "
+                        + "You will be notified once a decision has been made.",
                         "CATEGORY_REQUEST");
 
                 notifyAdmins(recruiterUser,
-                        "New Category Approval Request",
-                        recruiterUser.getUserName() + " requested new category: " + category.getCategoryName(),
+                        "New Skill Category Approval Request",
+                        recruiterUser.getUserName()
+                        + " has requested the addition of a new skill category: \""
+                        + category.getCategoryName()
+                        + "\". Please review and approve or reject this request from the admin panel.",
                         "CATEGORY_PENDING");
             }
+
             // =====================================================
             // USE EXISTING CATEGORY
             // =====================================================
@@ -801,9 +691,7 @@ public class RecruiterBean implements RecruiterBeanLocal {
                     && !skillNames.isEmpty())
                     && category == null) {
 
-                throw new RuntimeException(
-                        "Please select category"
-                );
+                throw new RuntimeException("Please select category");
             }
 
             // =====================================================
@@ -840,13 +728,20 @@ public class RecruiterBean implements RecruiterBeanLocal {
                     em.persist(skill);
 
                     saveNotification(recruiterUser, recruiterUser,
-                            "Skill Request Submitted",
-                            "Your skill request is pending admin approval: " + skill.getSkillName(),
+                            "Skill Request Submitted — Pending Approval",
+                            "Your request to add the skill \""
+                            + skill.getSkillName()
+                            + "\" has been submitted successfully. "
+                            + "It is currently pending review by the QuickHire admin team. "
+                            + "You will be notified once a decision has been made.",
                             "SKILL_REQUEST");
 
                     notifyAdmins(recruiterUser,
                             "New Skill Approval Request",
-                            recruiterUser.getUserName() + " requested new skill: " + skill.getSkillName(),
+                            recruiterUser.getUserName()
+                            + " has requested the addition of a new skill: \""
+                            + skill.getSkillName()
+                            + "\". Please review and approve or reject this request from the admin panel.",
                             "SKILL_PENDING");
                 }
             }
@@ -883,16 +778,13 @@ public class RecruiterBean implements RecruiterBeanLocal {
                 .getSingleResult();
     }
 
-// ================= JOB Education =============================================================================
+    // ================= JOB Education =============================================================================
     @Override
     public Collection<Tbleducation> getAllEducation() {
         try {
-
             return em.createNamedQuery("Tbleducation.findAll", Tbleducation.class).getResultList();
-
         } catch (Exception e) {
             e.printStackTrace();
-
             return new ArrayList<>();
         }
     }
@@ -1220,7 +1112,6 @@ public class RecruiterBean implements RecruiterBeanLocal {
             for (Object[] row : results) {
                 Integer appId = (Integer) row[0];
                 BigDecimal score = (BigDecimal) row[1];
-                // Only keep the latest score per application
                 if (!scoreMap.containsKey(appId)) {
                     scoreMap.put(appId, score);
                 }
@@ -1257,8 +1148,10 @@ public class RecruiterBean implements RecruiterBeanLocal {
         updateApplicationStatusWithHistoryAndNotification(
                 applicationId,
                 "Shortlisted",
-                "Application Under Review",
-                "Your application is under review."
+                "Application Shortlisted — QuickHire",
+                "Congratulations! Your application has been shortlisted. "
+                + "Our recruitment team is currently reviewing your profile in detail "
+                + "and will be in touch shortly regarding the next steps in the hiring process."
         );
     }
 
@@ -1267,8 +1160,11 @@ public class RecruiterBean implements RecruiterBeanLocal {
         updateApplicationStatusWithHistoryAndNotification(
                 applicationId,
                 "Rejected",
-                "Application Update",
-                "Thank you for applying. We will not be moving forward with your application at this time."
+                "Application Update — QuickHire",
+                "Thank you for your interest and the time you invested in applying. "
+                + "After careful consideration of all applications, we regret to inform you "
+                + "that we will not be moving forward with your application at this time. "
+                + "We encourage you to keep your profile updated and explore other opportunities on QuickHire."
         );
     }
 
@@ -1312,7 +1208,6 @@ public class RecruiterBean implements RecruiterBeanLocal {
             em.merge(app);
             em.flush();
 
-//            addApplicationStatusHistory(app, oldStatus, newStatus);
             Tblusers recruiterUser = app.getJobId()
                     .getRecruiterId()
                     .getUserId();
@@ -1332,23 +1227,64 @@ public class RecruiterBean implements RecruiterBeanLocal {
                     recruiterUser,
                     recruiterUser,
                     "Application Status Updated",
-                    candidateUser.getUserName()
-                    + " status changed to "
-                    + newStatus
-                    + " for "
-                    + app.getJobId().getJobTitle(),
+                    "The application of "
+                    + candidateUser.getUserName()
+                    + " for \""
+                    + app.getJobId().getJobTitle()
+                    + "\" has been updated to: "
+                    + newStatus + ".",
                     "APPLICATION_STATUS"
             );
 
             if (candidateUser.getUserEmail() != null) {
+
+                // ================= BUILD EMAIL BODY BASED ON STATUS =================
+                String emailBody;
+
+                if ("Shortlisted".equalsIgnoreCase(newStatus)) {
+                    emailBody = "Hello " + candidateUser.getUserName() + ",\n\n"
+                            + "We are pleased to inform you that your application for the position of \""
+                            + app.getJobId().getJobTitle()
+                            + "\" at QuickHire has been shortlisted.\n\n"
+                            + "Your profile stood out among many applicants, and our recruitment team "
+                            + "is currently reviewing your details further.\n\n"
+                            + "What happens next?\n"
+                            + "  \u2022 Our team will review your profile in detail.\n"
+                            + "  \u2022 You may be contacted for an interview or further assessment.\n"
+                            + "  \u2022 Please ensure your contact details are up to date on your QuickHire profile.\n\n"
+                            + "We appreciate your interest and will be in touch soon.\n\n"
+                            + "Warm regards,\n"
+                            + "QuickHire Recruitment Team";
+
+                } else if ("Rejected".equalsIgnoreCase(newStatus)) {
+                    emailBody = "Hello " + candidateUser.getUserName() + ",\n\n"
+                            + "Thank you for taking the time to apply for the position of \""
+                            + app.getJobId().getJobTitle()
+                            + "\" at QuickHire.\n\n"
+                            + "After a thorough review of all applications, we regret to inform you "
+                            + "that we will not be moving forward with your application at this stage. "
+                            + "This was a competitive process, and we appreciate the effort you put into your application.\n\n"
+                            + "We encourage you to:\n"
+                            + "  \u2022 Keep your profile and skills updated on QuickHire.\n"
+                            + "  \u2022 Apply for other roles that match your expertise.\n"
+                            + "  \u2022 Continue building your experience for future opportunities.\n\n"
+                            + "We wish you the very best in your job search and future career endeavours.\n\n"
+                            + "Kind regards,\n"
+                            + "QuickHire Recruitment Team";
+
+                } else {
+                    emailBody = "Hello " + candidateUser.getUserName() + ",\n\n"
+                            + candidateMessage + "\n\n"
+                            + "Job: " + app.getJobId().getJobTitle() + "\n"
+                            + "Status: " + newStatus + "\n\n"
+                            + "Regards,\n"
+                            + "QuickHire Recruitment Team";
+                }
+
                 emailService.sendEmail(
                         candidateUser.getUserEmail(),
                         notificationTitle,
-                        "Hello " + candidateUser.getUserName() + ",\n\n"
-                        + candidateMessage + "\n\n"
-                        + "Job: " + app.getJobId().getJobTitle() + "\n"
-                        + "Status: " + newStatus + "\n\n"
-                        + "Regards,\nQuickHire Team"
+                        emailBody
                 );
             }
 
@@ -1406,13 +1342,11 @@ public class RecruiterBean implements RecruiterBeanLocal {
             );
 
             if (app == null) {
-
                 throw new RuntimeException("Application not found");
             }
 
             // ================= STATUS CHECK =================
             if (!"Shortlisted".equalsIgnoreCase(app.getApplicationStatus())) {
-
                 throw new RuntimeException(
                         "Interview can only be scheduled for shortlisted candidates"
                 );
@@ -1422,14 +1356,10 @@ public class RecruiterBean implements RecruiterBeanLocal {
             interview.setApplicationId(app);
 
             // ================= DEFAULT VALUES =================
-            // Interview just scheduled
             interview.setInterviewStatus("Scheduled");
             interview.setInterviewRound(1);
             interview.setInterviewRoundName("Interview Round");
-            // Result will be updated after interview
             interview.setResult("Pending");
-
-            // Feedback will be added later
             interview.setFeedback(null);
 
             // ================= SAVE INTERVIEW =================
@@ -1437,7 +1367,6 @@ public class RecruiterBean implements RecruiterBeanLocal {
 
             // ================= UPDATE APPLICATION STATUS =================
             app.setApplicationStatus("Interview Scheduled");
-
             app.setLastUpdatedDate(new Date());
 
             em.merge(app);
@@ -1455,9 +1384,11 @@ public class RecruiterBean implements RecruiterBeanLocal {
             saveNotification(
                     recruiterUser,
                     candidateUser,
-                    "Interview Scheduled",
-                    "Your interview has been scheduled for "
-                    + app.getJobId().getJobTitle(),
+                    "Interview Scheduled — QuickHire",
+                    "Your interview for the position of \""
+                    + app.getJobId().getJobTitle()
+                    + "\" has been scheduled. Please check your email for the complete interview details "
+                    + "and ensure you are available at the scheduled time.",
                     "INTERVIEW"
             );
 
@@ -1466,65 +1397,74 @@ public class RecruiterBean implements RecruiterBeanLocal {
                     recruiterUser,
                     recruiterUser,
                     "Interview Scheduled",
-                    "Interview scheduled with "
+                    "An interview has been scheduled with "
                     + candidateUser.getUserName()
-                    + " for "
-                    + app.getJobId().getJobTitle(),
+                    + " for the position of \""
+                    + app.getJobId().getJobTitle()
+                    + "\" on "
+                    + interview.getInterviewDate() + ".",
                     "INTERVIEW"
             );
 
             // ================= EMAIL SECTION =================
             if (candidateUser.getUserEmail() != null) {
 
-                String interviewDetails = "";
+                String modeDetails;
 
                 // ================= ONLINE =================
                 if ("Online".equalsIgnoreCase(interview.getInterviewerMode())) {
+                    modeDetails
+                            = "  Mode    : Online\n"
+                            + "  Details : Your meeting link and access credentials will be shared with you "
+                            + "shortly via this email. Please ensure your device, camera, and microphone "
+                            + "are working properly before the session.";
 
-                    interviewDetails
-                            = "Mode: Online\n"
-                            + "Meeting details will be shared soon.\n";
                 } // ================= OFFLINE =================
                 else if ("Offline".equalsIgnoreCase(interview.getInterviewerMode())) {
+                    modeDetails
+                            = "  Mode    : In-Person (Offline)\n"
+                            + "  Details : The interview will be held at our office. The exact venue address "
+                            + "and reporting instructions will be shared with you by the recruiter prior to the date. "
+                            + "Please carry a printed copy of your resume and any relevant documents.";
 
-                    interviewDetails
-                            = "Mode: Offline\n"
-                            + "Interview location will be shared later by the recruiter.\n";
                 } // ================= PHONE =================
                 else if ("Phone".equalsIgnoreCase(interview.getInterviewerMode())) {
+                    modeDetails
+                            = "  Mode    : Phone Interview\n"
+                            + "  Details : The interviewer will call you on your registered phone number at the "
+                            + "scheduled time. Please ensure you are in a quiet environment and reachable at that number.";
 
-                    interviewDetails
-                            = "Mode: Phone Interview\n"
-                            + "The recruiter will contact you on your registered phone number.\n";
                 } // ================= DEFAULT FALLBACK =================
                 else {
-
-                    interviewDetails
-                            = "Interview mode details will be shared soon.\n";
+                    modeDetails
+                            = "  Mode    : " + interview.getInterviewerMode() + "\n"
+                            + "  Details : Further information regarding the interview mode will be shared with you shortly.";
                 }
 
-                String subject = "Interview Scheduled";
+                String subject = "Interview Scheduled — QuickHire";
 
                 String message
-                        = "Hello "
-                        + candidateUser.getUserName()
-                        + ",\n\n"
-                        + "Congratulations! Your interview has been scheduled "
-                        + "for the position of "
+                        = "Hello " + candidateUser.getUserName() + ",\n\n"
+                        + "Congratulations on progressing to the interview stage!\n\n"
+                        + "We are pleased to inform you that your interview for the position of \""
                         + app.getJobId().getJobTitle()
-                        + ".\n\n"
+                        + "\" at QuickHire has been scheduled.\n\n"
                         + "Interview Details:\n"
-                        + "Date: "
-                        + interview.getInterviewDate()
-                        + "\n"
-                        + "Interviewer: "
-                        + interview.getInterviewerName()
-                        + "\n"
-                        + interviewDetails
-                        + "\n"
-                        + "Please be available on time and prepare well for your interview.\n\n"
-                        + "Best Regards,\n"
-                        + "QuickHire Team";
+                        + "  Date & Time  : " + interview.getInterviewDate() + "\n"
+                        + "  Interviewer  : " + interview.getInterviewerName() + "\n"
+                        + modeDetails + "\n\n"
+                        + "Tips to prepare:\n"
+                        + "  \u2022 Research the role and review the job description beforehand.\n"
+                        + "  \u2022 Keep a copy of your resume and any supporting documents handy.\n"
+                        + "  \u2022 Be available and ready 5\u201310 minutes before the scheduled time.\n\n"
+                        + "If you have any questions or need to reschedule, please reach out through your QuickHire portal.\n\n"
+                        + "We look forward to speaking with you!\n\n"
+                        + "Warm regards,\n"
+                        + "QuickHire Recruitment Team\n\n"
+                        + "---\n"
+                        + "Note: This interview invitation does not constitute an offer of employment. "
+                        + "A formal offer, if made, will be communicated separately in writing upon "
+                        + "the successful completion of the hiring process.";
 
                 // ================= SEND EMAIL =================
                 emailService.sendEmail(
@@ -1686,35 +1626,92 @@ public class RecruiterBean implements RecruiterBeanLocal {
             Tblusers recruiterUser = app.getJobId().getRecruiterId().getUserId();
             Tblusers candidateUser = app.getCandidateId().getUserId();
 
-            String title = "Selected".equalsIgnoreCase(result)
-                    ? "Congratulations! You have been selected"
-                    : "Application Update";
+            // ================= SELECTED =================
+            if ("Selected".equalsIgnoreCase(result)) {
 
-            String candidateMsg = "Selected".equalsIgnoreCase(result)
-                    ? "Congratulations! You have been selected for "
-                    + app.getJobId().getJobTitle() + "."
-                    : "Thank you for interviewing for "
-                    + app.getJobId().getJobTitle()
-                    + ". We will not be moving forward at this time.";
+                saveNotification(recruiterUser, candidateUser,
+                        "Congratulations — You Have Been Selected!",
+                        "We are delighted to inform you that you have been selected for the position of \""
+                        + app.getJobId().getJobTitle()
+                        + "\" at QuickHire. Our HR team will be in touch shortly with further details regarding the formal offer and next steps.",
+                        "APPLICATION_STATUS");
 
-            saveNotification(recruiterUser, candidateUser, title, candidateMsg, "APPLICATION_STATUS");
+                saveNotification(recruiterUser, recruiterUser,
+                        "Interview Completed — Candidate Selected",
+                        candidateUser.getUserName()
+                        + " has been marked as Selected for \""
+                        + app.getJobId().getJobTitle()
+                        + "\". The candidate will be notified and an offer can now be initiated.",
+                        "APPLICATION_STATUS");
 
-            saveNotification(recruiterUser, recruiterUser,
-                    "Interview Completed",
-                    candidateUser.getUserName() + " marked as " + result
-                    + " for " + app.getJobId().getJobTitle(),
-                    "APPLICATION_STATUS");
+                if (candidateUser.getUserEmail() != null) {
+                    emailService.sendEmail(
+                            candidateUser.getUserEmail(),
+                            "Congratulations — You Have Been Selected! — QuickHire",
+                            "Hello " + candidateUser.getUserName() + ",\n\n"
+                            + "We are delighted to inform you that you have been selected for the position of \""
+                            + app.getJobId().getJobTitle()
+                            + "\" at QuickHire!\n\n"
+                            + "You impressed our recruitment panel throughout the process, and we are excited "
+                            + "about the possibility of you joining our team.\n\n"
+                            + "What happens next?\n"
+                            + "  \u2022 A member of our HR team will contact you within 2\u20133 business days.\n"
+                            + "  \u2022 You will receive a formal offer letter outlining your role, compensation, and joining details.\n"
+                            + "  \u2022 Please review the offer carefully and revert with your acceptance or any queries.\n\n"
+                            + "If you have any questions in the meantime, please reach out through your QuickHire portal.\n\n"
+                            + "Once again, congratulations \u2014 we look forward to welcoming you aboard!\n\n"
+                            + "Warm regards,\n"
+                            + "QuickHire Recruitment Team\n\n"
+                            + "---\n"
+                            + "Note: This notification is a preliminary communication indicating selection intent. "
+                            + "A formal, binding offer of employment will be issued separately via a written offer letter. "
+                            + "Employment is subject to the successful completion of any background verification "
+                            + "or documentation requirements."
+                    );
+                }
 
-            if (candidateUser.getUserEmail() != null) {
-                emailService.sendEmail(
-                        candidateUser.getUserEmail(),
-                        title,
-                        "Hello " + candidateUser.getUserName() + ",\n\n"
-                        + candidateMsg + "\n\n"
-                        + "Job: " + app.getJobId().getJobTitle() + "\n"
-                        + "Regards,\nQuickHire Team"
-                );
+            } // ================= NOT SELECTED =================
+            else {
+
+                saveNotification(recruiterUser, candidateUser,
+                        "Interview Outcome — QuickHire",
+                        "Thank you for attending the interview for \""
+                        + app.getJobId().getJobTitle()
+                        + "\" at QuickHire. After thorough deliberation, we will not be proceeding "
+                        + "with your application at this time. We wish you the very best in your career journey.",
+                        "APPLICATION_STATUS");
+
+                saveNotification(recruiterUser, recruiterUser,
+                        "Interview Completed — Candidate Not Selected",
+                        candidateUser.getUserName()
+                        + " has been marked as "
+                        + result
+                        + " for \""
+                        + app.getJobId().getJobTitle() + "\".",
+                        "APPLICATION_STATUS");
+
+                if (candidateUser.getUserEmail() != null) {
+                    emailService.sendEmail(
+                            candidateUser.getUserEmail(),
+                            "Interview Outcome — QuickHire",
+                            "Hello " + candidateUser.getUserName() + ",\n\n"
+                            + "Thank you for taking the time to interview with us for the position of \""
+                            + app.getJobId().getJobTitle()
+                            + "\" at QuickHire. We genuinely appreciated the opportunity to learn more about your background and experience.\n\n"
+                            + "After careful deliberation, we have decided to move forward with another candidate "
+                            + "whose profile more closely matched our requirements at this time. "
+                            + "This was not an easy decision given the calibre of applicants we received.\n\n"
+                            + "We encourage you to:\n"
+                            + "  \u2022 Keep your QuickHire profile updated with your latest skills and experience.\n"
+                            + "  \u2022 Continue exploring other roles on our platform that may be a great fit.\n\n"
+                            + "We will retain your profile and may reach out for future opportunities that align with your expertise.\n\n"
+                            + "Thank you again for your interest in QuickHire, and we wish you every success in your career.\n\n"
+                            + "Kind regards,\n"
+                            + "QuickHire Recruitment Team"
+                    );
+                }
             }
+
         } catch (Exception e) {
             e.printStackTrace();
             throw e;
@@ -1750,6 +1747,58 @@ public class RecruiterBean implements RecruiterBeanLocal {
         app.setApplicationStatus("Interview Scheduled");
         app.setLastUpdatedDate(new Date());
         em.merge(app);
+        em.flush();
+
+        Tblusers recruiterUser = app.getJobId().getRecruiterId().getUserId();
+        Tblusers candidateUser = app.getCandidateId().getUserId();
+
+        // ================= CANDIDATE NOTIFICATION =================
+        saveNotification(
+                recruiterUser,
+                candidateUser,
+                "Interview Rescheduled — QuickHire",
+                "Your interview for \""
+                + app.getJobId().getJobTitle()
+                + "\" has been rescheduled. "
+                + "Please check your email for the updated date and interview details. "
+                + "Your application remains active and we look forward to speaking with you.",
+                "INTERVIEW"
+        );
+
+        // ================= RECRUITER ACTIVITY =================
+        saveNotification(
+                recruiterUser,
+                recruiterUser,
+                "Interview Rescheduled",
+                "The interview with "
+                + candidateUser.getUserName()
+                + " for \""
+                + app.getJobId().getJobTitle()
+                + "\" has been rescheduled to "
+                + interviewDate + ".",
+                "INTERVIEW"
+        );
+
+        // ================= EMAIL TO CANDIDATE =================
+        if (candidateUser.getUserEmail() != null) {
+            emailService.sendEmail(
+                    candidateUser.getUserEmail(),
+                    "Interview Rescheduled — QuickHire",
+                    "Hello " + candidateUser.getUserName() + ",\n\n"
+                    + "We would like to inform you that your interview for the position of \""
+                    + app.getJobId().getJobTitle()
+                    + "\" at QuickHire has been rescheduled.\n\n"
+                    + "Updated Interview Details:\n"
+                    + "  New Date & Time : " + interviewDate + "\n"
+                    + "  Interviewer      : " + interviewerName + "\n"
+                    + "  Mode             : " + interviewerMode + "\n\n"
+                    + "We apologise for any inconvenience this change may have caused. "
+                    + "Your application remains active, and we look forward to speaking with you at the rescheduled time.\n\n"
+                    + "If this new date does not work for you, please reach out through your QuickHire portal at your earliest convenience.\n\n"
+                    + "Kind regards,\n"
+                    + "QuickHire Recruitment Team"
+            );
+        }
     }
 
     @Override
@@ -1772,31 +1821,45 @@ public class RecruiterBean implements RecruiterBeanLocal {
             app.setApplicationStatus("Shortlisted");
             app.setLastUpdatedDate(new Date());
             em.merge(app);
+            em.flush();
 
             Tblusers recruiterUser = app.getJobId().getRecruiterId().getUserId();
             Tblusers candidateUser = app.getCandidateId().getUserId();
 
+            // ================= CANDIDATE NOTIFICATION =================
             saveNotification(recruiterUser, candidateUser,
-                    "Interview Cancelled",
-                    "Your interview for " + app.getJobId().getJobTitle()
-                    + " has been cancelled. The recruiter will be in touch to reschedule.",
+                    "Interview Cancelled — QuickHire",
+                    "Your scheduled interview for \""
+                    + app.getJobId().getJobTitle()
+                    + "\" at QuickHire has been cancelled. "
+                    + "Please note that your application remains under active consideration. "
+                    + "The recruiter will be in touch shortly to arrange a new interview date.",
                     "INTERVIEW");
 
+            // ================= RECRUITER ACTIVITY =================
             saveNotification(recruiterUser, recruiterUser,
                     "Interview Cancelled",
-                    "Interview cancelled for " + candidateUser.getUserName()
-                    + " - " + app.getJobId().getJobTitle(),
+                    "The scheduled interview with "
+                    + candidateUser.getUserName()
+                    + " for \""
+                    + app.getJobId().getJobTitle()
+                    + "\" has been cancelled. The candidate's application has been moved back to Shortlisted.",
                     "INTERVIEW");
 
+            // ================= EMAIL TO CANDIDATE =================
             if (candidateUser.getUserEmail() != null) {
                 emailService.sendEmail(
                         candidateUser.getUserEmail(),
-                        "Interview Cancelled",
+                        "Interview Cancelled — QuickHire",
                         "Hello " + candidateUser.getUserName() + ",\n\n"
-                        + "Your interview for " + app.getJobId().getJobTitle()
-                        + " has been cancelled.\n"
-                        + "The recruiter will contact you to reschedule.\n\n"
-                        + "Regards,\nQuickHire Team"
+                        + "We regret to inform you that your scheduled interview for the position of \""
+                        + app.getJobId().getJobTitle()
+                        + "\" at QuickHire has been cancelled.\n\n"
+                        + "Please note that your application continues to be under active consideration. "
+                        + "The recruiter will be in touch shortly to arrange a new interview date that is convenient for both parties.\n\n"
+                        + "We sincerely apologise for the inconvenience and appreciate your patience and understanding.\n\n"
+                        + "Kind regards,\n"
+                        + "QuickHire Recruitment Team"
                 );
             }
         }
