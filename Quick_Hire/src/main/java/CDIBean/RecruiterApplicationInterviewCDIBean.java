@@ -770,58 +770,58 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
         }
     }
 
-    public void applyApplicantFilters() {
-        reloadAllApplicationsFromDatabaseForFiltering();
-
-        List<Tblapplication> source = allRecruiterApplicationList != null
-                ? allRecruiterApplicationList
-                : new ArrayList<>();
-
-        String search = safeLower(applicantSearchText);
-        String job = applicantJobFilter != null ? applicantJobFilter.trim() : "All Jobs";
-        String status = applicantStatusFilter != null ? applicantStatusFilter.trim() : "All Status";
-
-        List<Tblapplication> filtered = new ArrayList<>();
-        for (Tblapplication app : source) {
-            if (matchesApplicantSearch(app, search)
-                    && matchesApplicantJob(app, job)
-                    && matchesApplicantStatus(app, status)) {
-                filtered.add(app);
-            }
-        }
-
-        sortApplicantList(filtered);
-        recruiterApplicationList = filtered;
-    }
-
-    public void resetApplicantFilters() {
-        reloadAllApplicationsFromDatabaseForFiltering();
-
-        applicantSearchText = null;
-        applicantJobFilter = "All Jobs";
-        applicantStatusFilter = "All Status";
-        applicantSortFilter = "Newest First";
-        recruiterApplicationList = allRecruiterApplicationList != null
-                ? new ArrayList<>(allRecruiterApplicationList)
-                : new ArrayList<>();
-        sortApplicantList(recruiterApplicationList);
-    }
-
-    private void reloadAllApplicationsFromDatabaseForFiltering() {
-        try {
-            if (recruiter == null || recruiter.getRecruiterId() == null) {
-                return;
-            }
-            client.setToken(loginBean.getToken());
-            Collection<Tblapplication> applications = client.getRecruiterApplications(recruiter.getRecruiterId());
-            allRecruiterApplicationList = applications != null
-                    ? new ArrayList<>(applications)
-                    : new ArrayList<>();
-            loadAllScores();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+//    public void applyApplicantFilters() {
+//        reloadAllApplicationsFromDatabaseForFiltering();
+//
+//        List<Tblapplication> source = allRecruiterApplicationList != null
+//                ? allRecruiterApplicationList
+//                : new ArrayList<>();
+//
+//        String search = safeLower(applicantSearchText);
+//        String job = applicantJobFilter != null ? applicantJobFilter.trim() : "All Jobs";
+//        String status = applicantStatusFilter != null ? applicantStatusFilter.trim() : "All Status";
+//
+//        List<Tblapplication> filtered = new ArrayList<>();
+//        for (Tblapplication app : source) {
+//            if (matchesApplicantSearch(app, search)
+//                    && matchesApplicantJob(app, job)
+//                    && matchesApplicantStatus(app, status)) {
+//                filtered.add(app);
+//            }
+//        }
+//
+//        sortApplicantList(filtered);
+//        recruiterApplicationList = filtered;
+//    }
+//
+//    public void resetApplicantFilters() {
+//        reloadAllApplicationsFromDatabaseForFiltering();
+//
+//        applicantSearchText = null;
+//        applicantJobFilter = "All Jobs";
+//        applicantStatusFilter = "All Status";
+//        applicantSortFilter = "Newest First";
+//        recruiterApplicationList = allRecruiterApplicationList != null
+//                ? new ArrayList<>(allRecruiterApplicationList)
+//                : new ArrayList<>();
+//        sortApplicantList(recruiterApplicationList);
+//    }
+//
+////    private void reloadAllApplicationsFromDatabaseForFiltering() {
+////        try {
+////            if (recruiter == null || recruiter.getRecruiterId() == null) {
+////                return;
+////            }
+////            client.setToken(loginBean.getToken());
+////            Collection<Tblapplication> applications = client.getRecruiterApplications(recruiter.getRecruiterId());
+////            allRecruiterApplicationList = applications != null
+////                    ? new ArrayList<>(applications)
+////                    : new ArrayList<>();
+////            loadAllScores();
+////        } catch (Exception e) {
+////            e.printStackTrace();
+////        }
+//    }
 
     private boolean matchesApplicantSearch(Tblapplication app, String search) {
         if (search == null || search.isEmpty()) {

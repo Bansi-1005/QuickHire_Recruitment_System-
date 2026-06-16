@@ -22,11 +22,12 @@ import java.util.Map;
  * @author tejan
  */
 @Stateless
-@DeclareRoles({"Admin","Recruiter","Candidate"})
+@DeclareRoles({"Admin", "Recruiter", "Candidate"})
 public class AdminBean implements AdminBeanLocal {
+
     @PersistenceContext(unitName = "jpu")
     EntityManager em;
-    
+
     @Inject
     private Pbkdf2PasswordHash hash;
 
@@ -42,8 +43,7 @@ public class AdminBean implements AdminBeanLocal {
 //            return null;
 //        }
 //    }
-
-       // ================= ROLE =================
+    // ================= ROLE =================
 //    @Override
 //    public void addRole(Tblrolemaster role) {
 //        try {
@@ -64,7 +64,6 @@ public class AdminBean implements AdminBeanLocal {
 //            return new ArrayList<>();
 //        }
 //    }
-
     // ================= USER =================
     @Override
     public Collection<Tblusers> getAllUsers() {
@@ -79,7 +78,9 @@ public class AdminBean implements AdminBeanLocal {
     @Override
     public void updateUserStatus(int userId, String userStatus) {
         try {
-            if (userStatus == null || userStatus.trim().isEmpty()) return;
+            if (userStatus == null || userStatus.trim().isEmpty()) {
+                return;
+            }
 
             Tblusers user = em.find(Tblusers.class, userId);
             if (user != null) {
@@ -102,18 +103,17 @@ public class AdminBean implements AdminBeanLocal {
             return em.createNamedQuery("Tblusers.findByUserEmail", Tblusers.class)
                     .setParameter("userEmail", userEmail)
                     .getResultList();
-            
+
 //            return em.createQuery(
 //            "SELECT u FROM Tblusers u WHERE u.userEmail LIKE :email",
 //            Tblusers.class)
 //            .setParameter("email", "%" + userEmail + "%")
 //            .getResultList();
-
         } catch (Exception e) {
             return new ArrayList<>();
         }
     }
-    
+
     @Override
     public void toggleUserStatus(int userId, boolean status) {
 
@@ -126,7 +126,7 @@ public class AdminBean implements AdminBeanLocal {
             em.merge(user);
         }
     }
-    
+
     // ================= RECRUITER =================
     @Override
     public Collection<Tblrecruiters> getAllRecruiters() {
@@ -149,10 +149,7 @@ public class AdminBean implements AdminBeanLocal {
         }
     }
 
-    
-    
     // ================= Manage Skills =================
-    
     @Override
     public Collection<Tblskillcategory> getAllSkillCategories() {
 
@@ -196,8 +193,8 @@ public class AdminBean implements AdminBeanLocal {
 
         try {
 
-            Tblskillcategory dbCategory =
-                    em.find(Tblskillcategory.class,
+            Tblskillcategory dbCategory
+                    = em.find(Tblskillcategory.class,
                             category.getCategoryId());
 
             if (dbCategory != null) {
@@ -223,8 +220,8 @@ public class AdminBean implements AdminBeanLocal {
 
         try {
 
-            Tblskillcategory category =
-                    em.find(Tblskillcategory.class,
+            Tblskillcategory category
+                    = em.find(Tblskillcategory.class,
                             categoryId);
 
             if (category != null) {
@@ -262,8 +259,8 @@ public class AdminBean implements AdminBeanLocal {
 
         try {
 
-            Tblskillcategory category =
-                    em.find(
+            Tblskillcategory category
+                    = em.find(
                             Tblskillcategory.class,
                             skill.getCategoryId().getCategoryId());
 
@@ -309,8 +306,8 @@ public class AdminBean implements AdminBeanLocal {
 
         try {
 
-            Tblskills skill =
-                    em.find(Tblskills.class,
+            Tblskills skill
+                    = em.find(Tblskills.class,
                             skillId);
 
             if (skill != null) {
@@ -324,8 +321,7 @@ public class AdminBean implements AdminBeanLocal {
             throw e;
         }
     }
-    
-    
+
     // ================= COMPANY =================
 //    @Override
 //    public void addCompany(Tblcompany company) {
@@ -350,7 +346,6 @@ public class AdminBean implements AdminBeanLocal {
 //            return new ArrayList<>();
 //        }
 //    }
-
     @Override
     public void addCompany(Tblcompany company) {
 
@@ -389,8 +384,8 @@ public class AdminBean implements AdminBeanLocal {
 
         try {
 
-            Tblcompany company =
-                    em.find(Tblcompany.class, companyId);
+            Tblcompany company
+                    = em.find(Tblcompany.class, companyId);
 
             if (company != null) {
 
@@ -442,14 +437,14 @@ public class AdminBean implements AdminBeanLocal {
             return new ArrayList<>();
         }
     }
-    
+
     @Override
     public void toggleCompanyStatus(Integer companyId, boolean status) {
 
         try {
 
-            Tblcompany company =
-                    em.find(Tblcompany.class, companyId);
+            Tblcompany company
+                    = em.find(Tblcompany.class, companyId);
 
             if (company != null) {
 
@@ -463,7 +458,6 @@ public class AdminBean implements AdminBeanLocal {
             e.printStackTrace();
         }
     }
-    
 
     // ================= JOB =================
     @Override
@@ -475,23 +469,17 @@ public class AdminBean implements AdminBeanLocal {
             return new ArrayList<>();
         }
     }
-    
+
     @Override
-    public Tbljob getJobByJobId(Integer jobId)
-    {
-        try
-        {
+    public Tbljob getJobByJobId(Integer jobId) {
+        try {
             return em.createNamedQuery("Tbljob.findByJobId", Tbljob.class)
-                     .setParameter("jobId", jobId)
-                     .getSingleResult();
-        }
-        catch(Exception e)
-        {
+                    .setParameter("jobId", jobId)
+                    .getSingleResult();
+        } catch (Exception e) {
             return null;
         }
     }
-    
-    
 
 //    @Override
 //    public void updateJobStatus(int jobId, String jobStatus) {
@@ -529,7 +517,7 @@ public class AdminBean implements AdminBeanLocal {
 //                    .setParameter("jobTitle", jobTitle)
 //                    .getResultList();
 //            
-////            return em.createQuery("SELECT j FROM Tbljob j WHERE j.jobTitle LIKE :title", Tbljob.class)
+    ////            return em.createQuery("SELECT j FROM Tbljob j WHERE j.jobTitle LIKE :title", Tbljob.class)
 ////                .setParameter("jobTitle", "%" + jobTitle + "%")
 ////                .getResultList();
 //
@@ -545,25 +533,25 @@ public class AdminBean implements AdminBeanLocal {
 
         return em.find(Tblusers.class, userId);
     }
-    
+
     @Override
     public void updateAdminProfile(Tblusers user) {
 
-        Tblusers dbUser =
-                em.find(
+        Tblusers dbUser
+                = em.find(
                         Tblusers.class,
                         user.getUserId());
 
         dbUser.setUserName(
                 user.getUserName());
-        
+
         dbUser.setUserEmail(user.getUserEmail());
 
         dbUser.setUserIsActive(
                 user.getUserIsActive());
 
         em.merge(dbUser);
-        
+
         // profile notification
         Tblnotification notification = new Tblnotification();
 
@@ -584,7 +572,7 @@ public class AdminBean implements AdminBeanLocal {
 
         em.persist(notification);
     }
-    
+
     @Override
     public String changeAdminPassword(Integer userId, String currentPassword, String newPassword) {
 
@@ -649,8 +637,8 @@ public class AdminBean implements AdminBeanLocal {
     @Override
     public void uploadProfilePhoto(Integer userId, String photo) {
 
-        Tblusers user =
-                em.find(
+        Tblusers user
+                = em.find(
                         Tblusers.class,
                         userId);
 
@@ -658,17 +646,8 @@ public class AdminBean implements AdminBeanLocal {
 
         em.merge(user);
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    // ================= ADMIN NOTIFICATIONS =================
 
+    // ================= ADMIN NOTIFICATIONS =================
     @Override
     public Collection<Tblnotification> getAdminNotifications(int adminId) {
 
@@ -710,8 +689,8 @@ public class AdminBean implements AdminBeanLocal {
 
         try {
 
-            Tblnotification notification =
-                    em.find(Tblnotification.class, notificationId);
+            Tblnotification notification
+                    = em.find(Tblnotification.class, notificationId);
 
             if (notification != null) {
 
@@ -726,8 +705,6 @@ public class AdminBean implements AdminBeanLocal {
             e.printStackTrace();
         }
     }
-    
-    
 
     // ================= APPLICATION =================
 //    @Override
@@ -755,7 +732,6 @@ public class AdminBean implements AdminBeanLocal {
 //            e.printStackTrace();
 //        }
 //    }
-
     // ================= NOTIFICATION =================
 //    @Override
 //    public void sendNotification(Tblnotification notification) {
@@ -768,7 +744,6 @@ public class AdminBean implements AdminBeanLocal {
 //            e.printStackTrace();
 //        }
 //    }
-
     // ================= DASHBOARD =================
 //    @Override
 //    public int totalUsers() {
@@ -819,14 +794,12 @@ public class AdminBean implements AdminBeanLocal {
 //            return 0;
 //        }
 //    }
-    
     // ================= REPORTS =================
-
     // Total applications for a specific job
 //    @Override
 //    public Collection<Tblapplication> applicationsPerJob(int jobId) {
 //        try {
-////            return em.createNamedQuery("Tblapplication.countByJob", Long.class)
+    ////            return em.createNamedQuery("Tblapplication.countByJob", Long.class)
 //            return em.createNamedQuery("Tblapplication.FindApplicationsByJob", Tblapplication.class)
 //                    .setParameter("jobId", jobId)
 //                    .getResultList();
@@ -872,7 +845,7 @@ public class AdminBean implements AdminBeanLocal {
 //        }
 //    }  
     @Override
-     public Collection<Tblskills> getPendingSkills() {
+    public Collection<Tblskills> getPendingSkills() {
         return em.createQuery(
                 "SELECT s FROM Tblskills s "
                 + "WHERE s.skillStatus = 'PENDING' "
@@ -880,6 +853,7 @@ public class AdminBean implements AdminBeanLocal {
                 Tblskills.class)
                 .getResultList();
     }
+
     @Override
 
     public Collection<Tblskillcategory> getPendingCategories() {
@@ -890,6 +864,7 @@ public class AdminBean implements AdminBeanLocal {
                 Tblskillcategory.class)
                 .getResultList();
     }
+
     @Override
 
     public void approveSkill(Integer skillId, Integer adminUserId) {
@@ -910,6 +885,7 @@ public class AdminBean implements AdminBeanLocal {
                 "Your skill has been approved: " + skill.getSkillName(),
                 "SKILL_APPROVED");
     }
+
     @Override
 
     public void rejectSkill(Integer skillId, Integer adminUserId) {
@@ -920,36 +896,17 @@ public class AdminBean implements AdminBeanLocal {
             throw new RuntimeException("Skill not found");
         }
 
-        skill.setSkillStatus("REJECTED");
+        skill.setSkillStatus("DISAPPROVED");
+        skill.setApprovedByUserId(adminUserId);
+        skill.setApprovedDate(new Date());
         em.merge(skill);
 
         notifyCreator(skill.getCreatedByUserId(), admin,
-                "Skill Rejected",
-                "Your skill request was rejected: " + skill.getSkillName(),
-                "SKILL_REJECTED");
+                "Skill Disapproved",
+                "Your skill request was disapproved: " + skill.getSkillName(),
+                "SKILL_DISAPPROVED");
     }
-    @Override
 
-    public void mergeSkill(Integer pendingSkillId, Integer approvedSkillId, Integer adminUserId) {
-        Tblskills pending = em.find(Tblskills.class, pendingSkillId);
-        Tblskills approved = em.find(Tblskills.class, approvedSkillId);
-        Tblusers admin = em.find(Tblusers.class, adminUserId);
-
-        if (pending == null || approved == null) {
-            throw new RuntimeException("Skill not found");
-        }
-
-        pending.setSkillStatus("MERGED");
-        pending.setMergedIntoSkillId(approved.getSkillId());
-        pending.setApprovedByUserId(adminUserId);
-        pending.setApprovedDate(new Date());
-        em.merge(pending);
-
-        notifyCreator(pending.getCreatedByUserId(), admin,
-                "Skill Merged",
-                "Your skill '" + pending.getSkillName() + "' was merged into '" + approved.getSkillName() + "'.",
-                "SKILL_MERGED");
-    }
     @Override
 
     public void approveCategory(Integer categoryId, Integer adminUserId) {
@@ -968,9 +925,10 @@ public class AdminBean implements AdminBeanLocal {
                 "Your category has been approved: " + category.getCategoryName(),
                 "CATEGORY_APPROVED");
     }
-    @Override
 
+    @Override
     public void rejectCategory(Integer categoryId, Integer adminUserId) {
+
         Tblskillcategory category = em.find(Tblskillcategory.class, categoryId);
         Tblusers admin = em.find(Tblusers.class, adminUserId);
 
@@ -978,34 +936,36 @@ public class AdminBean implements AdminBeanLocal {
             throw new RuntimeException("Category not found");
         }
 
-        category.setCategoryStatus("REJECTED");
+        category.setCategoryStatus("DISAPPROVED");
         em.merge(category);
 
-        notifyCreator(category.getCreatedByUserId(), admin,
-                "Category Rejected",
-                "Your category request was rejected: " + category.getCategoryName(),
-                "CATEGORY_REJECTED");
-    }
-    @Override
+        Collection<Tblskills> categorySkills = em.createQuery(
+                "SELECT s FROM Tblskills s "
+                + "WHERE s.categoryId.categoryId = :categoryId "
+                + "AND s.skillStatus = 'PENDING'",
+                Tblskills.class)
+                .setParameter("categoryId", categoryId)
+                .getResultList();
 
-    public void mergeCategory(Integer pendingCategoryId, Integer approvedCategoryId, Integer adminUserId) {
-        Tblskillcategory pending = em.find(Tblskillcategory.class, pendingCategoryId);
-        Tblskillcategory approved = em.find(Tblskillcategory.class, approvedCategoryId);
-        Tblusers admin = em.find(Tblusers.class, adminUserId);
+        for (Tblskills skill : categorySkills) {
+            skill.setSkillStatus("DISAPPROVED");
+            skill.setApprovedByUserId(adminUserId);
+            skill.setApprovedDate(new Date());
+            em.merge(skill);
 
-        if (pending == null || approved == null) {
-            throw new RuntimeException("Category not found");
+            notifyCreator(skill.getCreatedByUserId(), admin,
+                    "Skill Disapproved",
+                    "Your skill request was disapproved because its category was disapproved: "
+                    + skill.getSkillName(),
+                    "SKILL_DISAPPROVED");
         }
 
-        pending.setCategoryStatus("MERGED");
-        pending.setMergedIntoCategoryId(approved.getCategoryId());
-        em.merge(pending);
-
-        notifyCreator(pending.getCreatedByUserId(), admin,
-                "Category Merged",
-                "Your category '" + pending.getCategoryName() + "' was merged into '" + approved.getCategoryName() + "'.",
-                "CATEGORY_MERGED");
+        notifyCreator(category.getCreatedByUserId(), admin,
+                "Category Disapproved",
+                "Your category request was disapproved: " + category.getCategoryName(),
+                "CATEGORY_DISAPPROVED");
     }
+
     @Override
 
     public Collection<Tblnotification> getAdminNotifications(Integer adminUserId) {
@@ -1017,6 +977,7 @@ public class AdminBean implements AdminBeanLocal {
                 .setParameter("uid", adminUserId)
                 .getResultList();
     }
+
     @Override
     public Collection<Tblskills> getApprovedSkills() {
         return em.createQuery(
@@ -1026,6 +987,7 @@ public class AdminBean implements AdminBeanLocal {
                 Tblskills.class)
                 .getResultList();
     }
+
     @Override
     public Collection<Tblskillcategory> getApprovedCategories() {
         return em.createQuery(
@@ -1035,6 +997,7 @@ public class AdminBean implements AdminBeanLocal {
                 Tblskillcategory.class)
                 .getResultList();
     }
+
     private void notifyCreator(Integer creatorUserId, Tblusers admin, String title, String message, String type) {
         if (creatorUserId == null) {
             return;
@@ -1054,6 +1017,29 @@ public class AdminBean implements AdminBeanLocal {
         notification.setIsRead(false);
         notification.setCreatedDate(new Date());
         em.persist(notification);
+    }
+
+    // Admin dashboard
+    @Override
+    public Collection<Tblapplication> getAllApplications() {
+        try {
+            return em.createNamedQuery("Tblapplication.findAll", Tblapplication.class)
+                    .getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public Collection<Tblinterview> getAllInterviews() {
+        try {
+            return em.createNamedQuery("Tblinterview.findAll", Tblinterview.class)
+                    .getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
 }

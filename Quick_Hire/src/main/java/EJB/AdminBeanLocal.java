@@ -116,17 +116,18 @@ public interface AdminBeanLocal {
 
     void rejectSkill(Integer skillId, Integer adminUserId);
 
-    void mergeSkill(Integer pendingSkillId, Integer approvedSkillId, Integer adminUserId);
 
     void approveCategory(Integer categoryId, Integer adminUserId);
 
     void rejectCategory(Integer categoryId, Integer adminUserId);
 
-    void mergeCategory(Integer pendingCategoryId, Integer approvedCategoryId, Integer adminUserId);
 
     Collection<Tblnotification> getAdminNotifications(Integer adminUserId);
 
     Collection<Tblskills> getApprovedSkills();
 
     Collection<Tblskillcategory> getApprovedCategories();
+    
+    public Collection<Tblapplication> getAllApplications();
+    public Collection<Tblinterview> getAllInterviews() ;
 }

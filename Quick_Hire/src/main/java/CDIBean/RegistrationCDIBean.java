@@ -11,6 +11,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.inject.Named;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.ws.rs.core.Response;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -179,16 +180,29 @@ public class RegistrationCDIBean {
             }
 
             //  CALL API
-            String response = client.registerUser(body);
-            System.out.println("API RESPONSE: " + response);
-            System.out.println("BODY JSON: " + body);
+            Response response = client.registerUser(body);
+            String msg = response.readEntity(String.class);
 
-            System.out.println("PHONE: " + candidate.getCandidatePhone());
-            System.out.println("DESIGNATION: " + recruiter.getDesignation());
+            System.out.println("API STATUS: " + response.getStatus());
+            System.out.println("API RESPONSE: " + msg);
+            System.out.println("BODY JSON: " + body);
 
             client.close();
 
-            return "/Login.xhtml?faces-redirect=true";
+            if (response.getStatus() == 200) {
+                return "/Login.xhtml?faces-redirect=true";
+            }
+
+            jakarta.faces.context.FacesContext.getCurrentInstance().addMessage(
+                    null,
+                    new jakarta.faces.application.FacesMessage(
+                            jakarta.faces.application.FacesMessage.SEVERITY_ERROR,
+                            "Registration Failed",
+                            msg
+                    )
+            );
+
+            return null;
 
         } catch (Exception e) {
             e.printStackTrace();

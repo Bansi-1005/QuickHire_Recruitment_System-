@@ -100,6 +100,15 @@ public class RecruiterJerseyClient {
                 .get(responseType);
     }
 
+    public Response uploadProfilePhoto(Integer userId, String photo) {
+        return webTarget.path("uploadProfilePhoto")
+                .queryParam("userId", userId)
+                .queryParam("photo", photo)
+                .request(MediaType.TEXT_PLAIN)
+                .header("Authorization", "Bearer " + token)
+                .put(Entity.text(""));
+    }
+
     public Response createJob(
             Tbljob requestEntity,
             Collection<Integer> skillIds,
@@ -335,7 +344,6 @@ public class RecruiterJerseyClient {
                 .header("Authorization", "Bearer " + token)
                 .get(String.class);
     }
-
 
     public Collection<Tblskills> getJobSkills(String jobId)
             throws ClientErrorException {
@@ -1158,6 +1166,14 @@ public class RecruiterJerseyClient {
                 .request(MediaType.TEXT_PLAIN)
                 .header("Authorization", "Bearer " + token)
                 .put(Entity.text(""));
+    }
+
+    public <T> T getActivities(GenericType<T> responseType, String userId) throws ClientErrorException {
+        WebTarget resource = webTarget.path("activities").path(userId);
+
+        return resource.request(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + token)
+                .get(responseType);
     }
 
     public void close() {

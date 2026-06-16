@@ -35,48 +35,7 @@ public class RecruiterResource {
 
     @EJB
     RecruiterBeanLocal ejb;
-    // ================= AUTH =================
-//    @GET
-//    @Path("login")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response login(@QueryParam("email") String email,
-//                          @QueryParam("password") String password,
-//                          @QueryParam("roleId") int roleId) {
-//        try {
-//            Tblusers user = ejb.recruiterLogin(email, password, roleId);
-//            if (user != null)
-//                return Response.ok(user).build();
-//            else
-//                return Response.status(401).entity("Invalid Credentials").build();
-//        } catch (Exception e) {
-//            return Response.status(500).entity(e.getMessage()).build();
-//        }
-//    }
 
-//    @POST
-//    @Path("registerRecruiter")
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response registerRecruiter(Tblrecruiters recruiter) {
-//        try {
-//
-//            if (recruiter == null || recruiter.getUserId() == null) {
-//                return Response.status(Response.Status.BAD_REQUEST)
-//                        .entity("User data is missing").build();
-//            }
-//
-//            Tblusers user = recruiter.getUserId();
-//            
-//
-//            ejb.registerRecruiter(user, recruiter);
-//
-//            return Response.ok("Recruiter Registered Successfully").build();
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();   
-//            return Response.status(500).entity(e.toString()).build();
-//        }
-//    }
     // ================= PROFILE =================
     @GET
     @Path("getProfile")
@@ -117,10 +76,42 @@ public class RecruiterResource {
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
+    
+    // Add this endpoint inside RecruiterResource.java, near profile endpoints:
+@PUT
+@Path("uploadProfilePhoto")
+@Produces(MediaType.TEXT_PLAIN)
+public Response uploadProfilePhoto(
+        @QueryParam("userId") Integer userId,
+        @QueryParam("photo") String photo) {
+
+    try {
+        if (userId == null || userId <= 0) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Invalid user ID")
+                    .build();
+        }
+
+        if (photo == null || photo.trim().isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Photo name is required")
+                    .build();
+        }
+
+        ejb.uploadProfilePhoto(userId, photo);
+
+        return Response.ok("Profile photo uploaded successfully").build();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                .entity(e.getMessage())
+                .build();
+    }
+}
 
 
 // ================= JOB MANAGEMENT =================
-
     @POST
     @Path("createJob")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -1684,6 +1675,28 @@ public class RecruiterResource {
         } catch (Exception e) {
             e.printStackTrace();
             return Response.status(500).entity(e.getMessage()).build();
+        }
+    }
+
+    @GET
+    @Path("activities/{userId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getActivities(@PathParam("userId") int userId) {
+
+        try {
+
+            Collection<Tblnotification> activities
+                    = ejb.getActivities(userId);
+
+            return Response.ok(activities).build();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error fetching activities: " + e.getMessage())
+                    .build();
         }
     }
 }

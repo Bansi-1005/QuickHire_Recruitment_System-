@@ -31,7 +31,11 @@ import java.util.List;
 import util.LocationData;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.validator.ValidatorException;
+import jakarta.servlet.http.Part;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Locale;
@@ -129,6 +133,8 @@ public class RecruiterCDIBean implements Serializable {
     private Map<Integer, Integer> jobApplicationTotalCounts = new HashMap<>();
     private Map<Integer, Map<String, Integer>> jobApplicationStatusCounts = new HashMap<>();
 
+    private Part profilePhoto;
+
     // RecruiterCDIBean
     public RecruiterCDIBean() {
     }
@@ -171,45 +177,6 @@ public class RecruiterCDIBean implements Serializable {
         }
     }
 
-    // initializeJobForm
-//    public void initializeJobForm() {
-//
-//        try {
-//
-//            client.setToken(loginBean.getToken());
-//
-//            if (recruiter == null || recruiter.getRecruiterId() == 0) {
-//                loadProfile();
-//            }
-//
-//            loadSkills();
-//            loadSkillCategories();
-//            loadEducation();
-//
-//            selectedSkillCategory = 0;
-//            filteredSkills = new ArrayList<>(allSkills);
-//
-//            if (editJobId != null && editJobId > 0) {
-//                loadJobForEdit();
-//            } else {
-//                editMode = false;
-//                job = new Tbljob();
-//
-//                selectedSkillIds = new ArrayList<>();
-//                selectedEducationIds = new ArrayList<>();
-//
-//                selectedState = null;
-//                selectedCity = null;
-//                availableCities = new ArrayList<>();
-//
-//                expYears = null;
-//                expMonths = null;
-//            }
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
     public void initializeJobForm() {
         try {
             client.setToken(loginBean.getToken());
@@ -373,12 +340,146 @@ public class RecruiterCDIBean implements Serializable {
                     String.valueOf(userId)
             );
 
-            recruiterId = recruiter.getRecruiterId();
-
+            if (recruiter != null && recruiter.getRecruiterId() != null) {
+                recruiterId = recruiter.getRecruiterId();
+            }
         } catch (Exception e) {
 
             e.printStackTrace();
         }
+    }
+
+    public void uploadProfilePhoto() {
+        try {
+            if (profilePhoto == null || profilePhoto.getSize() == 0) {
+                FacesContext.getCurrentInstance().addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_INFO,
+                                "Photo is optional",
+                                "Choose a photo only if you want to update it."
+                        )
+                );
+                return;
+            }
+
+            String submittedName = Paths.get(profilePhoto.getSubmittedFileName())
+                    .getFileName()
+                    .toString()
+                    .replaceAll("[^a-zA-Z0-9._-]", "_");
+
+            String lowerName = submittedName.toLowerCase();
+            if (!lowerName.endsWith(".jpg")
+                    && !lowerName.endsWith(".jpeg")
+                    && !lowerName.endsWith(".png")) {
+                FacesContext.getCurrentInstance().addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_ERROR,
+                                "Invalid photo",
+                                "Only JPG and PNG files are allowed."
+                        )
+                );
+                return;
+            }
+
+            String basePath = "D:/QuickHireUploads/profilephotos/";
+            Files.createDirectories(Paths.get(basePath));
+
+            String uniqueName = System.currentTimeMillis()
+                    + "_RECRUITER_"
+                    + submittedName;
+
+            Files.copy(
+                    profilePhoto.getInputStream(),
+                    Paths.get(basePath + uniqueName),
+                    StandardCopyOption.REPLACE_EXISTING
+            );
+
+            client.setToken(loginBean.getToken());
+
+            Response response = client.uploadProfilePhoto(
+                    loginBean.getUserId(),
+                    uniqueName
+            );
+
+            if (response.getStatus() == 200) {
+                if (recruiter != null && recruiter.getUserId() != null) {
+                    recruiter.getUserId().setProfilePhoto(uniqueName);
+                }
+
+                FacesContext.getCurrentInstance().addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_INFO,
+                                "Profile photo uploaded",
+                                "Your profile photo has been updated."
+                        )
+                );
+
+                loadProfile();
+            } else {
+                FacesContext.getCurrentInstance().addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_ERROR,
+                                "Upload failed",
+                                response.readEntity(String.class)
+                        )
+                );
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            FacesContext.getCurrentInstance().addMessage(
+                    null,
+                    new FacesMessage(
+                            FacesMessage.SEVERITY_ERROR,
+                            "Upload failed",
+                            "Something went wrong while uploading photo."
+                    )
+            );
+        }
+    }
+
+    public String getProfilePhotoPath() {
+        try {
+            if (recruiter != null
+                    && recruiter.getUserId() != null
+                    && recruiter.getUserId().getProfilePhoto() != null
+                    && !recruiter.getUserId().getProfilePhoto().trim().isEmpty()) {
+                return recruiter.getUserId().getProfilePhoto();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return "default-user.png";
+    }
+
+    public String getProfilePhotoUrl() {
+        try {
+            if (recruiter != null
+                    && recruiter.getUserId() != null
+                    && recruiter.getUserId().getProfilePhoto() != null
+                    && !recruiter.getUserId().getProfilePhoto().trim().isEmpty()) {
+
+                String contextPath = FacesContext.getCurrentInstance()
+                        .getExternalContext()
+                        .getRequestContextPath();
+
+                String fileName = recruiter.getUserId()
+                        .getProfilePhoto()
+                        .trim();
+
+                return contextPath + "/profilephotos/" + fileName
+                        + "?v=" + System.currentTimeMillis();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return "";
     }
 
     // loadDashboardData
@@ -2703,6 +2804,14 @@ public class RecruiterCDIBean implements Serializable {
     // setEditingExpiryJobId
     public void setEditingExpiryJobId(Integer editingExpiryJobId) {
         this.editingExpiryJobId = editingExpiryJobId;
+    }
+
+    public Part getProfilePhoto() {
+        return profilePhoto;
+    }
+
+    public void setProfilePhoto(Part profilePhoto) {
+        this.profilePhoto = profilePhoto;
     }
 
     // validateCompensation

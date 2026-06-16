@@ -10,7 +10,9 @@ var activeActionAppId = null;
 var activeScheduleRow = null;
 var activeScheduleAppId = null;
 var drawerResumeUrl = '';
-
+function byIdSuffix(id) {
+    return document.getElementById(id) || document.querySelector('[id$="' + id + '"]');
+}
 function getApplicantRows() {
     return Array.prototype.slice.call(document.querySelectorAll('.applicant-row'));
 }
@@ -239,17 +241,17 @@ function openProfileDrawerFromRow(button) {
     var ds = row.dataset;
 
     openProfileDrawer({
-        name:       ds.name       || 'Candidate',
-        email:      ds.email      || 'Email not provided',
-        role:       ds.job        || 'Job title',
+        name: ds.name || 'Candidate',
+        email: ds.email || 'Email not provided',
+        role: ds.job || 'Job title',
         experience: ds.experience || '-',
-        skills:     ds.skills     || 'Skills not provided',
-        education:  ds.education  || 'Education not provided',
-        notes:      ds.notes      || '',
-        location:   ds.location   || 'Location not provided',
-        score:      ds.score && ds.score !== '--' ? ds.score + '%' : '--',
-        status:     ds.displayStatus || ds.status || 'Applied',
-        resumeUrl:  ds.resumeUrl  || ''
+        skills: ds.skills || 'Skills not provided',
+        education: ds.education || 'Education not provided',
+        notes: ds.notes || '',
+        location: ds.location || 'Location not provided',
+        score: ds.score && ds.score !== '--' ? ds.score + '%' : '--',
+        status: ds.displayStatus || ds.status || 'Applied',
+        resumeUrl: ds.resumeUrl || ''
     });
 }
 
@@ -314,24 +316,33 @@ function populateJobFilter() {
 }
 
 function applyStaticFilters() {
-    var search = (document.getElementById('searchInput') || {}).value || '';
-    var job = (document.getElementById('jobFilter') || {}).value || 'All Jobs';
-    var status = (document.getElementById('statusFilter') || {}).value || 'All Status';
-    var sort = (document.getElementById('sortFilter') || {}).value || 'Newest First';
-    var query = search.trim().toLowerCase();
+    var searchEl = byIdSuffix('searchInput');
+    var jobEl = byIdSuffix('jobFilter');
+    var statusEl = byIdSuffix('statusFilter');
+    var sortEl = byIdSuffix('sortFilter');
+
+    var search = searchEl ? searchEl.value.trim().toLowerCase() : '';
+    var job = jobEl ? jobEl.value.trim() : 'All Jobs';
+    var status = statusEl ? statusEl.value.trim() : 'All Status';
+    var sort = sortEl ? sortEl.value.trim() : 'Newest First';
 
     getApplicantRows().forEach(function (row) {
-        var actualStatus = normalizeStatus(row.dataset.status).toLowerCase();
-        var selectedStatus = status.toLowerCase();
+        var rowName = rowText(row, 'name');
+        var rowEmail = rowText(row, 'email');
+        var rowJob = ((row.dataset.job || '').trim());
+        var rowJobLower = rowJob.toLowerCase();
+        var rowStatus = normalizeStatus(row.dataset.status).toLowerCase();
 
-        var searchMatch = !query
-                || rowText(row, 'name').indexOf(query) >= 0
-                || rowText(row, 'email').indexOf(query) >= 0
-                || rowText(row, 'job').indexOf(query) >= 0;
-        var jobMatch = job === 'All Jobs' || row.dataset.job === job;
+        var searchMatch = !search
+                || rowName.indexOf(search) >= 0
+                || rowEmail.indexOf(search) >= 0
+                || rowJobLower.indexOf(search) >= 0;
+
+        var jobMatch = job === 'All Jobs'
+                || rowJob.toLowerCase() === job.toLowerCase();
+
         var statusMatch = status === 'All Status'
-                || actualStatus === selectedStatus
-                || (selectedStatus === 'rejected' && actualStatus === 'rejected application');
+                || rowStatus === status.toLowerCase();
 
         row.dataset.filterMatch = (searchMatch && jobMatch && statusMatch) ? 'true' : 'false';
     });
@@ -340,7 +351,6 @@ function applyStaticFilters() {
     applicantsCurrentPage = 1;
     renderApplicantsPagination();
 }
-
 function sortApplicants(sort) {
     var tbody = document.querySelector('.applicants-table tbody');
     if (!tbody) {
@@ -374,17 +384,23 @@ function sortApplicants(sort) {
 }
 
 function resetStaticFilters() {
-    var search = document.getElementById('searchInput');
+    var search = byIdSuffix('searchInput');
+    var job = byIdSuffix('jobFilter');
+    var status = byIdSuffix('statusFilter');
+    var sort = byIdSuffix('sortFilter');
+
     if (search) {
         search.value = '';
     }
-
-    ['jobFilter', 'statusFilter', 'sortFilter'].forEach(function (id) {
-        var item = document.getElementById(id);
-        if (item) {
-            item.selectedIndex = 0;
-        }
-    });
+    if (job) {
+        job.value = 'All Jobs';
+    }
+    if (status) {
+        status.value = 'All Status';
+    }
+    if (sort) {
+        sort.value = 'Newest First';
+    }
 
     getApplicantRows().forEach(function (row) {
         row.dataset.filterMatch = 'true';
@@ -574,7 +590,7 @@ function openScheduleInterviewAfterAjax(data) {
 
     if (data.status === 'success') {
         setTimeout(openScheduleInterviewModal, 60);
-        setInterviewDateMin(); 
+        setInterviewDateMin();
     }
 }
 
@@ -635,17 +651,18 @@ document.addEventListener('click', function (e) {
     }
 });
 function setInterviewDateMin() {
-    const input = document.getElementById('interviewDateInput') 
-               || document.querySelector('input[type="datetime-local"]');
-    if (!input) return;
+    const input = document.getElementById('interviewDateInput')
+            || document.querySelector('input[type="datetime-local"]');
+    if (!input)
+        return;
 
     const now = new Date();
 
-    const year   = now.getFullYear();
-    const month  = String(now.getMonth() + 1).padStart(2, '0');
-    const day    = String(now.getDate()).padStart(2, '0');
-    const hours  = String(now.getHours()).padStart(2, '0');
-    const mins   = String(now.getMinutes()).padStart(2, '0');
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const mins = String(now.getMinutes()).padStart(2, '0');
 
     input.min = `${year}-${month}-${day}T${hours}:${mins}`;
 }

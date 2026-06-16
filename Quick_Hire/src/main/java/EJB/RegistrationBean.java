@@ -37,7 +37,9 @@ public class RegistrationBean implements RegistrationBeanLocal {
     @Override
     public void registerUser(Tblusers user, Tblrolemaster role, Tblcandidates candidate, Tblrecruiters recruiter) {
         try {
-            if (user == null || role == null) return;
+            if (user == null || role == null) {
+                throw new RuntimeException("User or role is missing");
+            }
 
             Date now = new Date();
 
@@ -59,7 +61,7 @@ public class RegistrationBean implements RegistrationBeanLocal {
 
             // SET ROLE
             Tblrolemaster managedRole = em.find(Tblrolemaster.class, role.getRoleId());
-            user.setRoleId(managedRole);            
+            user.setRoleId(managedRole);
 
             em.persist(user);
             em.flush();
@@ -67,7 +69,6 @@ public class RegistrationBean implements RegistrationBeanLocal {
             // ============================
             // ROLE BASED LOGIC
             // ============================
-
             // Candidate (roleId = 2)
             if (managedRole.getRoleId() == 2 && candidate != null) {
 
@@ -87,20 +88,17 @@ public class RegistrationBean implements RegistrationBeanLocal {
 
                     emailService.sendEmail(user.getUserEmail(), subject, message);
                 }
-            }
-
-            // Recruiter (Assume roleId = 3)
+            } // Recruiter (Assume roleId = 3)
             else if (managedRole.getRoleId() == 3 && recruiter != null) {
 
                 recruiter.setUserId(user);
                 recruiter.setCreatedDate(now);
-                
+
                 if (recruiter.getCompanyId() != null) {
-                    Tblcompany managedCompany = em.find(Tblcompany.class,recruiter.getCompanyId().getCompanyId());
+                    Tblcompany managedCompany = em.find(Tblcompany.class, recruiter.getCompanyId().getCompanyId());
                     recruiter.setCompanyId(managedCompany);
                 }
 
-              
                 em.persist(recruiter);
 
                 // Email
@@ -117,11 +115,11 @@ public class RegistrationBean implements RegistrationBeanLocal {
 
         } catch (Exception e) {
             e.printStackTrace();
+            throw new RuntimeException("Registration failed: " + e.getMessage(), e);
         }
-     }
-    
-    
-        // ================= COMPANY =================
+    }
+
+    // ================= COMPANY =================
     @Override
     public Collection<Tblcompany> getAllCompanies() {
         try {

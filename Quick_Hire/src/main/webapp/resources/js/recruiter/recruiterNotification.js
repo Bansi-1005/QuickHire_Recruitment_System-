@@ -1,12 +1,13 @@
 /*
  * recruiterNotification.js
- * Notification page functionality for recruiters
+ * Splits recruiter notifications from recruiter activities.
  */
 
 (function () {
     var initialVisibleCount = 50;
     var currentVisibleCount = initialVisibleCount;
     var loadStep = 50;
+    var activeMode = 'notifications';
     var activeTab = 'all';
     var firstInitDone = false;
 
@@ -18,7 +19,7 @@
         return Array.prototype.slice.call(nodeList || []);
     }
 
-    function getNotificationItems() {
+    function getItems() {
         return toArray(document.querySelectorAll('.notification-item'));
     }
 
@@ -46,11 +47,11 @@
     }
 
     function getReadValue(item) {
-        var value = item.getAttribute('data-isread');
-        if (value === null || value === '') {
-            value = item.getAttribute('data-iscread');
-        }
-        return normalizeText(value) === 'true';
+        return normalizeText(item.getAttribute('data-isread')) === 'true';
+    }
+
+    function getMode(item) {
+        return item.getAttribute('data-mode') || 'notifications';
     }
 
     function parseIsoDate(value) {
@@ -72,8 +73,16 @@
         return today;
     }
 
+    function matchesMode(item) {
+        return getMode(item) === activeMode;
+    }
+
     function matchesActiveTab(item) {
         var isRead = getReadValue(item);
+
+        if (activeMode === 'activities') {
+            return activeTab === 'all' || activeTab === 'read';
+        }
 
         if (activeTab === 'unread') {
             return !isRead;
@@ -148,7 +157,7 @@
         var itemSender = normalizeText(getItemText(item, '.notification-item-sender', 'data-sender'));
         var isRead = getReadValue(item);
 
-        if (!matchesActiveTab(item)) {
+        if (!matchesMode(item) || !matchesActiveTab(item)) {
             return false;
         }
 
@@ -179,27 +188,7 @@
     }
 
     function getFilteredItems() {
-        var items = getNotificationItems();
-        var filtered = [];
-        var i;
-
-        for (i = 0; i < items.length; i++) {
-            if (matchesFilters(items[i])) {
-                filtered.push(items[i]);
-            }
-        }
-
-        return filtered;
-    }
-
-    function containsItem(list, item) {
-        var i;
-        for (i = 0; i < list.length; i++) {
-            if (list[i] === item) {
-                return true;
-            }
-        }
-        return false;
+        return getItems().filter(matchesFilters);
     }
 
     function updateActiveState() {
@@ -212,49 +201,62 @@
         });
     }
 
+    function updateModeText() {
+        if (activeMode === 'activities') {
+            setText('notificationListHeading', 'Activity List');
+            setText('notificationListSubheading', 'Actions and activity records created under your recruiter account.');
+            return;
+        }
+
+        setText('notificationListHeading', 'Notification List');
+        setText('notificationListSubheading', 'Messages sent to your recruiter account by others.');
+    }
+
     function updateResultsCount(count) {
-        var label = count + (count === 1 ? ' result' : ' results');
-        setText('notificationResultsCount', label);
+        setText('notificationResultsCount', count + (count === 1 ? ' result' : ' results'));
     }
 
     function updateStatCounters() {
-        var items = getNotificationItems();
-        var total = items.length;
-        var unread = 0;
-        var recent = 0;
-        var recentStart = startOfToday();
-
-        recentStart.setDate(recentStart.getDate() - 6);
-
-        items.forEach(function (item) {
-            var created;
-
-            if (!getReadValue(item)) {
-                unread++;
-            }
-
-            created = getCreatedDate(item);
-            if (created && created >= recentStart) {
-                recent++;
-            }
+        var items = getItems();
+        var notificationItems = items.filter(function (item) {
+            return getMode(item) === 'notifications';
         });
+        var activityItems = items.filter(function (item) {
+            return getMode(item) === 'activities';
+        });
+        var visibleModeItems = items.filter(function (item) {
+            return getMode(item) === activeMode;
+        });
+        var unread = notificationItems.filter(function (item) {
+            return !getReadValue(item);
+        }).length;
+        var read = notificationItems.length - unread;
 
-        setText('totalNotifications', String(total));
+        setText('totalNotifications', String(notificationItems.length));
         setText('unreadNotifications', String(unread));
-        setText('readNotifications', String(total - unread));
-        setText('recentNotifications', String(recent));
-        setText('tabAllCount', String(total));
-        setText('tabUnreadCount', String(unread));
-        setText('tabReadCount', String(total - unread));
+        setText('readNotifications', String(read));
+        setText('activityNotifications', String(activityItems.length));
+        setText('modeNotificationsCount', String(notificationItems.length));
+        setText('modeActivitiesCount', String(activityItems.length));
+
+        if (activeMode === 'activities') {
+            setText('tabAllCount', String(activityItems.length));
+            setText('tabUnreadCount', '0');
+            setText('tabReadCount', String(activityItems.length));
+        } else {
+            setText('tabAllCount', String(visibleModeItems.length));
+            setText('tabUnreadCount', String(unread));
+            setText('tabReadCount', String(read));
+        }
     }
 
     function applyVisibility() {
-        var items = getNotificationItems();
+        var items = getItems();
         var filtered = getFilteredItems();
         var shownCount = 0;
 
         items.forEach(function (item) {
-            if (!containsItem(filtered, item)) {
+            if (filtered.indexOf(item) === -1) {
                 item.classList.add('notification-hidden');
                 return;
             }
@@ -277,20 +279,51 @@
             loadMoreWrap.style.display = filtered.length > currentVisibleCount ? 'flex' : 'none';
         }
 
+        updateModeText();
         updateResultsCount(filtered.length);
         updateStatCounters();
+    }
+
+    function setActiveMode(modeName) {
+        activeMode = modeName || 'notifications';
+
+        if (activeMode === 'activities' && activeTab === 'unread') {
+            activeTab = 'all';
+        }
+
+        toArray(document.querySelectorAll('.notification-mode-btn')).forEach(function (btn) {
+            btn.classList.toggle('notification-mode-btn-active', btn.getAttribute('data-mode') === activeMode);
+        });
+
+        var markAllBtn = byId('notificationActionForm:markAllReadBtn');
+        if (markAllBtn) {
+            markAllBtn.style.display = activeMode === 'notifications' ? '' : 'none';
+        }
+
+        var hideReadBtn = byId('clearReadBtn');
+        if (hideReadBtn) {
+            hideReadBtn.style.display = activeMode === 'notifications' ? '' : 'none';
+        }
+
+        var unreadTab = document.querySelector('.notification-tab-btn[data-tab="unread"]');
+        if (unreadTab) {
+            unreadTab.style.display = activeMode === 'notifications' ? '' : 'none';
+        }
     }
 
     function setActiveTab(tabName) {
         activeTab = tabName || 'all';
 
         toArray(document.querySelectorAll('.notification-tab-btn')).forEach(function (btn) {
-            if (btn.getAttribute('data-tab') === activeTab) {
-                btn.classList.add('notification-tab-btn-active');
-            } else {
-                btn.classList.remove('notification-tab-btn-active');
-            }
+            btn.classList.toggle('notification-tab-btn-active', btn.getAttribute('data-tab') === activeTab);
         });
+    }
+
+    function switchMode(modeName) {
+        currentVisibleCount = initialVisibleCount;
+        setActiveMode(modeName);
+        setActiveTab(activeTab);
+        applyVisibility();
     }
 
     function switchTab(tabName) {
@@ -312,14 +345,18 @@
         setFieldValue('notificationSearch', '');
         currentVisibleCount = initialVisibleCount;
         updateActiveState();
-        switchTab('all');
+        setActiveTab('all');
+        applyVisibility();
     }
 
     function hideReadNotifications() {
+        activeMode = 'notifications';
         setFieldValue('statusFilter', 'false');
         currentVisibleCount = initialVisibleCount;
         updateActiveState();
-        switchTab('unread');
+        setActiveMode('notifications');
+        setActiveTab('unread');
+        applyVisibility();
     }
 
     function loadMoreNotifications() {
@@ -337,6 +374,13 @@
     }
 
     function bindEvents() {
+        toArray(document.querySelectorAll('.notification-mode-btn')).forEach(function (btn) {
+            bindOnce(btn, 'click', 'mode-bound', function (event) {
+                event.preventDefault();
+                switchMode(btn.getAttribute('data-mode'));
+            });
+        });
+
         toArray(document.querySelectorAll('.notification-tab-btn')).forEach(function (btn) {
             bindOnce(btn, 'click', 'tab-bound', function (event) {
                 event.preventDefault();
@@ -345,25 +389,16 @@
         });
 
         toArray(document.querySelectorAll('.notification-select-control')).forEach(function (select) {
-            bindOnce(select, 'change', 'select-bound', function () {
-                applyFilters();
-            });
+            bindOnce(select, 'change', 'select-bound', applyFilters);
         });
 
-        bindOnce(byId('notificationSearch'), 'input', 'search-bound', function () {
-            applyFilters();
-        });
+        bindOnce(byId('notificationSearch'), 'input', 'search-bound', applyFilters);
 
         bindOnce(byId('notificationSearch'), 'keydown', 'search-key-bound', function (event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
                 applyFilters();
             }
-        });
-
-        bindOnce(byId('applyFiltersBtn'), 'click', 'apply-bound', function (event) {
-            event.preventDefault();
-            applyFilters();
         });
 
         bindOnce(byId('clearFiltersBtn'), 'click', 'clear-bound', function (event) {
@@ -397,6 +432,7 @@
     function init() {
         bindEvents();
         resetBrowserRestoredFiltersOnce();
+        setActiveMode(activeMode);
         setActiveTab(activeTab);
         updateActiveState();
         applyVisibility();

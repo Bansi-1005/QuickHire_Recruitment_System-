@@ -28,6 +28,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -40,38 +41,30 @@ public class AdminCDIBean implements Serializable {
 
     // ================= API =================
     private final String BASE_URL = "http://localhost:8080/Quick_Hire/resources/admin";
-    
-    @Inject private LoginCDIBean loginBean;
-    
+
+    @Inject
+    private LoginCDIBean loginBean;
+
     private Collection<Tblrecruiters> recruiterList = new ArrayList<>();
     private Collection<Tblcandidates> candidateList = new ArrayList<>();
     private String activeTab = "CANDIDATES";
-    
-    
-    
+
     // Skills & Category    
     private Collection<Tblskillcategory> skillCategoryList = new ArrayList<>();
     private Collection<Tblskills> skillList = new ArrayList<>();
     private Tblskillcategory categoryObj = new Tblskillcategory();
     private Tblskills skillObj = new Tblskills();
     private Integer selectedCategoryId;
-   
-    
-    
+
     // Company
     private Collection<Tblcompany> companyList = new ArrayList<>();
     private Tblcompany companyObj = new Tblcompany();
     private boolean showCompanyForm = false;
-    
-    
-    
-    
+
     // Jobs
     private Collection<Tbljob> jobList = new ArrayList<>();
     private Tbljob selectedJob;
-    
-    
-    
+
     // Profile
     private Tblusers userObj = new Tblusers();
 
@@ -80,26 +73,283 @@ public class AdminCDIBean implements Serializable {
     private String confirmPassword;
 
     private Part profilePhoto;
-    
-    
-    
-    
-    
+
     // Notifications
-    
-    
-    
+    //skills
+    private Collection<Tblskills> pendingSkillList = new ArrayList<>();
+    private Collection<Tblskillcategory> pendingCategoryList = new ArrayList<>();
+    private Collection<Tblskills> approvedSkillList = new ArrayList<>();
+    private Collection<Tblskillcategory> approvedCategoryList = new ArrayList<>();
+
+    //admin dashboard
+    private Collection<Tblusers> userList = new ArrayList<>();
+    private Collection<Tblapplication> applicationList = new ArrayList<>();
+    private Collection<Tblinterview> interviewList = new ArrayList<>();
+
     public AdminCDIBean() {
 
     }
-    
+
     private Client getClient() {
         return ClientBuilder.newBuilder()
                 .register(new JwtClientFilter(loginBean.getToken())) // ✅ FIX: attach token
                 .build();
     }
 
-    
+    //admin dashboard
+    public void loadDashboardPage() {
+        if (!FacesContext.getCurrentInstance().isPostback()) {
+            loadDashboardData();
+        }
+    }
+
+    public void loadDashboardData() {
+        loadUsers();
+        loadCandidates();
+        loadRecruiters();
+        loadCompanies();
+        loadJobs();
+        loadApplications();
+        loadInterviews();
+        loadNotificationsPage();
+        refreshSkillApprovals();
+    }
+
+    public void loadUsers() {
+        try {
+            userList = getClient()
+                    .target(BASE_URL + "/getAllUsers")
+                    .request(MediaType.APPLICATION_JSON)
+                    .get(new GenericType<Collection<Tblusers>>() {
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+            userList = new ArrayList<>();
+        }
+    }
+
+    public void loadApplications() {
+        try {
+            applicationList = getClient()
+                    .target(BASE_URL + "/getAllApplications")
+                    .request(MediaType.APPLICATION_JSON)
+                    .get(new GenericType<Collection<Tblapplication>>() {
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+            applicationList = new ArrayList<>();
+        }
+    }
+
+    public void loadInterviews() {
+        try {
+            interviewList = getClient()
+                    .target(BASE_URL + "/getAllInterviews")
+                    .request(MediaType.APPLICATION_JSON)
+                    .get(new GenericType<Collection<Tblinterview>>() {
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+            interviewList = new ArrayList<>();
+        }
+    }
+
+    public int getTotalUserCount() {
+        return userList == null ? 0 : userList.size();
+    }
+
+    public int getActiveUserCount() {
+        if (userList == null) {
+            return 0;
+        }
+
+        return (int) userList.stream()
+                .filter(u -> u != null && Boolean.TRUE.equals(u.getUserIsActive()))
+                .count();
+    }
+
+    public int getCandidateCount() {
+        return candidateList == null ? 0 : candidateList.size();
+    }
+
+    public int getActiveCandidateCount() {
+        if (candidateList == null) {
+            return 0;
+        }
+
+        return (int) candidateList.stream()
+                .filter(c -> c != null
+                && c.getUserId() != null
+                && Boolean.TRUE.equals(c.getUserId().getUserIsActive()))
+                .count();
+    }
+
+    public int getRecruiterCount() {
+        return recruiterList == null ? 0 : recruiterList.size();
+    }
+
+    public int getTotalJobCount() {
+        return jobList == null ? 0 : jobList.size();
+    }
+
+    public int getTotalApplicationCount() {
+        return applicationList == null ? 0 : applicationList.size();
+    }
+
+    public int getTotalInterviewCount() {
+        return interviewList == null ? 0 : interviewList.size();
+    }
+
+    public int getScheduledInterviewCount() {
+        if (interviewList == null) {
+            return 0;
+        }
+
+        return (int) interviewList.stream()
+                .filter(i -> i != null
+                && i.getInterviewStatus() != null
+                && (i.getInterviewStatus().equalsIgnoreCase("Scheduled")
+                || i.getInterviewStatus().equalsIgnoreCase("Pending")
+                || i.getInterviewStatus().equalsIgnoreCase("In Progress")))
+                .count();
+    }
+
+    public int getPendingSkillCount() {
+        return pendingSkillList == null ? 0 : pendingSkillList.size();
+    }
+
+    public int getPendingCategoryCount() {
+        return pendingCategoryList == null ? 0 : pendingCategoryList.size();
+    }
+
+    public int getPendingApprovalCount() {
+        return getPendingSkillCount() + getPendingCategoryCount();
+    }
+
+    public int getTotalSkillCategoryCount() {
+        return skillCategoryList == null ? 0 : skillCategoryList.size();
+    }
+
+    public List<Tblusers> getRecentUsers() {
+        if (userList == null) {
+            return new ArrayList<>();
+        }
+
+        return userList.stream()
+                .filter(u -> u != null)
+                .sorted(Comparator.comparing(Tblusers::getCreatedDate,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .limit(5)
+                .toList();
+    }
+
+    public List<Tbljob> getRecentJobs() {
+        if (jobList == null) {
+            return new ArrayList<>();
+        }
+
+        return jobList.stream()
+                .filter(j -> j != null)
+                .sorted(Comparator.comparing(Tbljob::getJobPostedDate,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .limit(5)
+                .toList();
+    }
+
+    public List<Tblapplication> getRecentApplications() {
+        if (applicationList == null) {
+            return new ArrayList<>();
+        }
+
+        return applicationList.stream()
+                .filter(a -> a != null)
+                .sorted(Comparator.comparing(Tblapplication::getApplicationAppliedDate,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .limit(5)
+                .toList();
+    }
+
+    public String getUserRoleName(Tblusers user) {
+        if (user == null || user.getRoleId() == null || user.getRoleId().getRoleName() == null) {
+            return "-";
+        }
+
+        return user.getRoleId().getRoleName();
+    }
+
+    public String getUserStatusClass(Tblusers user) {
+        return user != null && Boolean.TRUE.equals(user.getUserIsActive()) ? "active" : "inactive";
+    }
+
+    public String getJobStatusClass(Tbljob job) {
+        if (job == null || job.getJobStatus() == null) {
+            return "default";
+        }
+
+        String status = job.getJobStatus().toLowerCase();
+
+        if (status.contains("open") || status.contains("active") || status.contains("approved")) {
+            return "open";
+        }
+
+        if (status.contains("close") || status.contains("reject") || status.contains("inactive")) {
+            return "closed";
+        }
+
+        return "pending";
+    }
+
+    public String getApplicationStatusClass(Tblapplication application) {
+        if (application == null || application.getApplicationStatus() == null) {
+            return "pending";
+        }
+
+        String status = application.getApplicationStatus().toLowerCase();
+
+        if (status.contains("select") || status.contains("shortlist") || status.contains("approve")) {
+            return "selected";
+        }
+
+        if (status.contains("reject")) {
+            return "rejected";
+        }
+
+        if (status.contains("review") || status.contains("screen")) {
+            return "review";
+        }
+
+        return "pending";
+    }
+
+    public String getApplicationCandidateName(Tblapplication application) {
+        try {
+            if (application != null
+                    && application.getCandidateId() != null
+                    && application.getCandidateId().getUserId() != null
+                    && application.getCandidateId().getUserId().getUserName() != null) {
+                return application.getCandidateId().getUserId().getUserName();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return "Candidate";
+    }
+
+    public String getApplicationJobTitle(Tblapplication application) {
+        try {
+            if (application != null
+                    && application.getJobId() != null
+                    && application.getJobId().getJobTitle() != null) {
+                return application.getJobId().getJobTitle();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return "Job";
+    }
+
     // ------- GET SESSION USER ------
     private int fetchAdminIdFromSession() {
 
@@ -119,20 +369,10 @@ public class AdminCDIBean implements Serializable {
     public int getLoggedInAdminId() {
         return fetchAdminIdFromSession();
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     /* ===============================================
         All Users
     ===================================================*/
-    
-    
     public void loadUsersPage() {
         activeTab = "CANDIDATES";
         loadCandidates();
@@ -164,7 +404,7 @@ public class AdminCDIBean implements Serializable {
             e.printStackTrace();
         }
     }
-    
+
     public void showCandidates() {
         activeTab = "CANDIDATES";
     }
@@ -172,7 +412,7 @@ public class AdminCDIBean implements Serializable {
     public void showRecruiters() {
         activeTab = "RECRUITERS";
     }
-    
+
     public String getProfilePhoto(Tblusers user) {
 
         try {
@@ -190,7 +430,7 @@ public class AdminCDIBean implements Serializable {
 
         return "default-user.png";
     }
-    
+
     public void toggleUserStatus(Tblusers user) {
 
         try {
@@ -215,32 +455,18 @@ public class AdminCDIBean implements Serializable {
             e.printStackTrace();
         }
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-        
+
     /* ===============================================
         Manage Skills
     ===================================================*/
-    
     public void loadSkillsPage() {
 
         if (!FacesContext.getCurrentInstance().isPostback()) {
-
-            activeTab = "CATEGORY";
-
-            loadSkillCategories();
-            loadSkills();
+            activeTab = "PENDING";
+            refreshSkillApprovals();
         }
     }
-    
+
     public void loadSkillCategories() {
 
         try {
@@ -258,8 +484,7 @@ public class AdminCDIBean implements Serializable {
             e.printStackTrace();
         }
     }
-    
-    
+
     public void loadSkills() {
 
         try {
@@ -277,26 +502,26 @@ public class AdminCDIBean implements Serializable {
             e.printStackTrace();
         }
     }
-    
-    
+
     public void showCategories() {
 
         activeTab = "CATEGORY";
 
-        loadSkillCategories();
+        refreshSkillApprovals();
+
     }
 
     public void showSkills() {
 
         activeTab = "SKILL";
 
-        loadSkills();
+        refreshSkillApprovals();
     }
-    
+
     public void saveCategory() {
 
         try {
-            
+
             if (categoryObj.getCategoryName() == null
                     || categoryObj.getCategoryName().trim().isEmpty()) {
 
@@ -345,8 +570,7 @@ public class AdminCDIBean implements Serializable {
 
             categoryObj = new Tblskillcategory();
 
-            loadSkillCategories();
-            loadSkills();
+            refreshSkillApprovals();
 
         } catch (Exception e) {
 
@@ -360,7 +584,7 @@ public class AdminCDIBean implements Serializable {
                             null));
         }
     }
-      
+
     public void editCategory(Tblskillcategory category) {
 
         try {
@@ -374,37 +598,111 @@ public class AdminCDIBean implements Serializable {
             e.printStackTrace();
         }
     }
-    
+
     public void deleteCategory(Integer categoryId) {
-
         try {
-
             Response response = getClient()
                     .target(BASE_URL + "/deleteSkillCategory/" + categoryId)
                     .request()
                     .delete();
 
             if (response.getStatus() == 200) {
-
-                loadSkillCategories();
-                loadSkills();
+                refreshSkillApprovals();
 
                 FacesContext.getCurrentInstance().addMessage(
                         null,
-                        new FacesMessage(
-                                FacesMessage.SEVERITY_INFO,
-                                "Category deleted successfully.",
-                                null));
-
+                        new FacesMessage(FacesMessage.SEVERITY_INFO,
+                                "Category deleted successfully.", null));
             } else {
+                FacesContext.getCurrentInstance().addMessage(
+                        null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Unable to delete category because skills may exist under it.", null));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            FacesContext.getCurrentInstance().addMessage(
+                    null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                            "Unable to delete category.", null));
+        }
+    }
+
+    // -----------------Skills-----------------
+    public void saveSkill() {
+
+        try {
+
+            if (skillObj.getSkillName() == null
+                    || skillObj.getSkillName().trim().isEmpty()) {
 
                 FacesContext.getCurrentInstance().addMessage(
                         null,
                         new FacesMessage(
                                 FacesMessage.SEVERITY_ERROR,
-                                "Unable to delete category because skills may exist under it.",
+                                "Please enter Skill.",
+                                null));
+
+                return;
+            }
+
+            if (selectedCategoryId == null) {
+
+                FacesContext.getCurrentInstance().addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_ERROR,
+                                "Please select a category.",
+                                null));
+
+                return;
+            }
+
+            Tblskillcategory category
+                    = new Tblskillcategory();
+
+            category.setCategoryId(
+                    selectedCategoryId);
+
+            skillObj.setCategoryId(
+                    category);
+
+            if (skillObj.getSkillId() == null) {
+
+                getClient()
+                        .target(BASE_URL + "/addSkill")
+                        .request()
+                        .post(Entity.entity(
+                                skillObj,
+                                MediaType.APPLICATION_JSON));
+
+                FacesContext.getCurrentInstance().addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_INFO,
+                                "Skill added successfully.",
+                                null));
+
+            } else {
+
+                getClient()
+                        .target(BASE_URL + "/updateSkill")
+                        .request()
+                        .put(Entity.entity(
+                                skillObj,
+                                MediaType.APPLICATION_JSON));
+
+                FacesContext.getCurrentInstance().addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_INFO,
+                                "Skill updated successfully.",
                                 null));
             }
+
+            skillObj = new Tblskills();
+            selectedCategoryId = null;
+            refreshSkillApprovals();
 
         } catch (Exception e) {
 
@@ -414,101 +712,11 @@ public class AdminCDIBean implements Serializable {
                     null,
                     new FacesMessage(
                             FacesMessage.SEVERITY_ERROR,
-                            "Unable to delete category.",
+                            "Unable to save skill.",
                             null));
         }
     }
-    
-    // -----------------Skills-----------------
-    public void saveSkill() {
 
-       try {
-
-           if (skillObj.getSkillName() == null
-                   || skillObj.getSkillName().trim().isEmpty()) {
-
-               FacesContext.getCurrentInstance().addMessage(
-                       null,
-                       new FacesMessage(
-                               FacesMessage.SEVERITY_ERROR,
-                               "Please enter Skill.",
-                               null));
-
-               return;
-           }
-
-           if (selectedCategoryId == null) {
-
-               FacesContext.getCurrentInstance().addMessage(
-                       null,
-                       new FacesMessage(
-                               FacesMessage.SEVERITY_ERROR,
-                               "Please select a category.",
-                               null));
-
-               return;
-           }
-
-           Tblskillcategory category =
-                   new Tblskillcategory();
-
-           category.setCategoryId(
-                   selectedCategoryId);
-
-           skillObj.setCategoryId(
-                   category);
-
-           if (skillObj.getSkillId() == null) {
-
-               getClient()
-                       .target(BASE_URL + "/addSkill")
-                       .request()
-                       .post(Entity.entity(
-                               skillObj,
-                               MediaType.APPLICATION_JSON));
-
-               FacesContext.getCurrentInstance().addMessage(
-                       null,
-                       new FacesMessage(
-                               FacesMessage.SEVERITY_INFO,
-                               "Skill added successfully.",
-                               null));
-
-           } else {
-
-               getClient()
-                       .target(BASE_URL + "/updateSkill")
-                       .request()
-                       .put(Entity.entity(
-                               skillObj,
-                               MediaType.APPLICATION_JSON));
-
-               FacesContext.getCurrentInstance().addMessage(
-                       null,
-                       new FacesMessage(
-                               FacesMessage.SEVERITY_INFO,
-                               "Skill updated successfully.",
-                               null));
-           }
-
-           skillObj = new Tblskills();
-           selectedCategoryId = null;
-
-           loadSkills();
-
-       } catch (Exception e) {
-
-           e.printStackTrace();
-
-           FacesContext.getCurrentInstance().addMessage(
-                   null,
-                   new FacesMessage(
-                           FacesMessage.SEVERITY_ERROR,
-                           "Unable to save skill.",
-                           null));
-       }
-   }
-    
     public void editSkill(Tblskills skill) {
 
         try {
@@ -517,8 +725,8 @@ public class AdminCDIBean implements Serializable {
 
             if (skill.getCategoryId() != null) {
 
-                selectedCategoryId =
-                        skill.getCategoryId().getCategoryId();
+                selectedCategoryId
+                        = skill.getCategoryId().getCategoryId();
             }
 
             activeTab = "SKILL";
@@ -532,8 +740,7 @@ public class AdminCDIBean implements Serializable {
             e.printStackTrace();
         }
     }
-    
-    
+
     public void deleteSkill(Integer skillId) {
 
         try {
@@ -543,7 +750,7 @@ public class AdminCDIBean implements Serializable {
                     .request()
                     .delete();
 
-            loadSkills();
+            refreshSkillApprovals();
 
             FacesContext.getCurrentInstance().addMessage(
                     null,
@@ -565,18 +772,58 @@ public class AdminCDIBean implements Serializable {
         }
     }
 
-    
-    
+    public String getUserNameById(Integer userId) {
+        if (userId == null) {
+            return "-";
+        }
 
-    
-    
-    
-    
-    
+        try {
+            for (Tblusers user : getClient()
+                    .target(BASE_URL + "/getAllUsers")
+                    .request(MediaType.APPLICATION_JSON)
+                    .get(new GenericType<Collection<Tblusers>>() {
+                    })) {
+
+                if (user != null && user.getUserId() != null
+                        && user.getUserId().equals(userId)) {
+                    return user.getUserName();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return "User " + userId;
+    }
+
+    public String getUserRoleById(Integer userId) {
+        if (userId == null) {
+            return "-";
+        }
+
+        try {
+            for (Tblusers user : getClient()
+                    .target(BASE_URL + "/getAllUsers")
+                    .request(MediaType.APPLICATION_JSON)
+                    .get(new GenericType<Collection<Tblusers>>() {
+                    })) {
+
+                if (user != null && user.getUserId() != null
+                        && user.getUserId().equals(userId)
+                        && user.getRoleId() != null) {
+                    return user.getRoleId().getRoleName();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return "User";
+    }
+
     /* ===============================================
         Manage Companies
     ===================================================*/
-    
     public void loadCompanies() {
         try {
             showCompanyForm = false;
@@ -586,14 +833,15 @@ public class AdminCDIBean implements Serializable {
             Response response = target.request().get();
 
             if (response.getStatus() == 200) {
-                companyList = response.readEntity(new GenericType<Collection<Tblcompany>>() {});
+                companyList = response.readEntity(new GenericType<Collection<Tblcompany>>() {
+                });
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     public int getActiveCompanyCount() {
 
         int count = 0;
@@ -610,18 +858,18 @@ public class AdminCDIBean implements Serializable {
 
         return count;
     }
-    
+
     public void showAddCompanyForm() {
         companyObj = new Tblcompany();
         companyObj.setIsActive(true);
         showCompanyForm = true;
     }
-    
+
     public void cancelCompanyForm() {
         companyObj = new Tblcompany();
         showCompanyForm = false;
     }
-    
+
     public void saveCompany() {
         try {
 
@@ -697,7 +945,7 @@ public class AdminCDIBean implements Serializable {
                             "Unable to save company"));
         }
     }
-    
+
     public void editCompany(Tblcompany company) {
         try {
 
@@ -710,7 +958,7 @@ public class AdminCDIBean implements Serializable {
             e.printStackTrace();
         }
     }
-    
+
     public void deleteCompany(Integer companyId) {
         try {
 
@@ -752,7 +1000,7 @@ public class AdminCDIBean implements Serializable {
                             "Unable to delete company"));
         }
     }
-    
+
     public void toggleCompanyStatus(Tblcompany company) {
         try {
 
@@ -796,32 +1044,24 @@ public class AdminCDIBean implements Serializable {
                             "Unable to update company status"));
         }
     }
-    
-    
-    
-    
-    
 
-    
-    
-    
     /* ===============================================
         Jobs
     ===================================================*/
-    
     public void loadJobs() {
         try {
             WebTarget target = getClient().target(BASE_URL + "/getAllJobs");
 
             jobList = target.request(MediaType.APPLICATION_JSON)
-                    .get(new GenericType<Collection<Tbljob>>() {});
+                    .get(new GenericType<Collection<Tbljob>>() {
+                    });
 
             jobList = new ArrayList<>(jobList);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     public void loadJobDetails(Integer jobId) {
         try {
 
@@ -829,14 +1069,13 @@ public class AdminCDIBean implements Serializable {
                     BASE_URL + "/getJobByJobId/" + jobId);
 
             selectedJob = target.request(MediaType.APPLICATION_JSON)
-                                .get(Tbljob.class);
+                    .get(Tbljob.class);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    
     public int getOpenJobCount() {
 
         if (jobList == null) {
@@ -845,27 +1084,13 @@ public class AdminCDIBean implements Serializable {
 
         return (int) jobList.stream()
                 .filter(job -> job.getJobStatus() != null
-                        && job.getJobStatus().equalsIgnoreCase("Open"))
+                && job.getJobStatus().equalsIgnoreCase("Open"))
                 .count();
     }
-    
-    
-    
-    
-    
-  
-    
-    
-    
-    
-    
-    
-    
-    
+
     /* ===============================================
         Profile
     ===================================================*/
-
     public void loadProfileData() {
 
         try {
@@ -928,7 +1153,6 @@ public class AdminCDIBean implements Serializable {
 
         try {
             System.out.println("JSF METHOD CALLED");
-            
 
             if (!newPassword.equals(confirmPassword)) {
 
@@ -946,7 +1170,6 @@ public class AdminCDIBean implements Serializable {
                     .queryParam("newPassword", newPassword)
                     .request()
                     .put(Entity.text(""));
-            
 
             String msg = response.readEntity(String.class);
 
@@ -973,7 +1196,7 @@ public class AdminCDIBean implements Serializable {
             e.printStackTrace();
         }
     }
-    
+
     public void uploadProfilePhoto() {
 
         try {
@@ -992,18 +1215,18 @@ public class AdminCDIBean implements Serializable {
                 return;
             }
 
-            String basePath =
-                    "D:/QuickHireUploads/profilephotos/";
+            String basePath
+                    = "D:/QuickHireUploads/profilephotos/";
 
             Files.createDirectories(Paths.get(basePath));
 
-            String fileName =
-                    Paths.get(profilePhoto.getSubmittedFileName())
+            String fileName
+                    = Paths.get(profilePhoto.getSubmittedFileName())
                             .getFileName()
                             .toString();
 
-            String uniqueName =
-                    System.currentTimeMillis()
+            String uniqueName
+                    = System.currentTimeMillis()
                     + "_ADMIN_"
                     + fileName;
 
@@ -1061,31 +1284,14 @@ public class AdminCDIBean implements Serializable {
         return "default-user.png";
     }
 
-  
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     /* ===============================================
         Notifications
     ===================================================*/
-    
     // ================= NOTIFICATIONS =================
-
     private List<Tblnotification> notificationList = new ArrayList<>();
     private String notificationFilter = "ALL";
 
     // ================= NOTIFICATION METHODS =================
-
     public void loadNotificationsPage() {
 
         int adminId = getLoggedInAdminId();
@@ -1235,6 +1441,118 @@ public class AdminCDIBean implements Serializable {
         return "alert";
     }
 
+    //skills
+    public void refreshSkillApprovals() {
+        loadPendingSkills();
+        loadPendingCategories();
+        loadApprovedSkills();
+        loadApprovedCategories();
+        loadSkillCategories();
+        loadSkills();
+    }
+
+    public void showPendingApprovals() {
+        activeTab = "PENDING";
+        refreshSkillApprovals();
+    }
+
+    public void loadPendingSkills() {
+        try {
+            pendingSkillList = getClient()
+                    .target(BASE_URL + "/pendingSkills")
+                    .request(MediaType.APPLICATION_JSON)
+                    .get(new GenericType<Collection<Tblskills>>() {
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+            pendingSkillList = new ArrayList<>();
+        }
+    }
+
+    public void loadPendingCategories() {
+        try {
+            pendingCategoryList = getClient()
+                    .target(BASE_URL + "/pendingCategories")
+                    .request(MediaType.APPLICATION_JSON)
+                    .get(new GenericType<Collection<Tblskillcategory>>() {
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+            pendingCategoryList = new ArrayList<>();
+        }
+    }
+
+    public void loadApprovedSkills() {
+        try {
+            approvedSkillList = getClient()
+                    .target(BASE_URL + "/approvedSkills")
+                    .request(MediaType.APPLICATION_JSON)
+                    .get(new GenericType<Collection<Tblskills>>() {
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+            approvedSkillList = new ArrayList<>();
+        }
+    }
+
+    public void loadApprovedCategories() {
+        try {
+            approvedCategoryList = getClient()
+                    .target(BASE_URL + "/approvedCategories")
+                    .request(MediaType.APPLICATION_JSON)
+                    .get(new GenericType<Collection<Tblskillcategory>>() {
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+            approvedCategoryList = new ArrayList<>();
+        }
+    }
+
+    public void approveSkill(Integer skillId) {
+        callSkillAction("/approveSkill", "skillId", skillId, "Skill approved successfully.");
+    }
+
+    public void rejectSkill(Integer skillId) {
+        callSkillAction("/rejectSkill", "skillId", skillId, "Skill disapproved successfully.");
+    }
+
+    public void approveCategory(Integer categoryId) {
+        callSkillAction("/approveCategory", "categoryId", categoryId, "Category approved successfully.");
+    }
+
+    public void rejectCategory(Integer categoryId) {
+        callSkillAction("/rejectCategory", "categoryId", categoryId, "Category disapproved successfully.");
+    }
+
+    private void callSkillAction(String path, String idName, Integer id, String successMessage) {
+        try {
+            Response response = getClient()
+                    .target(BASE_URL + path)
+                    .queryParam(idName, id)
+                    .queryParam("adminUserId", getLoggedInAdminId())
+                    .request()
+                    .put(Entity.text(""));
+
+            handleActionResponse(response, successMessage);
+        } catch (Exception e) {
+            e.printStackTrace();
+            addMessage(FacesMessage.SEVERITY_ERROR, "Action failed.");
+        }
+    }
+
+    private void handleActionResponse(Response response, String successMessage) {
+        if (response.getStatus() == 200) {
+            addMessage(FacesMessage.SEVERITY_INFO, successMessage);
+            refreshSkillApprovals();
+        } else {
+            addMessage(FacesMessage.SEVERITY_ERROR, response.readEntity(String.class));
+        }
+    }
+
+    private void addMessage(FacesMessage.Severity severity, String message) {
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, message, null));
+    }
+
     public List<Tblnotification> getNotificationList() {
         return notificationList;
     }
@@ -1250,23 +1568,8 @@ public class AdminCDIBean implements Serializable {
     public void setNotificationFilter(String notificationFilter) {
         this.notificationFilter = notificationFilter;
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     // ================= GETTERS & SETTERS =================
-    
     public LoginCDIBean getLoginBean() {
         return loginBean;
     }
@@ -1290,7 +1593,7 @@ public class AdminCDIBean implements Serializable {
     public void setCandidateList(Collection<Tblcandidates> candidateList) {
         this.candidateList = candidateList;
     }
-    
+
     public String getActiveTab() {
         return activeTab;
     }
@@ -1298,8 +1601,8 @@ public class AdminCDIBean implements Serializable {
     public void setActiveTab(String activeTab) {
         this.activeTab = activeTab;
     }
-    
-        public Collection<Tblskillcategory> getSkillCategoryList() {
+
+    public Collection<Tblskillcategory> getSkillCategoryList() {
         return skillCategoryList;
     }
 
@@ -1338,8 +1641,8 @@ public class AdminCDIBean implements Serializable {
     public void setSelectedCategoryId(Integer selectedCategoryId) {
         this.selectedCategoryId = selectedCategoryId;
     }
-    
-        public Collection<Tblcompany> getCompanyList() {
+
+    public Collection<Tblcompany> getCompanyList() {
         return companyList;
     }
 
@@ -1362,7 +1665,7 @@ public class AdminCDIBean implements Serializable {
     public void setShowCompanyForm(boolean showCompanyForm) {
         this.showCompanyForm = showCompanyForm;
     }
-    
+
     public Collection<Tbljob> getJobList() {
         return jobList;
     }
@@ -1378,8 +1681,8 @@ public class AdminCDIBean implements Serializable {
     public void setSelectedJob(Tbljob selectedJob) {
         this.selectedJob = selectedJob;
     }
-    
-      public Tblusers getUserObj() {
+
+    public Tblusers getUserObj() {
         return userObj;
     }
 
@@ -1418,4 +1721,61 @@ public class AdminCDIBean implements Serializable {
     public void setProfilePhoto(Part profilePhoto) {
         this.profilePhoto = profilePhoto;
     }
+
+    public Collection<Tblskills> getPendingSkillList() {
+        return pendingSkillList;
+    }
+
+    public void setPendingSkillList(Collection<Tblskills> pendingSkillList) {
+        this.pendingSkillList = pendingSkillList;
+    }
+
+    public Collection<Tblskillcategory> getPendingCategoryList() {
+        return pendingCategoryList;
+    }
+
+    public void setPendingCategoryList(Collection<Tblskillcategory> pendingCategoryList) {
+        this.pendingCategoryList = pendingCategoryList;
+    }
+
+    public Collection<Tblskills> getApprovedSkillList() {
+        return approvedSkillList;
+    }
+
+    public void setApprovedSkillList(Collection<Tblskills> approvedSkillList) {
+        this.approvedSkillList = approvedSkillList;
+    }
+
+    public Collection<Tblskillcategory> getApprovedCategoryList() {
+        return approvedCategoryList;
+    }
+
+    public void setApprovedCategoryList(Collection<Tblskillcategory> approvedCategoryList) {
+        this.approvedCategoryList = approvedCategoryList;
+    }
+
+    public Collection<Tblusers> getUserList() {
+        return userList;
+    }
+
+    public void setUserList(Collection<Tblusers> userList) {
+        this.userList = userList;
+    }
+
+    public Collection<Tblapplication> getApplicationList() {
+        return applicationList;
+    }
+
+    public void setApplicationList(Collection<Tblapplication> applicationList) {
+        this.applicationList = applicationList;
+    }
+
+    public Collection<Tblinterview> getInterviewList() {
+        return interviewList;
+    }
+
+    public void setInterviewList(Collection<Tblinterview> interviewList) {
+        this.interviewList = interviewList;
+    }
+
 }

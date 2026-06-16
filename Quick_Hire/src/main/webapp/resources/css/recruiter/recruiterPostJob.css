@@ -1836,6 +1836,17 @@ SELECTED SKILLS - FULL WIDTH & RICH UI (ENHANCED)
     display:none;
 }
 
+
+.postjob-no-skill-msg {
+    padding: 12px 14px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #64748b;
+    font-weight: 800;
+    text-align: center;
+}
+
 /* =========================
 RESPONSIVE
 ========================= */

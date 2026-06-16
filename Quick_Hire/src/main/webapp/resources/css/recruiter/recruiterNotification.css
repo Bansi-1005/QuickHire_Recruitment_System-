@@ -1,11 +1,7 @@
 /*
  * recruiterNotification.css
- * Notification page styles for recruiters
+ * Notification and activity page styles for recruiters.
  */
-
-/* ============================================
-   LAYOUT & PAGE STRUCTURE
-   ============================================ */
 
 .notification-page {
     display: flex;
@@ -29,10 +25,6 @@
     width: 100%;
     box-sizing: border-box;
 }
-
-/* ============================================
-   HERO SECTION
-   ============================================ */
 
 .notification-hero {
     display: flex;
@@ -71,7 +63,6 @@
     font-size: 34px;
     line-height: 1.15;
     font-weight: 800;
-    
 }
 
 .notification-hero p {
@@ -90,10 +81,6 @@
     justify-content: flex-end;
     flex-wrap: wrap;
 }
-
-/* ============================================
-   STATS CARDS
-   ============================================ */
 
 .notification-stats {
     display: grid;
@@ -143,14 +130,13 @@
 .notification-stat-warning { border-left: 4px solid #ff9f43; }
 .notification-stat-warning strong { color: #ff9f43; }
 
-/* ============================================
-   TABS
-   ============================================ */
-
-.notification-tabs-panel {
+.notification-mode-panel,
+.notification-tabs-panel,
+.notification-filter-panel {
     margin-bottom: 24px;
 }
 
+.notification-mode-tabs,
 .notification-tabs-wrapper {
     display: flex !important;
     flex-direction: row !important;
@@ -165,6 +151,7 @@
     overflow-x: auto;
 }
 
+.notification-mode-btn,
 .notification-tab-btn {
     display: inline-flex;
     align-items: center;
@@ -183,11 +170,18 @@
     transition: background 0.2s ease, color 0.2s ease;
 }
 
+.notification-mode-btn {
+    min-width: 170px;
+}
+
+.notification-mode-btn:hover,
 .notification-tab-btn:hover {
     background: rgba(15, 92, 117, 0.08);
     color: #0f5c75;
 }
 
+.notification-mode-btn-active,
+.notification-mode-btn-active:hover,
 .notification-tab-btn-active,
 .notification-tab-btn-active:hover {
     background: #0f5c75;
@@ -211,17 +205,10 @@
     font-weight: 800;
 }
 
+.notification-mode-btn-active .notification-tab-count,
 .notification-tab-btn-active .notification-tab-count {
     background: rgba(255, 255, 255, 0.25);
     color: #ffffff;
-}
-
-/* ============================================
-   FILTER SECTION
-   ============================================ */
-
-.notification-filter-panel {
-    margin-bottom: 24px;
 }
 
 .notification-filter-panel,
@@ -364,10 +351,6 @@
     flex-wrap: wrap;
 }
 
-/* ============================================
-   BUTTONS
-   ============================================ */
-
 .notification-btn {
     display: inline-flex;
     align-items: center;
@@ -391,23 +374,14 @@
     cursor: not-allowed;
 }
 
-.notification-btn-primary {
-    background: #0f5c75;
-    color: #ffffff;
-}
-
-.notification-btn-primary:hover {
-    background: #0d4d62;
-}
-
 .notification-btn-secondary {
-    border-color: rgba(15, 92, 117, 0.22);
-    background: rgba(15, 92, 117, 0.1);
+    border-color: rgba(255, 255, 255, 0.34);
+    background: rgba(255, 255, 255, 0.16);
     color: #ffffff !important;
 }
 
 .notification-btn-secondary:hover {
-    background: rgba(15, 92, 117, 0.18);
+    background: rgba(255, 255, 255, 0.24);
 }
 
 .notification-btn-light {
@@ -433,18 +407,17 @@
     background: rgba(15, 133, 125, 0.18);
 }
 
-
 .notification-results-panel {
     margin-bottom: 24px;
     min-height: 220px;
     overflow: visible;
 }
 
-.notification-list-wrap {
+.notification-list-wrap,
+.notification-list {
     display: block !important;
     width: 100% !important;
     max-width: 100% !important;
-    overflow: visible !important;
     box-sizing: border-box;
 }
 
@@ -453,10 +426,6 @@
     flex-direction: column !important;
     align-items: stretch !important;
     gap: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box;
-    clear: both;
 }
 
 .notification-item {
@@ -469,8 +438,6 @@
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
-    float: none !important;
-    clear: both !important;
     margin: 0 !important;
     padding: 22px 20px !important;
     border: 0;
@@ -478,7 +445,6 @@
     border-radius: 0;
     background: #ffffff;
     box-sizing: border-box;
-    overflow: visible;
 }
 
 .notification-item.notification-hidden {
@@ -495,6 +461,10 @@
 
 .notification-item-read {
     background: #f8fafb;
+}
+
+.notification-mode-activities {
+    background: linear-gradient(90deg, rgba(255, 159, 67, 0.08), #ffffff 68%);
 }
 
 .notification-item-icon {
@@ -581,6 +551,11 @@
     white-space: nowrap;
 }
 
+.notification-item-type.activity-type {
+    background: rgba(255, 159, 67, 0.18);
+    color: #b66b00;
+}
+
 .notification-item-message {
     width: 100%;
     margin: 0 0 11px;
@@ -588,7 +563,6 @@
     font-size: 15px;
     line-height: 1.55;
     overflow-wrap: anywhere;
-    word-break: normal;
 }
 
 .notification-item-meta {
@@ -634,9 +608,10 @@
     font-weight: 800;
 }
 
-/* ============================================
-   EMPTY STATE
-   ============================================ */
+.notification-item-read-badge.activity-badge {
+    background: rgba(255, 159, 67, 0.16);
+    color: #b66b00;
+}
 
 .notification-empty-state {
     display: none;
@@ -665,10 +640,6 @@
     font-size: 15px;
 }
 
-/* ============================================
-   LOAD MORE
-   ============================================ */
-
 .notification-loadmore-wrap {
     display: flex;
     justify-content: center;
@@ -695,10 +666,6 @@
     background: rgba(15, 92, 117, 0.05);
     border-color: rgba(15, 92, 117, 0.32);
 }
-
-/* ============================================
-   MESSAGE WRAPPER
-   ============================================ */
 
 .notification-global-message-wrap {
     width: 100%;
@@ -739,10 +706,6 @@
     background: rgba(255, 159, 67, 0.1);
     color: #b66b00;
 }
-
-/* ============================================
-   RESPONSIVE
-   ============================================ */
 
 @media (max-width: 1200px) {
     .notification-stats {
@@ -803,10 +766,12 @@
         width: 100%;
     }
 
+    .notification-mode-tabs,
     .notification-tabs-wrapper {
         align-items: stretch;
     }
 
+    .notification-mode-btn,
     .notification-tab-btn {
         padding: 10px 14px;
         font-size: 13px;

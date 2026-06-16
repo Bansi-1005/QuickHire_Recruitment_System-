@@ -6,352 +6,642 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
 
-<f:metadata>
-    <f:viewAction action="#{loginBean.checkLogin}" />
-    <f:viewAction action="#{adminCDIBean.loadSkillsPage}" />
-</f:metadata>
+    <f:metadata>
+        <f:viewAction action="#{loginBean.checkLogin}" />
+        <f:viewAction action="#{adminCDIBean.loadSkillsPage}" />
+    </f:metadata>
 
-<h:head>
-    <title>Skills</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <h:outputStylesheet library="css" name="admin/admin.css" />
-    <h:outputStylesheet library="css" name="admin/manageSkills.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-</h:head>
+    <h:head>
+        <title>Manage Skills</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <h:outputStylesheet library="css" name="admin/admin.css" />
+        <h:outputStylesheet library="css" name="admin/manageSkills.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    </h:head>
 
-<h:body>
-    <ui:include src="/common/header.xhtml" />
+    <h:body>
+        <ui:include src="/common/header.xhtml" />
 
-    <h:panelGroup rendered="#{loginBean.role eq 'Admin'}" layout="block">
-        <div class="dashboard-layout">
+        <h:panelGroup rendered="#{loginBean.role eq 'Admin'}" layout="block">
+            <div class="dashboard-layout">
+                <ui:include src="/admin/sidebar.xhtml">
+                    <ui:param name="activePage" value="manageSkills" />
+                </ui:include>
 
-            <ui:include src="/admin/sidebar.xhtml">
-                <ui:param name="activePage" value="manageSkills" />
-            </ui:include>
+                <main class="main skills-main">
+                    <h:form id="skillsForm">
+                        <h:panelGroup id="toastPanel" layout="block" styleClass="toast-stack">
+                            <h:messages id="messages"
+                                        globalOnly="true"
+                                        showDetail="true"
+                                        showSummary="false"
+                                        layout="list"
+                                        infoClass="toast success"
+                                        warnClass="toast warning"
+                                        errorClass="toast error"
+                                        fatalClass="toast error" />
+                        </h:panelGroup>
 
-            <main class="main" id="main">
+                        <h:panelGroup id="heroPanel" layout="block">
+                            <section class="skills-hero">
+                                <div class="skills-hero-copy">
+                                    <span class="hero-kicker">Skill Library</span>
+                                    <h1>Manage Skills</h1>
+                                    <p>Approve recruiter requests, maintain approved categories, and keep skills clean for every recruiter.</p>
+                                </div>
 
-                <h:form id="msgForm">
-                    <h:messages id="messages" globalOnly="true" showDetail="true" showSummary="false"
-                                styleClass="custom-toast" infoClass="info" warnClass="warn" errorClass="error" fatalClass="error"/>
-                </h:form>
+                                <div class="hero-metrics">
+                                    <article>
+                                        <span>Pending</span>
+                                        <strong>#{adminCDIBean.pendingSkillList.size() + adminCDIBean.pendingCategoryList.size()}</strong>
+                                    </article>
+                                    <article>
+                                        <span>Approved Skills</span>
+                                        <strong>#{adminCDIBean.approvedSkillList.size()}</strong>
+                                    </article>
+                                    <article>
+                                        <span>Categories</span>
+                                        <strong>#{adminCDIBean.approvedCategoryList.size()}</strong>
+                                    </article>
+                                </div>
+                            </section>
+                        </h:panelGroup>
 
-                <section class="hero">
-                    <div class="hero-grid">
-                        <div>
-                            <div class="welcome-tag">Skills</div>
-                            <h1>Manage Skills &amp; Categories</h1>
-                            <p>
-                                Create, update and manage skill categories and skills
-                                used throughout the recruitment platform.
-                            </p>
-                        </div>
+                        <section class="toolbar-panel">
+                            <div class="tabs" role="tablist">
+                                <h:commandLink value="Pending Review"
+                                               action="#{adminCDIBean.showPendingApprovals}"
+                                               styleClass="#{adminCDIBean.activeTab eq 'PENDING' ? 'tab active' : 'tab'}"
+                                               onclick="markManageSkillAction('tab');">
+                                    <f:ajax execute="@this"
+                                            render=":skillsForm:toastPanel :skillsForm:heroPanel :skillsForm:pagePanel"
+                                            onevent="manageSkillsAfterAjax" />
+                                </h:commandLink>
 
-                        <div class="hero-stats">
-                            <div class="hero-mini-card">
-                                <span>Total Categories</span>
-                                <strong>#{adminCDIBean.skillCategoryList.size()}</strong>
+                                <h:commandLink value="Categories"
+                                               action="#{adminCDIBean.showCategories}"
+                                               styleClass="#{adminCDIBean.activeTab eq 'CATEGORY' ? 'tab active' : 'tab'}"
+                                               onclick="markManageSkillAction('tab');">
+                                    <f:ajax execute="@this"
+                                            render=":skillsForm:toastPanel :skillsForm:heroPanel :skillsForm:pagePanel"
+                                            onevent="manageSkillsAfterAjax" />
+                                </h:commandLink>
+
+                                <h:commandLink value="Skills"
+                                               action="#{adminCDIBean.showSkills}"
+                                               styleClass="#{adminCDIBean.activeTab eq 'SKILL' ? 'tab active' : 'tab'}"
+                                               onclick="markManageSkillAction('tab');">
+                                    <f:ajax execute="@this"
+                                            render=":skillsForm:toastPanel :skillsForm:heroPanel :skillsForm:pagePanel"
+                                            onevent="manageSkillsAfterAjax" />
+                                </h:commandLink>
                             </div>
 
-                            <div class="hero-mini-card">
-                                <span>Total Skills</span>
-                                <strong>#{adminCDIBean.skillList.size()}</strong>
+                            <div class="toolbar-actions">
+                                <input type="text"
+                                       id="skillPageSearch"
+                                       class="search-control"
+                                       placeholder="Search current table" />
+
+                                <h:commandButton value="Refresh"
+                                                 action="#{adminCDIBean.refreshSkillApprovals}"
+                                                 styleClass="btn btn-light"
+                                                 onclick="markManageSkillAction('refresh');">
+                                    <f:ajax execute="@this"
+                                            render=":skillsForm:toastPanel :skillsForm:heroPanel :skillsForm:pagePanel"
+                                            onevent="manageSkillsAfterAjax" />
+                                </h:commandButton>
                             </div>
-                        </div>
+                        </section>
+
+                        <h:panelGroup id="pagePanel" layout="block">
+                            <h:panelGroup rendered="#{adminCDIBean.activeTab eq 'PENDING'}" layout="block">
+                                <section class="panel">
+                                    <div class="section-heading">
+                                        <div>
+                                            <h2>Pending Categories</h2>
+                                            <p>New category requests waiting for admin approval.</p>
+                                        </div>
+                                        <span class="count-pill">#{adminCDIBean.pendingCategoryList.size()}</span>
+                                    </div>
+
+                                    <div class="table-wrap">
+                                        <table class="data-table searchable-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Category</th>
+                                                    <th>Status</th>
+                                                    <th>Requested By</th>
+                                                    <th>Created Date</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <ui:repeat value="#{adminCDIBean.pendingCategoryList}" var="cat">
+                                                    <tr>
+                                                        <td><strong>#{cat.categoryName}</strong></td>
+                                                        <td><span class="status pending">#{cat.categoryStatus}</span></td>
+                                                        <td>
+                                                            <span class="user-cell">#{adminCDIBean.getUserNameById(cat.createdByUserId)}</span>
+                                                            <span class="role-chip">#{adminCDIBean.getUserRoleById(cat.createdByUserId)}</span>
+                                                        </td>
+                                                        <td>
+                                                            <h:outputText value="#{cat.createdDate}">
+                                                                <f:convertDateTime pattern="dd MMM yyyy, hh:mm a" />
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td>
+                                                            <div class="action-row">
+                                                                <h:commandButton value="Approve"
+                                                                                 action="#{adminCDIBean.approveCategory(cat.categoryId)}"
+                                                                                 styleClass="btn btn-approve"
+                                                                                 onclick="markManageSkillAction('action');">
+                                                                    <f:ajax execute="@this"
+                                                                            render=":skillsForm:toastPanel :skillsForm:heroPanel :skillsForm:pagePanel"
+                                                                            onevent="manageSkillsAfterAjax" />
+                                                                </h:commandButton>
+
+                                                                <button type="button"
+                                                                        class="btn btn-disapprove"
+                                                                        onclick="openActionModal('Disapprove category', 'This category request will be disapproved.', this);">
+                                                                    Disapprove
+                                                                </button>
+                                                                <h:commandButton value="Disapprove"
+                                                                                 action="#{adminCDIBean.rejectCategory(cat.categoryId)}"
+                                                                                 styleClass="js-confirm-action">
+                                                                    <f:ajax execute="@this"
+                                                                            render=":skillsForm:toastPanel :skillsForm:heroPanel :skillsForm:pagePanel"
+                                                                            onevent="manageSkillsAfterAjax" />
+                                                                </h:commandButton>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </ui:repeat>
+
+                                                <h:panelGroup rendered="#{empty adminCDIBean.pendingCategoryList}">
+                                                    <tr>
+                                                        <td colspan="5" class="empty-cell">No pending categories.</td>
+                                                    </tr>
+                                                </h:panelGroup>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </section>
+
+                                <section class="panel">
+                                    <div class="section-heading">
+                                        <div>
+                                            <h2>Pending Skills</h2>
+                                            <p>New skill requests waiting for admin approval.</p>
+                                        </div>
+                                        <span class="count-pill">#{adminCDIBean.pendingSkillList.size()}</span>
+                                    </div>
+
+                                    <div class="table-wrap">
+                                        <table class="data-table searchable-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Skill</th>
+                                                    <th>Category</th>
+                                                    <th>Status</th>
+                                                    <th>Requested By</th>
+                                                    <th>Created Date</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <ui:repeat value="#{adminCDIBean.pendingSkillList}" var="skill">
+                                                    <tr>
+                                                        <td><strong>#{skill.skillName}</strong></td>
+                                                        <td>#{empty skill.categoryId ? '-' : skill.categoryId.categoryName}</td>
+                                                        <td><span class="status pending">#{skill.skillStatus}</span></td>
+                                                        <td>
+                                                            <span class="user-cell">#{adminCDIBean.getUserNameById(skill.createdByUserId)}</span>
+                                                            <span class="role-chip">#{adminCDIBean.getUserRoleById(skill.createdByUserId)}</span>
+                                                        </td>
+                                                        <td>
+                                                            <h:outputText value="#{skill.createdDate}">
+                                                                <f:convertDateTime pattern="dd MMM yyyy, hh:mm a" />
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td>
+                                                            <div class="action-row">
+                                                                <h:commandButton value="Approve"
+                                                                                 action="#{adminCDIBean.approveSkill(skill.skillId)}"
+                                                                                 styleClass="btn btn-approve"
+                                                                                 onclick="markManageSkillAction('action');">
+                                                                    <f:ajax execute="@this"
+                                                                            render=":skillsForm:toastPanel :skillsForm:heroPanel :skillsForm:pagePanel"
+                                                                            onevent="manageSkillsAfterAjax" />
+                                                                </h:commandButton>
+
+                                                                <button type="button"
+                                                                        class="btn btn-disapprove"
+                                                                        onclick="openActionModal('Disapprove skill', 'This skill request will be disapproved.', this);">
+                                                                    Disapprove
+                                                                </button>
+                                                                <h:commandButton value="Disapprove"
+                                                                                 action="#{adminCDIBean.rejectSkill(skill.skillId)}"
+                                                                                 styleClass="js-confirm-action">
+                                                                    <f:ajax execute="@this"
+                                                                            render=":skillsForm:toastPanel :skillsForm:heroPanel :skillsForm:pagePanel"
+                                                                            onevent="manageSkillsAfterAjax" />
+                                                                </h:commandButton>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </ui:repeat>
+
+                                                <h:panelGroup rendered="#{empty adminCDIBean.pendingSkillList}">
+                                                    <tr>
+                                                        <td colspan="6" class="empty-cell">No pending skills.</td>
+                                                    </tr>
+                                                </h:panelGroup>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </section>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{adminCDIBean.activeTab eq 'CATEGORY'}" layout="block">
+                                <section id="categoryEditPanel" class="panel form-panel">
+                                    <div class="section-heading">
+                                        <div>
+                                            <h2>#{empty adminCDIBean.categoryObj.categoryId ? 'Add Category' : 'Edit Category'}</h2>
+                                            <p>Admin-created categories are approved immediately.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="inline-form">
+                                        <div class="field-group">
+                                            <h:inputText id="categoryName"
+                                                         value="#{adminCDIBean.categoryObj.categoryName}"
+                                                         styleClass="form-control"
+                                                         pt:placeholder="Category Name" />
+                                        </div>
+
+                                        <h:commandButton value="#{empty adminCDIBean.categoryObj.categoryId ? 'Add Category' : 'Update Category'}"
+                                                         action="#{adminCDIBean.saveCategory}"
+                                                         styleClass="btn btn-approve"
+                                                         onclick="markManageSkillAction('save');">
+                                            <f:ajax execute="@form"
+                                                    render=":skillsForm:toastPanel :skillsForm:heroPanel :skillsForm:pagePanel"
+                                                    onevent="manageSkillsAfterAjax" />
+                                        </h:commandButton>
+                                    </div>
+                                </section>
+
+                                <section class="panel">
+                                    <div class="section-heading">
+                                        <div>
+                                            <h2>Approved Categories</h2>
+                                            <p>These categories are visible on recruiter pages.</p>
+                                        </div>
+                                        <span class="count-pill">#{adminCDIBean.approvedCategoryList.size()}</span>
+                                    </div>
+
+                                    <div class="table-wrap">
+                                        <table class="data-table searchable-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Category</th>
+                                                    <th>Status</th>
+                                                    <th>Created By</th>
+                                                    <th>Created Date</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <ui:repeat value="#{adminCDIBean.approvedCategoryList}" var="cat">
+                                                    <tr>
+                                                        <td><strong>#{cat.categoryName}</strong></td>
+                                                        <td><span class="status approved">#{cat.categoryStatus}</span></td>
+                                                        <td>
+                                                            <span class="user-cell">#{adminCDIBean.getUserNameById(cat.createdByUserId)}</span>
+                                                            <span class="role-chip">#{adminCDIBean.getUserRoleById(cat.createdByUserId)}</span>
+                                                        </td>
+                                                        <td>
+                                                            <h:outputText value="#{cat.createdDate}">
+                                                                <f:convertDateTime pattern="dd MMM yyyy" />
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td>
+                                                            <div class="action-row">
+                                                                <h:commandButton value="Edit"
+                                                                                 action="#{adminCDIBean.editCategory(cat)}"
+                                                                                 styleClass="btn btn-light"
+                                                                                 onclick="markManageSkillAction('editCategory');">
+                                                                    <f:ajax execute="@this"
+                                                                            render=":skillsForm:toastPanel :skillsForm:heroPanel :skillsForm:pagePanel"
+                                                                            onevent="manageSkillsAfterAjax" />
+                                                                </h:commandButton>
+
+                                                                <button type="button"
+                                                                        class="btn btn-disapprove"
+                                                                        onclick="openActionModal('Delete category', 'This approved category will be deleted.', this);">
+                                                                    Delete
+                                                                </button>
+                                                                <h:commandButton value="Delete"
+                                                                                 action="#{adminCDIBean.deleteCategory(cat.categoryId)}"
+                                                                                 styleClass="js-confirm-action">
+                                                                    <f:ajax execute="@this"
+                                                                            render=":skillsForm:toastPanel :skillsForm:heroPanel :skillsForm:pagePanel"
+                                                                            onevent="manageSkillsAfterAjax" />
+                                                                </h:commandButton>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </ui:repeat>
+
+                                                <h:panelGroup rendered="#{empty adminCDIBean.approvedCategoryList}">
+                                                    <tr>
+                                                        <td colspan="5" class="empty-cell">No approved categories.</td>
+                                                    </tr>
+                                                </h:panelGroup>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </section>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{adminCDIBean.activeTab eq 'SKILL'}" layout="block">
+                                <section id="skillEditPanel" class="panel form-panel">
+                                    <div class="section-heading">
+                                        <div>
+                                            <h2>#{empty adminCDIBean.skillObj.skillId ? 'Add Skill' : 'Edit Skill'}</h2>
+                                            <p>Admin-created skills are approved immediately.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="inline-form skill-form">
+                                        <div class="field-group">
+                                            <label for="skillName">Skill Name</label>
+                                            <h:inputText id="skillName"
+                                                         value="#{adminCDIBean.skillObj.skillName}"
+                                                         styleClass="form-control"
+                                                         pt:placeholder="Example: Java" />
+                                        </div>
+
+                                        <div class="field-group">
+                                            <label for="skillCategory">Category</label>
+                                            <h:selectOneMenu id="skillCategory"
+                                                             value="#{adminCDIBean.selectedCategoryId}"
+                                                             styleClass="form-control select-control">
+                                                <f:selectItem itemLabel="Select Category" itemValue="#{null}" />
+                                                <f:selectItems value="#{adminCDIBean.approvedCategoryList}"
+                                                               var="cat"
+                                                               itemLabel="#{cat.categoryName}"
+                                                               itemValue="#{cat.categoryId}" />
+                                            </h:selectOneMenu>
+                                        </div>
+
+                                        <h:commandButton value="#{empty adminCDIBean.skillObj.skillId ? 'Add Skill' : 'Update Skill'}"
+                                                         action="#{adminCDIBean.saveSkill}"
+                                                         styleClass="btn btn-approve"
+                                                         onclick="markManageSkillAction('save');">
+                                            <f:ajax execute="@form"
+                                                    render=":skillsForm:toastPanel :skillsForm:heroPanel :skillsForm:pagePanel"
+                                                    onevent="manageSkillsAfterAjax" />
+                                        </h:commandButton>
+                                    </div>
+                                </section>
+
+                                <section class="panel">
+                                    <div class="section-heading">
+                                        <div>
+                                            <h2>Approved Skills</h2>
+                                            <p>These skills are visible on recruiter pages.</p>
+                                        </div>
+                                        <span class="count-pill">#{adminCDIBean.approvedSkillList.size()}</span>
+                                    </div>
+
+                                    <div class="table-wrap">
+                                        <table class="data-table searchable-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Skill</th>
+                                                    <th>Category</th>
+                                                    <th>Status</th>
+                                                    <th>Approved By</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <ui:repeat value="#{adminCDIBean.approvedSkillList}" var="skill">
+                                                    <tr>
+                                                        <td><strong>#{skill.skillName}</strong></td>
+                                                        <td>#{empty skill.categoryId ? '-' : skill.categoryId.categoryName}</td>
+                                                        <td><span class="status approved">#{skill.skillStatus}</span></td>
+                                                        <td>
+                                                            <span class="user-cell">#{adminCDIBean.getUserNameById(skill.approvedByUserId)}</span>
+                                                            <span class="role-chip">#{adminCDIBean.getUserRoleById(skill.approvedByUserId)}</span>
+                                                        </td>
+                                                        <td>
+                                                            <div class="action-row">
+                                                                <h:commandButton value="Edit"
+                                                                                 action="#{adminCDIBean.editSkill(skill)}"
+                                                                                 styleClass="btn btn-light"
+                                                                                 onclick="markManageSkillAction('editSkill');">
+                                                                    <f:ajax execute="@this"
+                                                                            render=":skillsForm:toastPanel :skillsForm:heroPanel :skillsForm:pagePanel"
+                                                                            onevent="manageSkillsAfterAjax" />
+                                                                </h:commandButton>
+
+                                                                <button type="button"
+                                                                        class="btn btn-disapprove"
+                                                                        onclick="openActionModal('Delete skill', 'This approved skill will be deleted.', this);">
+                                                                    Delete
+                                                                </button>
+                                                                <h:commandButton value="Delete"
+                                                                                 action="#{adminCDIBean.deleteSkill(skill.skillId)}"
+                                                                                 styleClass="js-confirm-action">
+                                                                    <f:ajax execute="@this"
+                                                                            render=":skillsForm:toastPanel :skillsForm:heroPanel :skillsForm:pagePanel"
+                                                                            onevent="manageSkillsAfterAjax" />
+                                                                </h:commandButton>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </ui:repeat>
+
+                                                <h:panelGroup rendered="#{empty adminCDIBean.approvedSkillList}">
+                                                    <tr>
+                                                        <td colspan="5" class="empty-cell">No approved skills.</td>
+                                                    </tr>
+                                                </h:panelGroup>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </section>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </h:form>
+                </main>
+            </div>
+
+            <div id="skillActionModal" class="skill-modal-overlay" aria-hidden="true">
+                <div class="skill-modal" role="dialog" aria-modal="true" aria-labelledby="skillActionModalTitle">
+                    <div class="skill-modal-icon">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
                     </div>
-                </section>
+                    <div class="skill-modal-content">
+                        <h3 id="skillActionModalTitle">Confirm Action</h3>
+                        <p id="skillActionModalText">Are you sure?</p>
+                    </div>
+                    <div class="skill-modal-actions">
+                        <button type="button" class="btn btn-light" onclick="closeActionModal();">Cancel</button>
+                        <button type="button" class="btn btn-disapprove solid" onclick="confirmActionModal();">Confirm</button>
+                    </div>
+                </div>
+            </div>
+        </h:panelGroup>
 
-                <h:form id="tabForm">
-                    <section class="toolbar">
-                        <div class="search-box">
-                            <h:commandLink value="Categories"
-                                           action="#{adminCDIBean.showCategories}"
-                                           styleClass="#{adminCDIBean.activeTab eq 'CATEGORY' ? 'filter-chip active' : 'filter-chip'}">
-                                <f:ajax render=":tabForm:Panel :tabForm :msgForm:messages" />
-                            </h:commandLink>
+        <h:panelGroup rendered="#{loginBean.role ne 'Admin'}" layout="block">
+            <div class="access-denied">
+                <h2>Access Denied</h2>
+                <p>You do not have permission to view this page.</p>
+            </div>
+        </h:panelGroup>
 
-                            <h:commandLink value="Skills"
-                                           action="#{adminCDIBean.showSkills}"
-                                           styleClass="#{adminCDIBean.activeTab eq 'SKILL' ? 'filter-chip active' : 'filter-chip'}">
-                                <f:ajax render=":tabForm:Panel :tabForm :msgForm:messages" />
-                            </h:commandLink>
+        <ui:include src="/common/footer.xhtml" />
 
-                            <h:commandButton value="Refresh"
-                                             action="#{adminCDIBean.loadSkillsPage}"
-                                             styleClass="refresh-btn">
-                                <f:ajax render=":tabForm:Panel :tabForm :msgForm:messages" />
-                            </h:commandButton>
-                        </div>
-                    </section>
+        <script>
+            //<![CDATA[
+            (function () {
+                window.pendingSkillActionButton = null;
+                window.manageSkillNextAction = null;
 
-                    <h:panelGroup id="Panel" layout="block" styleClass="dashboard-panel">
+                function all(selector) {
+                    return Array.prototype.slice.call(document.querySelectorAll(selector));
+                }
 
-                        <div class="results-bar">
-                            <h2>
-                                #{adminCDIBean.activeTab eq 'CATEGORY' ? 'Skill Categories' : 'Skills'}
-                                <span class="result-count">
-                                    #{adminCDIBean.activeTab eq 'CATEGORY'
-                                        ? adminCDIBean.skillCategoryList.size()
-                                        : adminCDIBean.skillList.size()}
-                                </span>
-                            </h2>
-                        </div>
+                function normalize(value) {
+                    return (value || '').toString().toLowerCase().trim();
+                }
 
-                        <h:panelGroup rendered="#{adminCDIBean.activeTab eq 'CATEGORY'}" layout="block">
-                            <section class="action-bar">
-                                <h3>Add Category</h3>
+                function applySearch() {
+                    var input = document.getElementById('skillPageSearch');
+                    var query = normalize(input ? input.value : '');
 
-                                <div class="inline-form">
-                                    <h:inputText value="#{adminCDIBean.categoryObj.categoryName}"
-                                                 styleClass="form-input"
-                                                 pt:placeholder="Enter Category Name" />
+                    all('.searchable-table tbody tr').forEach(function (row) {
+                        var isEmptyRow = row.querySelector('.empty-cell');
+                        if (isEmptyRow) {
+                            row.style.display = '';
+                            return;
+                        }
 
-                                    <h:commandButton
-                                        value="#{adminCDIBean.categoryObj.categoryId == null ? 'Save' : 'Update'}"
-                                        action="#{adminCDIBean.saveCategory}"
-                                        styleClass="save-btn">
-                                       <f:ajax execute="@form"
-                                            render=":msgForm :msgForm:messages :tabForm:Panel"
-                                            onevent="hideToast"/>
-                                    </h:commandButton>
-                                </div>
-                            </section>
+                        var text = normalize(row.textContent);
+                        row.style.display = !query || text.indexOf(query) !== -1 ? '' : 'none';
+                    });
+                }
 
-                            <h:panelGroup rendered="#{empty adminCDIBean.skillCategoryList}" layout="block">
-                                <div class="empty-state">
-                                    <i class="fa-solid fa-layer-group empty-icon"></i>
-                                    <h3>No Categories Found</h3>
-                                    <p>Skill categories will appear here.</p>
-                                </div>
-                            </h:panelGroup>
+                function bindSearch() {
+                    var input = document.getElementById('skillPageSearch');
+                    if (!input || input.getAttribute('data-bound') === 'true') {
+                        return;
+                    }
 
-                            <h:panelGroup rendered="#{not empty adminCDIBean.skillCategoryList}" layout="block">
-                                <div class="table-wrap table-wrap-skill">
-                                    <table class="skill-table professional-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Category Name</th>
-                                                <th>Status</th>
-                                                <th>Created Date</th>
-                                                <th width="160">Actions</th>
-                                            </tr>
-                                        </thead>
+                    input.setAttribute('data-bound', 'true');
+                    input.addEventListener('input', applySearch);
+                    input.addEventListener('keydown', function (event) {
+                        if (event.key === 'Enter') {
+                            event.preventDefault();
+                        }
+                    });
+                }
 
-                                        <tbody>
-                                            <ui:repeat value="#{adminCDIBean.skillCategoryList}" var="cat">
+                function showToasts() {
+                    var stack = document.querySelector('.toast-stack');
+                    if (!stack || !normalize(stack.textContent)) {
+                        return;
+                    }
 
-                                                <tr class="skill-row">
+                    stack.classList.add('show');
+                    window.clearTimeout(window.manageSkillsMessageTimer);
 
-                                                    <td class="cell-title">
-                                                        <div class="title-wrapper">
-                                                            <i class="fa-solid fa-layer-group title-icon"></i>
-                                                            <span class="title-text">
-                                                                #{cat.categoryName}
-                                                            </span>
-                                                        </div>
-                                                    </td>
+                    window.manageSkillsMessageTimer = window.setTimeout(function () {
+                        stack.classList.remove('show');
+                    }, 4200);
+                }
 
-                                                    <td class="cell-status">
-                                                        <span class="status-badge status-open">
-                                                            <i class="fa-solid fa-circle-check"></i>
-                                                            #{cat.categoryStatus}
-                                                        </span>
-                                                    </td>
+                function scrollToEditPanel(actionName) {
+                    var target = null;
 
-                                                    <td class="cell-date">
-                                                        <i class="fa-solid fa-calendar-days"></i>
-                                                        <h:outputText value="#{cat.createdDate}">
-                                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm a"/>
-                                                        </h:outputText>
-                                                    </td>
+                    if (actionName === 'editCategory') {
+                        target = document.getElementById('categoryEditPanel');
+                    }
 
-                                                    <td class="action-cell">
+                    if (actionName === 'editSkill') {
+                        target = document.getElementById('skillEditPanel');
+                    }
 
-                                                        <h:commandButton value="Edit"
-                                                                         action="#{adminCDIBean.editCategory(cat)}"
-                                                                         styleClass="edit-btn">
-                                                            <f:ajax execute="@this"
-                                                                    render=":tabForm:Panel"/>
-                                                        </h:commandButton>
+                    if (target) {
+                        window.setTimeout(function () {
+                            target.scrollIntoView({behavior: 'smooth', block: 'start'});
+                        }, 80);
+                    }
+                }
 
-                                                        <h:commandButton value="Delete"
-                                                                         action="#{adminCDIBean.deleteCategory(cat.categoryId)}"
-                                                                         styleClass="delete-btn">
-                                                            <f:ajax execute="@this"
-                                                                    render=":tabForm:Panel :msgForm:messages"
-                                                                    onevent="hideToast"/>
-                                                        </h:commandButton>
+                function init() {
+                    bindSearch();
+                    applySearch();
+                    showToasts();
+                }
 
-                                                    </td>
+                window.markManageSkillAction = function (actionName) {
+                    window.manageSkillNextAction = actionName;
+                };
 
-                                                </tr>
+                window.openActionModal = function (title, message, sourceButton) {
+                    var row = sourceButton.closest('.action-row');
+                    window.pendingSkillActionButton = row ? row.querySelector('.js-confirm-action') : null;
 
-                                            </ui:repeat>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </h:panelGroup>
-                        </h:panelGroup>
+                    document.getElementById('skillActionModalTitle').textContent = title;
+                    document.getElementById('skillActionModalText').textContent = message;
+                    document.getElementById('skillActionModal').classList.add('show');
+                    document.getElementById('skillActionModal').setAttribute('aria-hidden', 'false');
+                };
 
-                        <h:panelGroup rendered="#{adminCDIBean.activeTab eq 'SKILL'}" layout="block">
-                            <section class="action-bar">
-                                <h3>Add Skill</h3>
+                window.closeActionModal = function () {
+                    document.getElementById('skillActionModal').classList.remove('show');
+                    document.getElementById('skillActionModal').setAttribute('aria-hidden', 'true');
+                    window.pendingSkillActionButton = null;
+                };
 
-                                <div class="inline-form">
-                                    <h:selectOneMenu value="#{adminCDIBean.selectedCategoryId}"
-                                                     styleClass="form-select">
-                                        <f:selectItem itemLabel="Select Category" itemValue="#{null}" />
-                                        <f:selectItems value="#{adminCDIBean.skillCategoryList}"
-                                                       var="cat"
-                                                       itemLabel="#{cat.categoryName}"
-                                                       itemValue="#{cat.categoryId}" />
-                                    </h:selectOneMenu>
+                window.confirmActionModal = function () {
+                    var button = window.pendingSkillActionButton;
+                    markManageSkillAction('action');
+                    closeActionModal();
+                    if (button) {
+                        button.click();
+                    }
+                };
 
-                                    <h:inputText value="#{adminCDIBean.skillObj.skillName}"
-                                                 styleClass="form-input"
-                                                 pt:placeholder="Enter Skill Name" />
+                window.manageSkillsAfterAjax = function (data) {
+                    if (!data || data.status === 'success') {
+                        var actionName = window.manageSkillNextAction;
+                        window.manageSkillNextAction = null;
 
-                                    <h:commandButton
-                                        value="#{adminCDIBean.skillObj.skillId == null ? 'Save' : 'Update'}"
-                                        action="#{adminCDIBean.saveSkill}"
-                                        styleClass="save-btn">
-                                        <f:ajax execute="@form" 
-                                                render=":tabForm:Panel :msgForm:messages" 
-                                                onevent="hideToast"/>
-                                    </h:commandButton>
-                                </div>
-                            </section>
+                        window.setTimeout(function () {
+                            init();
+                            scrollToEditPanel(actionName);
+                        }, 0);
+                    }
+                };
 
-                            <h:panelGroup rendered="#{empty adminCDIBean.skillList}" layout="block">
-                                <div class="empty-state">
-                                    <i class="fa-solid fa-code empty-icon"></i>
-                                    <h3>No Skills Found</h3>
-                                    <p>Skills will appear here.</p>
-                                </div>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{not empty adminCDIBean.skillList}" layout="block">
-                                <div class="table-wrap table-wrap-skill">
-                                    <table class="skill-table professional-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Skill Name</th>
-                                                <th>Category</th>
-                                                <th>Status</th>
-                                                <th>Created Date</th>
-                                                <th width="160">Actions</th>
-                                            </tr>
-                                        </thead>
-
-                                        <tbody>
-                                            <ui:repeat value="#{adminCDIBean.skillList}" var="skill">
-
-                                                <tr class="skill-row">
-
-                                                    <td class="cell-title">
-                                                        <div class="title-wrapper">
-                                                            <i class="fa-solid fa-code title-icon"></i>
-                                                            <span class="title-text">
-                                                                #{skill.skillName}
-                                                            </span>
-                                                        </div>
-                                                    </td>
-
-                                                    <td class="cell-category">
-                                                        #{skill.categoryId.categoryName}
-                                                    </td>
-
-                                                    <td class="cell-status">
-                                                        <span class="status-badge status-open">
-                                                            <i class="fa-solid fa-circle-check"></i>
-                                                            #{skill.skillStatus}
-                                                        </span>
-                                                    </td>
-
-                                                    <td class="cell-date">
-                                                        <i class="fa-solid fa-calendar-days"></i>
-                                                        <h:outputText value="#{skill.createdDate}">
-                                                            <f:convertDateTime pattern="dd MMM yyyy hh:mm a"/>
-                                                        </h:outputText>
-                                                    </td>
-
-                                                    <td class="action-cell">
-
-                                                        <h:commandButton value="Edit"
-                                                                         action="#{adminCDIBean.editSkill(skill)}"
-                                                                         styleClass="edit-btn">
-                                                            <f:ajax execute="@this"
-                                                                    render=":tabForm:Panel"/>
-                                                        </h:commandButton>
-
-                                                        <h:commandButton value="Delete"
-                                                                         action="#{adminCDIBean.deleteSkill(skill.skillId)}"
-                                                                         styleClass="delete-btn">
-                                                            <f:ajax execute="@this"
-                                                                    render=":tabForm:Panel :msgForm:messages"
-                                                                    onevent="hideToast"/>
-                                                        </h:commandButton>
-
-                                                    </td>
-
-                                                </tr>
-
-                                            </ui:repeat>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </h:panelGroup>
-                        </h:panelGroup>
-
-                    </h:panelGroup>
-                </h:form>
-            </main>
-        </div>
-    </h:panelGroup>
-
-    <h:panelGroup rendered="#{loginBean.role ne 'Admin'}" layout="block">
-        <div class="access-denied">
-            <h2>Access Denied</h2>
-            <p>You don't have permission to view this page.</p>
-        </div>
-    </h:panelGroup>
-
-    <ui:include src="/common/footer.xhtml" />
-
-    <script type="text/javascript">
-        function hideToast() {
-            var toast = document.querySelector(".custom-toast");
-            if (!toast || toast.innerText.trim() === "") {
-                return;
-            }
-
-            toast.style.display = "block";
-            toast.style.opacity = "1";
-
-            clearTimeout(window.toastHideTimer);
-            clearTimeout(window.toastDisplayTimer);
-
-            window.toastDisplayTimer = setTimeout(function () {
-                toast.style.transition = "opacity 0.5s ease";
-                toast.style.opacity = "0";
-
-                window.toastHideTimer = setTimeout(function () {
-                    toast.style.display = "none";
-                }, 500);
-            }, 3000);
-        }
-
-        window.addEventListener("load", hideToast);
-
-        if (window.jsf) {
-            if (jsf.ajax) {
-                jsf.ajax.addOnEvent(function(data) {
-                    if (data.status === "success") {
-                        hideToast();
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape') {
+                        closeActionModal();
                     }
                 });
-            }
-        }
-    </script>
-</h:body>
+
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', init);
+                } else {
+                    init();
+                }
+            })();
+            //]]>
+        </script>
+    </h:body>
 </html>

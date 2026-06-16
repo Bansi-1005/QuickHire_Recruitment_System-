@@ -38,7 +38,6 @@ import java.util.Date;
     @NamedQuery(name = "Tblskillcategory.findByCategoryName", query = "SELECT t FROM Tblskillcategory t WHERE t.categoryName = :categoryName"),
     @NamedQuery(name = "Tblskillcategory.findByCategoryStatus", query = "SELECT t FROM Tblskillcategory t WHERE t.categoryStatus = :categoryStatus"),
     @NamedQuery(name = "Tblskillcategory.findByCreatedByUserId", query = "SELECT t FROM Tblskillcategory t WHERE t.createdByUserId = :createdByUserId"),
-    @NamedQuery(name = "Tblskillcategory.findByMergedIntoCategoryId", query = "SELECT t FROM Tblskillcategory t WHERE t.mergedIntoCategoryId = :mergedIntoCategoryId"),
     @NamedQuery(name = "Tblskillcategory.findByCreatedDate", query = "SELECT t FROM Tblskillcategory t WHERE t.createdDate = :createdDate"),
     
     @NamedQuery(name = "Tblskillcategory.findApprovedCategory",
@@ -62,8 +61,6 @@ public class Tblskillcategory implements Serializable {
     private String categoryStatus;
     @Column(name = "createdByUserId")
     private Integer createdByUserId;
-    @Column(name = "mergedIntoCategoryId")
-    private Integer mergedIntoCategoryId;
     @Basic(optional = false)
     @NotNull
     @Column(name = "createdDate")
@@ -117,13 +114,6 @@ public class Tblskillcategory implements Serializable {
         this.createdByUserId = createdByUserId;
     }
 
-    public Integer getMergedIntoCategoryId() {
-        return mergedIntoCategoryId;
-    }
-
-    public void setMergedIntoCategoryId(Integer mergedIntoCategoryId) {
-        this.mergedIntoCategoryId = mergedIntoCategoryId;
-    }
 
     public Date getCreatedDate() {
         return createdDate;

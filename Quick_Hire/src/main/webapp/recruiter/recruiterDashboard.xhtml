@@ -209,6 +209,7 @@
                                                 </h4>
 
                                                 <p>
+                                                    #{i.interviewerName}
                                                     •
                                                     #{i.interviewerMode}
                                                 </p>
@@ -245,17 +246,17 @@
                                     </div>
 
                                     <h:form styleClass="activity-header-actions">
-                                            <h:commandLink value="View All"
-                                                           action="recruiterNotification?faces-redirect=true"
-                                                           styleClass="panel-link" />
+                                        <h:commandLink value="View All"
+                                                       action="recruiterNotification?faces-redirect=true"
+                                                       styleClass="panel-link" />
 
-                                            <h:commandButton
-                                                value="↻ Refresh"
-                                                action="#{recruiterCDIBean.loadDashboardData}"
-                                                styleClass="refresh-btn">
-                                                <f:ajax render="@form activityPanel"/>
-                                            </h:commandButton>
-                                        </h:form>
+                                        <h:commandButton
+                                            value="↻ Refresh"
+                                            action="#{recruiterCDIBean.loadDashboardData}"
+                                            styleClass="refresh-btn">
+                                            <f:ajax render="@form activityPanel"/>
+                                        </h:commandButton>
+                                    </h:form>
                                 </div>
 
                                 <h:panelGroup id="activityPanel" layout="block">
@@ -326,53 +327,130 @@
 
             <!-- ================= PROFILE MODAL ================= -->
             <div id="profileModal" class="modal-overlay">
-                <div class="modal-box">
+                <div class="modal-box recruiter-profile-modal">
 
                     <div class="modal-header">
-                        <h3>Update Profile</h3>
-                        <span class="close-btn" onclick="closeProfileModal()">×</span>
+                        <div>
+                            <h3>Recruiter Profile</h3>
+                            <p class="modal-header-subtitle">Update your recruiter details. Company information is read-only.</p>
+                        </div>
+                        <span class="close-btn" onclick="closeProfileModal()">x</span>
                     </div>
 
-                    <p class="modal-subtitle">
-                        Keep your contact details up to date so candidates can reach you easily.
-                    </p>
-
-                    <h:form id="profileForm" styleClass="modal-form">
-
-                        <!-- hidden recruiter id -->
+                    <h:form id="profileForm" styleClass="modal-form" enctype="multipart/form-data">
                         <h:inputHidden value="#{recruiterCDIBean.recruiter.recruiterId}" />
 
-                        <div class="form-inner">
+                        <div class="profile-modal-scroll">
+                            <section class="profile-photo-card">
+                                <div class="profile-photo-preview">
+                                    <h:panelGroup rendered="#{not empty recruiterCDIBean.profilePhotoUrl}">
+                                        <img src="#{recruiterCDIBean.profilePhotoUrl}"
+                                             class="profile-photo-img"
+                                             alt="Profile Photo" />
+                                    </h:panelGroup>
 
-                            <div class="form-group">
-                                <label>Name</label>
-                                <h:inputText value="#{loginBean.username}" readonly="true" />
-                            </div>
+                                    <h:panelGroup layout="block"
+                                                  styleClass="profile-photo-fallback"
+                                                  rendered="#{empty recruiterCDIBean.profilePhotoUrl}">
+                                        #{loginBean.username.substring(0,1)}
+                                    </h:panelGroup>
+                                </div>
 
-                            <div class="form-group">
-                                <label>Designation</label>
-                                <h:inputText value="#{recruiterCDIBean.recruiter.designation}" />
-                            </div>
-
-                            <div class="form-group">
-                                <label>Phone</label>
-                                <h:inputText value="#{recruiterCDIBean.recruiter.recruiterPhone}" />
-                            </div>
-
-                            <!-- success / error messages -->
+                                <div class="profile-photo-info">
+                                    <h4>Profile Photo</h4>
+                                    <p>Optional. JPG or PNG image recommended.</p>
+                                    <h:inputFile value="#{recruiterCDIBean.profilePhoto}"
+                                                 styleClass="profile-file-input" />
+                                    <h:commandButton value="Upload Photo"
+                                                     action="#{recruiterCDIBean.uploadProfilePhoto}"
+                                                     styleClass="btn-main btn-photo-upload">
+                                        <f:ajax execute="@form" render="profileForm" onevent="profileAfterAjax" />
+                                    </h:commandButton>
+                                </div>
+                            </section>
                             <h:messages id="messages"
                                         globalOnly="true"
                                         layout="list"
-                                        styleClass="modal-message" />
+                                        styleClass="modal-message profile-toast" />
+                            <section class="modal-section">
+                                <div class="modal-section-title">
+                                    <h4>Profile Information</h4>
+                                    <span class="section-chip editable">Editable</span>
+                                </div>
+
+                                <div class="form-inner profile-grid">
+                                    <div class="form-group">
+                                        <label>Name</label>
+                                        <h:inputText value="#{recruiterCDIBean.recruiter.userId.userName}" />                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Email</label>
+                                        <h:inputText value="#{recruiterCDIBean.recruiter.userId.userEmail}" />                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Designation</label>
+                                        <h:inputText value="#{recruiterCDIBean.recruiter.designation}" />
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Phone</label>
+                                        <h:inputText value="#{recruiterCDIBean.recruiter.recruiterPhone}" />
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="modal-section company-readonly-section">
+                                <div class="modal-section-title">
+                                    <h4>Company Information</h4>
+                                    <span class="section-chip readonly">Read Only</span>
+                                </div>
+
+                                <div class="company-info-grid">
+                                    <div class="company-info-item">
+                                        <span>Company Name</span>
+                                        <strong>#{empty recruiterCDIBean.recruiter.companyId.companyName ? '-' : recruiterCDIBean.recruiter.companyId.companyName}</strong>
+                                    </div>
+
+                                    <div class="company-info-item">
+                                        <span>Email</span>
+                                        <strong>#{empty recruiterCDIBean.recruiter.companyId.companyEmail ? '-' : recruiterCDIBean.recruiter.companyId.companyEmail}</strong>
+                                    </div>
+
+                                    <div class="company-info-item">
+                                        <span>Website</span>
+                                        <strong>#{empty recruiterCDIBean.recruiter.companyId.companyWebsite ? '-' : recruiterCDIBean.recruiter.companyId.companyWebsite}</strong>
+                                    </div>
+
+                                    <div class="company-info-item">
+                                        <span>Location</span>
+                                        <strong>#{empty recruiterCDIBean.recruiter.companyId.companyLocation ? '-' : recruiterCDIBean.recruiter.companyId.companyLocation}</strong>
+                                    </div>
+
+                                    <div class="company-info-item">
+                                        <span>Company Size</span>
+                                        <strong>#{empty recruiterCDIBean.recruiter.companyId.companySize ? '-' : recruiterCDIBean.recruiter.companyId.companySize}</strong>
+                                    </div>
+
+                                    <div class="company-info-item">
+                                        <span>Founded Year</span>
+                                        <strong>#{empty recruiterCDIBean.recruiter.companyId.foundedYear ? '-' : recruiterCDIBean.recruiter.companyId.foundedYear}</strong>
+                                    </div>
+
+                                    <div class="company-info-item full">
+                                        <span>Description</span>
+                                        <strong>#{empty recruiterCDIBean.recruiter.companyId.companyDescription ? '-' : recruiterCDIBean.recruiter.companyId.companyDescription}</strong>
+                                    </div>
+                                </div>
+                            </section>
+
 
                         </div>
 
                         <div class="modal-actions">
-
-                            <h:commandButton value="Update"
+                            <h:commandButton value="Save Changes"
                                              action="#{recruiterCDIBean.updateProfile}"
                                              styleClass="btn-main">
-                                <f:ajax execute="@form" render="profileForm"/>
+                                <f:ajax execute="@form" render="profileForm" onevent="profileAfterAjax" />
                             </h:commandButton>
 
                             <button type="button"
@@ -380,12 +458,11 @@
                                     onclick="closeProfileModal()">
                                 Cancel
                             </button>
-
                         </div>
-
                     </h:form>
                 </div>
             </div>
+
             <ui:include src="/common/footer.xhtml"/>
 
             <script>
@@ -399,12 +476,37 @@
                 function openProfileModal() {
                     clearProfileMessages();
                     document.getElementById("profileModal").style.display = "flex";
+                    document.body.classList.add("modal-open");
                 }
 
                 function closeProfileModal() {
                     clearProfileMessages();
                     document.getElementById("profileModal").style.display = "none";
+                    document.body.classList.remove("modal-open");
                 }
+                function profileAfterAjax(data) {
+                    if (!data || data.status === "success") {
+                        setTimeout(function () {
+                            var msg = document.getElementById("profileForm:messages");
+                            if (msg) {
+                                msg.style.display = "none";
+                                msg.innerHTML = "";
+                            }
+                        }, 3500);
+                    }
+                }
+                function clearProfileMessages() {
+                    var msg = document.getElementById("profileForm:messages");
+                    if (msg) {
+                        msg.style.display = "";
+                        msg.innerHTML = "";
+                    }
+                }
+                document.addEventListener("keydown", function (event) {
+                    if (event.key === "Escape") {
+                        closeProfileModal();
+                    }
+                });
             </script>
 
         </h:body>

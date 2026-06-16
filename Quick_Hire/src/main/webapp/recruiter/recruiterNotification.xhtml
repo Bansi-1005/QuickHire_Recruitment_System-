@@ -4,8 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <f:view>
         <h:head>
@@ -18,6 +17,7 @@
         <h:body>
             <f:metadata>
                 <f:viewAction action="#{loginBean.checkLogin}" />
+                <f:viewAction action="#{recruiterNotificationCDIBean.loadNotificationPage}" />
             </f:metadata>
 
             <ui:include src="/common/header.xhtml"/>
@@ -29,10 +29,9 @@
                         <div class="sidebar-title">Navigation</div>
 
                         <h:form styleClass="menu-form">
-                            <h:commandLink value="🏠 Dashboard"
+                            <h:commandLink value="🏠 Dashboard" 
                                            action="recruiterDashboard?faces-redirect=true"
                                            styleClass="menu-link" />
-
                             <h:commandLink value="📋 Job Postings"
                                            action="recruiterPostJob?faces-redirect=true"
                                            styleClass="menu-link" />
@@ -47,20 +46,20 @@
                                            styleClass="menu-link" />
                             <h:commandLink value="📊 Notification"
                                            styleClass="menu-link active" />
+                            
+                            
                         </h:form>
 
                         <div class="sidebar-card">
                             <h4>Quick Tips</h4>
                             <p>
-                                Stay updated with candidate applications, interview schedules,
-                                and job responses in real-time.
+                                Keep incoming messages separate from your own recruiter activity.
                             </p>
                             <a href="#" class="sidebar-btn">Notification Guide</a>
                         </div>
                     </aside>
 
                     <main class="main notification-main">
-
                         <h:form id="notificationActionForm">
 
                             <section class="notification-hero">
@@ -68,19 +67,19 @@
                                     <div class="notification-page-tag">Recruiter Workspace</div>
                                     <h1>Notifications</h1>
                                     <p>
-                                        Manage all your updates, alerts, and communications in one place.
-                                        Stay informed about applications, interviews, and job activities.
+                                        Review messages sent to you by others, then switch to activities
+                                        to see actions recorded under your recruiter account.
                                     </p>
                                 </div>
 
                                 <div class="notification-hero-actions">
                                     <h:commandButton id="markAllReadBtn"
-                                                     value="Mark All as Read"
+                                                     value="Mark All Notifications as Read"
                                                      action="#{recruiterNotificationCDIBean.markAllAsRead}"
                                                      styleClass="notification-btn notification-btn-secondary"
                                                      disabled="#{recruiterNotificationCDIBean.unreadCount eq 0}">
                                         <f:ajax execute="@this"
-                                                render=":notificationActionForm:statsWrapper :notificationActionForm:tabsWrapper :notificationActionForm:notificationStatusMessageWrapper :notificationActionForm:notificationsTableWrapper"
+                                                render=":notificationActionForm:statsWrapper :notificationActionForm:modeTabsWrapper :notificationActionForm:tabsWrapper :notificationActionForm:notificationStatusMessageWrapper :notificationActionForm:notificationsTableWrapper"
                                                 onevent="recruiterNotificationAfterAjax" />
                                     </h:commandButton>
 
@@ -92,17 +91,16 @@
 
                             <h:panelGroup id="statsWrapper" layout="block">
                                 <section class="notification-stats">
-
                                     <div class="notification-stat-card notification-stat-primary">
-                                        <span class="notification-stat-label">Total</span>
+                                        <span class="notification-stat-label">Notifications</span>
                                         <strong id="totalNotifications">#{recruiterNotificationCDIBean.totalCount}</strong>
-                                        <small>All notifications</small>
+                                        <small>Sent by others</small>
                                     </div>
 
                                     <div class="notification-stat-card notification-stat-success">
                                         <span class="notification-stat-label">Unread</span>
                                         <strong id="unreadNotifications">#{recruiterNotificationCDIBean.unreadCount}</strong>
-                                        <small>Not yet viewed</small>
+                                        <small>Notifications only</small>
                                     </div>
 
                                     <div class="notification-stat-card notification-stat-info">
@@ -112,19 +110,31 @@
                                     </div>
 
                                     <div class="notification-stat-card notification-stat-warning">
-                                        <span class="notification-stat-label">Recent</span>
-                                        <strong id="recentNotifications">#{recruiterNotificationCDIBean.recentCount}</strong>
-                                        <small>Last 7 days</small>
+                                        <span class="notification-stat-label">Activities</span>
+                                        <strong id="activityNotifications">#{recruiterNotificationCDIBean.activityCount}</strong>
+                                        <small>Your recruiter actions</small>
                                     </div>
-
                                 </section>
                             </h:panelGroup>
+
+                            <section class="panel notification-mode-panel">
+                                <h:panelGroup id="modeTabsWrapper" layout="block" styleClass="notification-mode-tabs">
+                                    <button type="button" class="notification-mode-btn notification-mode-btn-active" data-mode="notifications">
+                                        Notifications
+                                        <span class="notification-tab-count" id="modeNotificationsCount">#{recruiterNotificationCDIBean.totalCount}</span>
+                                    </button>
+                                    <button type="button" class="notification-mode-btn" data-mode="activities">
+                                        Activities
+                                        <span class="notification-tab-count" id="modeActivitiesCount">#{recruiterNotificationCDIBean.activityCount}</span>
+                                    </button>
+                                </h:panelGroup>
+                            </section>
 
                             <section class="panel notification-tabs-panel">
                                 <h:panelGroup id="tabsWrapper" layout="block" styleClass="notification-tabs-wrapper">
                                     <button type="button" class="notification-tab-btn notification-tab-btn-active" data-tab="all">
                                         <span class="notification-tab-icon">&#9670;</span>
-                                        All Notifications
+                                        All
                                         <span class="notification-tab-count" id="tabAllCount">#{recruiterNotificationCDIBean.totalCount}</span>
                                     </button>
                                     <button type="button" class="notification-tab-btn" data-tab="unread">
@@ -146,7 +156,7 @@
                                         <span class="notification-section-icon">&#9881;</span>
                                         <div>
                                             <h2>Filters &amp; Search</h2>
-                                            <p>Refine notifications by type, date, and status.</p>
+                                            <p>Refine the current tab by type, date, status, and text.</p>
                                         </div>
                                     </div>
 
@@ -157,9 +167,8 @@
 
                                 <div id="filterForm" class="notification-filter-form">
                                     <div class="notification-filter-grid">
-
                                         <div class="notification-filter-group">
-                                            <label for="typeFilter">Notification Type</label>
+                                            <label for="typeFilter">Type</label>
                                             <div class="notification-select-wrap">
                                                 <select id="typeFilter" class="notification-form-control notification-select-control" autocomplete="off">
                                                     <option value="">All Types</option>
@@ -195,7 +204,7 @@
                                         </div>
 
                                         <div class="notification-filter-group full">
-                                            <label for="notificationSearch">Search Notifications</label>
+                                            <label for="notificationSearch">Search</label>
                                             <input id="notificationSearch"
                                                    type="text"
                                                    class="notification-form-control"
@@ -229,8 +238,8 @@
                                     <div class="notification-section-title">
                                         <span class="notification-section-icon">&#128276;</span>
                                         <div>
-                                            <h2>Notification List</h2>
-                                           <p>Notifications for your recruiter account.</p>
+                                            <h2 id="notificationListHeading">Notification List</h2>
+                                            <p id="notificationListSubheading">Messages sent to your recruiter account by others.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -240,23 +249,18 @@
                                         <div class="notification-list" id="notificationList">
 
                                             <ui:repeat value="#{recruiterNotificationCDIBean.notifications}" var="notification">
-                                                <div class="notification-item #{notification.isRead ? 'notification-item-read' : 'notification-item-unread'}"
+                                                <div class="notification-item notification-mode-notifications #{notification.isRead ? 'notification-item-read' : 'notification-item-unread'}"
+                                                     data-mode="notifications"
                                                      data-notificationid="#{notification.notificationId}"
-                                                     data-senderuserid="#{empty notification.senderUserId ? '' : notification.senderUserId.userId}"
-                                                     data-receiveruserid="#{empty notification.receiverUserId ? '' : notification.receiverUserId.userId}"
                                                      data-sender="#{empty notification.senderUserId ? 'System' : notification.senderUserId.userName}"
                                                      data-notificationtitle="#{notification.notificationTitle}"
                                                      data-notificationmessage="#{notification.notificationMessage}"
                                                      data-notificationtype="#{notification.notificationType}"
                                                      data-isread="#{notification.isRead}"
-                                                     data-iscread="#{notification.isRead}"
-                                                     data-creatediso="#{recruiterNotificationCDIBean.formatIsoDate(notification.createdDate)}"
-                                                     data-createddate="#{recruiterNotificationCDIBean.formatDisplayDate(notification.createdDate)}">
+                                                     data-creatediso="#{recruiterNotificationCDIBean.formatIsoDate(notification.createdDate)}">
 
                                                     <div class="notification-item-icon #{recruiterNotificationCDIBean.getTypeClass(notification.notificationType)}">
-                                                        <span class="notification-type-letter">
-                                                            #{recruiterNotificationCDIBean.getTypeInitial(notification.notificationType)}
-                                                        </span>
+                                                        <span class="notification-type-letter">#{recruiterNotificationCDIBean.getTypeInitial(notification.notificationType)}</span>
                                                     </div>
 
                                                     <div class="notification-item-content">
@@ -277,10 +281,10 @@
                                                             <span class="notification-item-date">
                                                                 <h:outputText value="#{recruiterNotificationCDIBean.formatDisplayDate(notification.createdDate)}" />
                                                             </span>
-<!--                                                            <span class="notification-item-sender">
+                                                            <span class="notification-item-sender">
                                                                 From:
                                                                 <h:outputText value="#{empty notification.senderUserId ? 'System' : notification.senderUserId.userName}" />
-                                                            </span>-->
+                                                            </span>
                                                             <h:panelGroup rendered="#{notification.isRead and not empty notification.readDate}">
                                                                 <span class="notification-item-date">
                                                                     Read:
@@ -296,7 +300,7 @@
                                                                          rendered="#{not notification.isRead}"
                                                                          action="#{recruiterNotificationCDIBean.markAsRead(notification.notificationId)}">
                                                             <f:ajax execute="@this"
-                                                                    render=":notificationActionForm:statsWrapper :notificationActionForm:tabsWrapper :notificationActionForm:notificationStatusMessageWrapper :notificationActionForm:notificationsTableWrapper"
+                                                                    render=":notificationActionForm:statsWrapper :notificationActionForm:modeTabsWrapper :notificationActionForm:tabsWrapper :notificationActionForm:notificationStatusMessageWrapper :notificationActionForm:notificationsTableWrapper"
                                                                     onevent="recruiterNotificationAfterAjax" />
                                                         </h:commandButton>
 
@@ -307,18 +311,64 @@
                                                 </div>
                                             </ui:repeat>
 
+                                            <ui:repeat value="#{recruiterNotificationCDIBean.activities}" var="activity">
+                                                <div class="notification-item notification-mode-activities notification-item-read"
+                                                     data-mode="activities"
+                                                     data-notificationid="#{activity.notificationId}"
+                                                     data-sender="#{empty activity.senderUserId ? 'System' : activity.senderUserId.userName}"
+                                                     data-notificationtitle="#{activity.notificationTitle}"
+                                                     data-notificationmessage="#{activity.notificationMessage}"
+                                                     data-notificationtype="#{activity.notificationType}"
+                                                     data-isread="true"
+                                                     data-creatediso="#{recruiterNotificationCDIBean.formatIsoDate(activity.createdDate)}">
+
+                                                    <div class="notification-item-icon #{recruiterNotificationCDIBean.getTypeClass(activity.notificationType)}">
+                                                        <span class="notification-type-letter">#{recruiterNotificationCDIBean.getTypeInitial(activity.notificationType)}</span>
+                                                    </div>
+
+                                                    <div class="notification-item-content">
+                                                        <div class="notification-item-header">
+                                                            <h3 class="notification-item-title">
+                                                                <h:outputText value="#{empty activity.notificationTitle ? 'Activity' : activity.notificationTitle}" />
+                                                            </h3>
+                                                            
+                                                            <span class="notification-item-type">
+                                                                <h:outputText value="#{recruiterNotificationCDIBean.formatNotificationType(activity.notificationType)}" />
+                                                            </span>
+                                                        </div>
+
+                                                        <p class="notification-item-message">
+                                                            <h:outputText value="#{activity.notificationMessage}" />
+                                                        </p>
+
+                                                        <div class="notification-item-meta">
+                                                            <span class="notification-item-date">
+                                                                <h:outputText value="#{recruiterNotificationCDIBean.formatDisplayDate(activity.createdDate)}" />
+                                                            </span>
+<!--                                                            <span class="notification-item-sender">
+                                                                Recorded for:
+                                                                <h:outputText value="#{empty activity.receiverUserId ? 'Recruiter' : activity.receiverUserId.userName}" />
+                                                            </span>-->
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="notification-item-actions">
+                                                        <span class="notification-item-read-badge activity-badge">Activity</span>
+                                                    </div>
+                                                </div>
+                                            </ui:repeat>
                                         </div>
 
-                                        <h:panelGroup rendered="#{empty recruiterNotificationCDIBean.notifications}">
+                                        <h:panelGroup rendered="#{empty recruiterNotificationCDIBean.notifications and empty recruiterNotificationCDIBean.activities}">
                                             <div class="notification-empty-state notification-empty-state-server">
                                                 <div class="notification-empty-icon">&#128276;</div>
-                                                <p>No notifications are available right now.</p>
+                                                <p>No notifications or activities are available right now.</p>
                                             </div>
                                         </h:panelGroup>
 
                                         <div id="notificationEmptyState" class="notification-empty-state" style="display:none;">
                                             <div class="notification-empty-icon">&#128269;</div>
-                                            <p>No notifications found for the selected filters.</p>
+                                            <p>No records found for the selected filters.</p>
                                         </div>
                                     </div>
                                 </h:panelGroup>
@@ -328,7 +378,7 @@
                                 <button type="button"
                                         class="notification-loadmore-btn"
                                         id="loadMoreBtn">
-                                    <span class="notification-loadmore-text">Load More Notifications</span>
+                                    <span class="notification-loadmore-text">Load More</span>
                                     <span class="notification-loadmore-icon">&#8595;</span>
                                 </button>
                             </div>

@@ -23,6 +23,7 @@ public interface RecruiterBeanLocal {
 
     void updateProfile(Tblrecruiters recruiter);
 
+    void uploadProfilePhoto(Integer userId, String photo);
 
     // ================= JOB MANAGEMENT =================
 
@@ -122,6 +123,8 @@ public interface RecruiterBeanLocal {
 
     // ================= NOTIFICATION =================
     Collection<Tblnotification> getNotifications(int userId);
+    
+    public Collection<Tblnotification> getActivities(int userId);
 
     void markNotificationAsRead(int notificationId, int userId);
 

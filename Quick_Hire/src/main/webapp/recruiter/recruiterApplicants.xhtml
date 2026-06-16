@@ -136,19 +136,22 @@
                                 <h:inputText id="searchInput"
                                              value="#{recruiterApplicationInterviewCDIBean.applicantSearchText}"
                                              styleClass="filter-search"
-                                             p:placeholder="Search by candidate, email or job title" />
+                                             p:placeholder="Search by candidate, email or job title"
+                                             onkeyup="applyStaticFilters()" />
                             </div>
 
                             <h:selectOneMenu id="jobFilter"
                                              value="#{recruiterApplicationInterviewCDIBean.applicantJobFilter}"
-                                             styleClass="filter-select">
+                                             styleClass="filter-select"
+                                             onchange="applyStaticFilters()">
                                 <f:selectItem itemLabel="All Jobs" itemValue="All Jobs"/>
                                 <f:selectItems value="#{recruiterApplicationInterviewCDIBean.applicantJobOptions}"/>
                             </h:selectOneMenu>
 
                             <h:selectOneMenu id="statusFilter"
                                              value="#{recruiterApplicationInterviewCDIBean.applicantStatusFilter}"
-                                             styleClass="filter-select">
+                                             styleClass="filter-select"
+                                             onchange="applyStaticFilters()">
                                 <f:selectItem itemLabel="All Status" itemValue="All Status"/>
                                 <f:selectItem itemLabel="Applied" itemValue="Applied"/>
                                 <f:selectItem itemLabel="Shortlisted" itemValue="Shortlisted"/>
@@ -159,28 +162,25 @@
 
                             <h:selectOneMenu id="sortFilter"
                                              value="#{recruiterApplicationInterviewCDIBean.applicantSortFilter}"
-                                             styleClass="filter-select">
+                                             styleClass="filter-select"
+                                             onchange="applyStaticFilters()">
                                 <f:selectItem itemLabel="Newest First" itemValue="Newest First"/>
                                 <f:selectItem itemLabel="Oldest First" itemValue="Oldest First"/>
                                 <f:selectItem itemLabel="Top Score First" itemValue="Top Score First"/>
                                 <f:selectItem itemLabel="Lowest Score First" itemValue="Lowest Score First"/>
                             </h:selectOneMenu>
 
-                            <h:commandButton value="Apply Filters"
-                                             styleClass="filter-apply-btn"
-                                             action="#{recruiterApplicationInterviewCDIBean.applyApplicantFilters}">
-                                <f:ajax execute="searchInput jobFilter statusFilter sortFilter"
-                                        render="applicantsTablePanel activeFilters"
-                                        onevent="afterApplicantTableAjax"/>
-                            </h:commandButton>
+<!--                            <button type="button"
+                                    class="filter-apply-btn"
+                                    onclick="applyStaticFilters()">
+                                Apply Filters
+                            </button>-->
 
-                            <h:commandButton value="Reset"
-                                             styleClass="filter-reset-btn"
-                                             action="#{recruiterApplicationInterviewCDIBean.resetApplicantFilters}">
-                                <f:ajax execute="@this"
-                                        render="applicantsTablePanel activeFilters searchInput jobFilter statusFilter sortFilter"
-                                        onevent="afterApplicantTableAjax"/>
-                            </h:commandButton>
+                            <button type="button"
+                                    class="filter-apply-btn"
+                                    onclick="resetStaticFilters()">
+                                Reset
+                            </button>
                         </div>
 
                         <h:panelGroup id="activeFilters" layout="block" styleClass="active-filters">

@@ -25,13 +25,13 @@ import java.util.Collection;
  *
  * @author tejan
  */
-
 @Path("admin")
 public class AdminResource {
+
     @EJB
     AdminBeanLocal ejb;
-    
-     // ================= ROLE =================
+
+    // ================= ROLE =================
 //    @POST
 //    @Path("addRole")
 //    @Consumes(MediaType.APPLICATION_JSON)
@@ -54,7 +54,6 @@ public class AdminResource {
 //            return Response.status(500).entity(e.getMessage()).build();
 //        }
 //    }
-
     // ================= USER =================
     @GET
     @Path("getAllUsers")
@@ -70,7 +69,7 @@ public class AdminResource {
     @PUT
     @Path("updateUserStatus")
     public Response updateUserStatus(@QueryParam("userId") int userId,
-                                     @QueryParam("userStatus") String userStatus) {
+            @QueryParam("userStatus") String userStatus) {
         try {
             if (userStatus == null || userStatus.trim().isEmpty()) {
                 return Response.status(Response.Status.BAD_REQUEST)
@@ -95,7 +94,7 @@ public class AdminResource {
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
-    
+
     @PUT
     @Path("toggleUserStatus")
     public Response toggleUserStatus(
@@ -115,8 +114,7 @@ public class AdminResource {
                     .build();
         }
     }
-    
-    
+
     // ================= RECRUITER =================
     @GET
     @Path("getAllRecruiters")
@@ -141,12 +139,7 @@ public class AdminResource {
         }
     }
 
-    
-    
-    
-    
     // ================= Manage Skills =================
-
     @GET
     @Path("getAllSkillCategories")
     @Produces(MediaType.APPLICATION_JSON)
@@ -306,10 +299,6 @@ public class AdminResource {
                     .build();
         }
     }
-    
-    
-    
-    
 
     // ================= COMPANY =================
 //    @POST
@@ -339,7 +328,6 @@ public class AdminResource {
 //            return Response.status(500).entity(e.getMessage()).build();
 //        }
 //    }
-
     @POST
     @Path("addCompany")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -420,8 +408,8 @@ public class AdminResource {
 
         try {
 
-            Tblcompany company =
-                    ejb.findCompanyById(companyId);
+            Tblcompany company
+                    = ejb.findCompanyById(companyId);
 
             if (company == null) {
 
@@ -449,8 +437,8 @@ public class AdminResource {
 
         try {
 
-            Collection<Tblcompany> companies =
-                    ejb.getAllCompanies();
+            Collection<Tblcompany> companies
+                    = ejb.getAllCompanies();
 
             return Response.ok(companies)
                     .build();
@@ -490,7 +478,7 @@ public class AdminResource {
     }
 
     // ================= JOB =================
-     @GET
+    @GET
     @Path("getAllJobs")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAllJobs() {
@@ -501,24 +489,22 @@ public class AdminResource {
             return Response.status(500).entity(e.getMessage()).build();
         }
     }
-    
+
     @GET
     @Path("/getJobByJobId/{jobId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getJobByJobId(@PathParam("jobId") Integer jobId)
-    {
+    public Response getJobByJobId(@PathParam("jobId") Integer jobId) {
         Tbljob job = ejb.getJobByJobId(jobId);
 
-        if(job == null)
-        {
+        if (job == null) {
             return Response.status(Response.Status.NOT_FOUND)
-                           .entity("Job not found")
-                           .build();
+                    .entity("Job not found")
+                    .build();
         }
 
         return Response.ok(job).build();
     }
-    
+
 //    @PUT
 //    @Path("updateJobStatus/{jobId}/{jobStatus}")
 //    public Response updateJobStatus(@PathParam("jobId") int jobId,
@@ -567,9 +553,7 @@ public class AdminResource {
 //            return Response.status(500).entity(e.getMessage()).build();
 //        }
 //    }
-    
     // ========================Profile=======================
-        
     @GET
     @Path("getAdminProfile/{userId}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -578,7 +562,7 @@ public class AdminResource {
 
         return ejb.getAdminProfile(userId);
     }
-    
+
     @PUT
     @Path("updateAdminProfile")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -589,7 +573,7 @@ public class AdminResource {
 
         return Response.ok().build();
     }
-    
+
     @PUT
     @Path("changeAdminPassword")
     @Produces(MediaType.TEXT_PLAIN)
@@ -609,7 +593,7 @@ public class AdminResource {
                     .build();
         }
     }
-    
+
     @PUT
     @Path("uploadProfilePhoto")
     public Response uploadProfilePhoto(
@@ -623,15 +607,7 @@ public class AdminResource {
         return Response.ok().build();
     }
 
-    
-    
-    
-    
-    
-    
-    
     // ================= ADMIN NOTIFICATIONS =================
-
     @GET
     @Path("getAdminNotifications")
     @Produces(MediaType.APPLICATION_JSON)
@@ -693,12 +669,7 @@ public class AdminResource {
                     .build();
         }
     }
-    
-    
-    
-    
-    
-    
+
     // ================= APPLICATION =================
 //    @GET
 //    @Path("getAllApplications")
@@ -842,4 +813,97 @@ public class AdminResource {
 //            return Response.status(500).entity(e.getMessage()).build();
 //        }
 //    }
+    //skills
+    @GET
+    @Path("pendingSkills")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response pendingSkills() {
+        return Response.ok(ejb.getPendingSkills()).build();
+    }
+
+    @GET
+    @Path("pendingCategories")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response pendingCategories() {
+        return Response.ok(ejb.getPendingCategories()).build();
+    }
+
+    @GET
+    @Path("approvedSkills")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response approvedSkills() {
+        return Response.ok(ejb.getApprovedSkills()).build();
+    }
+
+    @GET
+    @Path("approvedCategories")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response approvedCategories() {
+        return Response.ok(ejb.getApprovedCategories()).build();
+    }
+
+    @PUT
+    @Path("approveSkill")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response approveSkill(@QueryParam("skillId") Integer skillId,
+            @QueryParam("adminUserId") Integer adminUserId) {
+        ejb.approveSkill(skillId, adminUserId);
+        return Response.ok("Skill approved").build();
+    }
+
+    @PUT
+    @Path("rejectSkill")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response rejectSkill(@QueryParam("skillId") Integer skillId,
+            @QueryParam("adminUserId") Integer adminUserId) {
+        ejb.rejectSkill(skillId, adminUserId);
+        return Response.ok("Skill rejected").build();
+    }
+
+    @PUT
+    @Path("approveCategory")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response approveCategory(@QueryParam("categoryId") Integer categoryId,
+            @QueryParam("adminUserId") Integer adminUserId) {
+        ejb.approveCategory(categoryId, adminUserId);
+        return Response.ok("Category approved").build();
+    }
+
+    @PUT
+    @Path("rejectCategory")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response rejectCategory(@QueryParam("categoryId") Integer categoryId,
+            @QueryParam("adminUserId") Integer adminUserId) {
+        ejb.rejectCategory(categoryId, adminUserId);
+        return Response.ok("Category rejected").build();
+    }
+
+    //admin dashboard
+    // Add these endpoints inside com.mycompany.quick_hire.resources/AdminResource.java
+    @GET
+    @Path("getAllApplications")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllApplications() {
+        try {
+            return Response.ok(ejb.getAllApplications()).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
+    @GET
+    @Path("getAllInterviews")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllInterviews() {
+        try {
+            return Response.ok(ejb.getAllInterviews()).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build();
+        }
+    }
+
 }

@@ -10,8 +10,8 @@
 
         <f:metadata>
             <f:viewAction action="#{loginBean.checkLogin}" />
-             <f:viewParam name="jobId"
-                 value="#{recruiterCDIBean.editJobId}" />
+            <f:viewParam name="jobId"
+                         value="#{recruiterCDIBean.editJobId}" />
 
             <f:viewAction action="#{recruiterCDIBean.loadProfile}" />
             <f:viewAction action="#{recruiterCDIBean.initLocationData}" />
@@ -42,7 +42,7 @@
 
                             <h:commandLink value="📋 Job Postings"
                                            styleClass="menu-link active" />
-                              <h:commandLink value="📋 View Jobs"
+                            <h:commandLink value="📋 View Jobs"
                                            action="recruiterViewJobs?faces-redirect=true"
                                            styleClass="menu-link"/>
 
@@ -640,10 +640,10 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
-                                    
-                                    
-                                   <!-- EDUCATION -->
+
+
+
+                                    <!-- EDUCATION -->
                                     <div class="postjob-form-section postjob-education-section">
                                         <div class="postjob-form-section-head">
                                             <h3>Education</h3>
@@ -879,7 +879,12 @@
                                                         <div class="postjob-skills-suggestions-row">
                                                             <div id="skillSuggestionsBox" class="postjob-skill-suggestions-box">
                                                                 <div class="postjob-suggestion-header">Suggestions</div>
-                                                                <div id="skillSuggestionsList" class="postjob-suggestion-list"></div>
+                                                                <div id="skillSuggestionsList" class="postjob-suggestion-list">
+                                                                    <h:panelGroup rendered="#{empty recruiterCDIBean.allSkills}" layout="block" styleClass="postjob-no-skill-msg">
+                                                                        No skill found
+                                                                    </h:panelGroup>
+
+                                                                </div>
                                                             </div>
                                                         </div>
 
@@ -1054,9 +1059,9 @@
 
                                     <!-- BUTTONS -->
                                     <div class="postjob-form-actions">
-                                    <h:commandButton value="#{recruiterCDIBean.editMode ? 'Update Job' : 'Publish Job'}"
-                                                     action="#{recruiterCDIBean.saveJob}"
-                                                     styleClass="postjob-btn postjob-btn-primary">
+                                        <h:commandButton value="#{recruiterCDIBean.editMode ? 'Update Job' : 'Publish Job'}"
+                                                         action="#{recruiterCDIBean.saveJob}"
+                                                         styleClass="postjob-btn postjob-btn-primary">
 
 
                                             <f:ajax execute="@form"
@@ -1085,10 +1090,10 @@
                                                     allSkillsJsonWrapper"
                                                     onevent="handleValidationGlobalMessage" />
                                         </h:commandButton>
-                                       <h:commandButton value="Reset"
-                                                        action="#{recruiterCDIBean.resetJobForm}"
-                                                        immediate="true"
-                                                        styleClass="postjob-btn postjob-btn-primary"/>
+                                        <h:commandButton value="Reset"
+                                                         action="#{recruiterCDIBean.resetJobForm}"
+                                                         immediate="true"
+                                                         styleClass="postjob-btn postjob-btn-primary"/>
 
                                         <h:commandButton value="Back to Dashboard"
                                                          action="recruiterDashboard?faces-redirect=true"

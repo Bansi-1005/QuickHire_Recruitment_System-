@@ -4,165 +4,301 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
-    
+
     <f:metadata>
         <f:viewAction action="#{loginBean.checkLogin}" />
-    </f:metadata>    
-    
-<h:head>
-    <title>Admin Dashboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    
-    <h:outputStylesheet library="css" name="/admin/admin.css" />
-    <h:outputStylesheet library="css" name="/admin/dashboard.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-</h:head>
-<h:body>
+        <f:viewAction action="#{adminCDIBean.loadDashboardPage}" />
+    </f:metadata>
 
-    <ui:include src="/common/header.xhtml" />
+    <h:head>
+        <title>Admin Dashboard</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-    <h:panelGroup rendered="#{loginBean.role eq 'Admin'}">
-        <div class="admin-layout">
-            
-            <ui:include src="/admin/sidebar.xhtml">
-                <ui:param name="activePage" value="dashboard"/>
-            </ui:include>
+        <h:outputStylesheet library="css" name="/admin/admin.css" />
+        <h:outputStylesheet library="css" name="/admin/dashboard.css" />
+        <link rel="stylesheet"
+              href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    </h:head>
 
+    <h:body>
+        <ui:include src="/common/header.xhtml" />
 
-            <main class="main-content">
-                <section class="hero">
-                    <div class="hero-grid">
-                        <div>
-                            <div class="welcome-tag">Admin Control Center</div>
-                            <h1>Welcome, <h:outputText value="#{loginBean.username}" /></h1>
-                            <p>Manage users, recruiters, jobs, applications, interviews, and rule-based matching from one unified panel.</p>
+        <h:panelGroup rendered="#{loginBean.role eq 'Admin'}">
+            <div class="admin-layout">
+                <ui:include src="/admin/sidebar.xhtml">
+                    <ui:param name="activePage" value="dashboard"/>
+                </ui:include>
 
-                            <div class="hero-actions">
-                                <button type="button" class="btn-main">View Reports</button>
-                                <button type="button" class="btn-light">System Rules</button>
+                <main class="main-content">
+                    <section class="hero">
+                        <div class="hero-grid">
+                            <div class="hero-copy">
+                                <div class="welcome-tag">Admin Control Center</div>
+                                <h1>Welcome, <h:outputText value="#{loginBean.username}" /></h1>
+                                <p>Manage users, recruiters, jobs, applications, interviews, notifications, and skill approvals from one unified panel.</p>
+
+                                <div class="hero-actions">
+                                    <a class="btn-main" href="#{request.contextPath}/admin/displayUsers.jsf">
+                                        Manage Users
+                                    </a>
+                                    <a class="btn-light" href="#{request.contextPath}/admin/manageSkills.jsf">
+                                        Skill Approvals
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="hero-stats">
+                                <div class="hero-mini-card">
+                                    <span>Total Users</span>
+                                    <strong><h:outputText value="#{adminCDIBean.totalUserCount}" /></strong>
+                                </div>
+                                <div class="hero-mini-card">
+                                    <span>Open Jobs</span>
+                                    <strong><h:outputText value="#{adminCDIBean.openJobCount}" /></strong>
+                                </div>
+                                <div class="hero-mini-card">
+                                    <span>Applications</span>
+                                    <strong><h:outputText value="#{adminCDIBean.totalApplicationCount}" /></strong>
+                                </div>
+                                <div class="hero-mini-card">
+                                    <span>Interviews</span>
+                                    <strong><h:outputText value="#{adminCDIBean.totalInterviewCount}" /></strong>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="dashboard-grid dashboard-grid-top">
+                        <div class="dashboard-panel overview-panel">
+                            <div class="panel-header">
+                                <h2>System Overview</h2>
+                                <span class="panel-chip">Live Snapshot</span>
+                            </div>
+
+                            <div class="panel-scroll">
+                                <div class="overview-list">
+                                    <div class="overview-item">
+                                        <span>Active Users</span>
+                                        <strong><h:outputText value="#{adminCDIBean.activeUserCount}" /></strong>
+                                    </div>
+                                    <div class="overview-item">
+                                        <span>Recruiters</span>
+                                        <strong><h:outputText value="#{adminCDIBean.recruiterCount}" /></strong>
+                                    </div>
+                                    <div class="overview-item">
+                                        <span>Active Candidates</span>
+                                        <strong><h:outputText value="#{adminCDIBean.activeCandidateCount}" /></strong>
+                                    </div>
+                                    <div class="overview-item">
+                                        <span>Total Jobs Posted</span>
+                                        <strong><h:outputText value="#{adminCDIBean.totalJobCount}" /></strong>
+                                    </div>
+                                    <div class="overview-item">
+                                        <span>Pending Skill Approvals</span>
+                                        <strong><h:outputText value="#{adminCDIBean.pendingApprovalCount}" /></strong>
+                                    </div>
+                                    <div class="overview-item">
+                                        <span>Scheduled Interviews</span>
+                                        <strong><h:outputText value="#{adminCDIBean.scheduledInterviewCount}" /></strong>
+                                    </div>
+                                    <div class="overview-item">
+                                        <span>Unread Notifications</span>
+                                        <strong><h:outputText value="#{adminCDIBean.unreadNotificationCount}" /></strong>
+                                    </div>
+                                    <div class="overview-item">
+                                        <span>Active Companies</span>
+                                        <strong class="ok"><h:outputText value="#{adminCDIBean.activeCompanyCount}" /></strong>
+                                    </div>
+                                    <div class="overview-item">
+                                        <span>Skill Categories</span>
+                                        <strong><h:outputText value="#{adminCDIBean.totalSkillCategoryCount}" /></strong>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="hero-stats">
-                            <div class="hero-mini-card">
-                                <span>Total Users</span>
-                                <strong>248</strong>
+                        <div class="dashboard-panel notifications-panel">
+                            <div class="panel-header">
+                                <h2>Recent Notifications</h2>
+                                <span class="panel-chip muted">Latest</span>
                             </div>
-                            <div class="hero-mini-card">
-                                <span>Open Jobs</span>
-                                <strong>86</strong>
+
+                            <div class="panel-scroll">
+                                <h:panelGroup rendered="#{empty adminCDIBean.recentNotifications}">
+                                    <div class="empty-state compact">
+                                        <div class="empty-icon"><i class="fa-regular fa-bell"></i></div>
+                                        <p>No recent notifications.</p>
+                                    </div>
+                                </h:panelGroup>
+
+                                <div class="activity-list">
+                                    <ui:repeat value="#{adminCDIBean.recentNotifications}" var="n">
+                                        <div class="activity-item">
+                                            <i class="fa-solid fa-bell"></i>
+                                            <div>
+                                                <strong><h:outputText value="#{n.notificationTitle}" /></strong>
+                                                <p><h:outputText value="#{n.notificationMessage}" /></p>
+                                                <span class="activity-date">
+                                                    <h:outputText value="#{n.createdDate}">
+                                                        <f:convertDateTime pattern="dd MMM yyyy, hh:mm a" />
+                                                    </h:outputText>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </ui:repeat>
+                                </div>
                             </div>
-                            <div class="hero-mini-card">
-                                <span>Applications</span>
-                                <strong>412</strong>
+                        </div>
+                    </section>
+
+                    <section class="dashboard-grid">
+                        <div class="dashboard-panel users-panel">
+                            <div class="panel-header">
+                                <h2>Recent Users</h2>
+                                <span class="panel-chip">Users Table</span>
                             </div>
-                            <div class="hero-mini-card">
-                                <span>Interviews</span>
-                                <strong>28</strong>
+
+                            <div class="panel-scroll table-scroll">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Role</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ui:repeat value="#{adminCDIBean.recentUsers}" var="u">
+                                            <tr>
+                                                <td><h:outputText value="#{u.userName}" /></td>
+                                                <td><h:outputText value="#{adminCDIBean.getUserRoleName(u)}" /></td>
+                                                <td>
+                                                    <span class="status #{adminCDIBean.getUserStatusClass(u)}">
+                                                        <h:outputText value="#{u.userIsActive ? 'Active' : 'Inactive'}" />
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
-                    </div>
-                </section>
 
-                <section class="stat-grid">
-                    <div class="stat-card accent-blue">
-                        <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
-                        <div class="stat-label">Total Users</div>
-                        <div class="stat-value">248</div>
-                        <div class="stat-note">Active accounts in the system</div>
-                    </div>
-                    <div class="stat-card accent-teal">
-                        <div class="stat-icon"><i class="fa-solid fa-user-tie"></i></div>
-                        <div class="stat-label">Recruiters</div>
-                        <div class="stat-value">34</div>
-                        <div class="stat-note">Approved recruiters</div>
-                    </div>
-                    <div class="stat-card accent-purple">
-                        <div class="stat-icon"><i class="fa-solid fa-briefcase"></i></div>
-                        <div class="stat-label">Open Jobs</div>
-                        <div class="stat-value">86</div>
-                        <div class="stat-note">Currently visible opportunities</div>
-                    </div>
-                    <div class="stat-card accent-green">
-                        <div class="stat-icon"><i class="fa-solid fa-file-signature"></i></div>
-                        <div class="stat-label">Applications</div>
-                        <div class="stat-value">412</div>
-                        <div class="stat-note">Total submitted applications</div>
-                    </div>
-                </section>
+                        <div class="dashboard-panel jobs-panel">
+                            <div class="panel-header">
+                                <h2>Latest Jobs</h2>
+                                <span class="panel-chip success">Open Roles</span>
+                            </div>
 
-                <section class="dashboard-grid">
-                    <div class="dashboard-panel">
-                        <div class="panel-header">
-                            <h2>System Overview</h2>
-                            <span class="panel-chip">Live Snapshot</span>
-                        </div>
-                        <div class="overview-list">
-                            <div class="overview-item"><span>Active Candidates</span><strong>152</strong></div>
-                            <div class="overview-item"><span>Pending Approvals</span><strong>12</strong></div>
-                            <div class="overview-item"><span>Interviews Scheduled</span><strong>28</strong></div>
-                            <div class="overview-item"><span>Unread Notifications</span><strong>19</strong></div>
-                            <div class="overview-item"><span>Rule Engine Status</span><strong class="ok">Healthy</strong></div>
-                            <div class="overview-item"><span>Skill Categories</span><strong>10</strong></div>
-                        </div>
-                    </div>
+                            <div class="panel-scroll">
+                                <div class="rules-box">
+                                    <ui:repeat value="#{adminCDIBean.recentJobs}" var="job">
+                                        <div class="rule-item job-item">
+                                            <div>
+                                                <strong><h:outputText value="#{job.jobTitle}" /></strong>
+                                                <p>
+                                                    <h:outputText value="#{job.jobCity}" />
+                                                    <h:panelGroup rendered="#{not empty job.jobState}">, </h:panelGroup>
+                                                    <h:outputText value="#{job.jobState}" />
+                                                </p>
+                                            </div>
+                                            <span class="status #{adminCDIBean.getJobStatusClass(job)}">
+                                                <h:outputText value="#{empty job.jobStatus ? 'N/A' : job.jobStatus}" />
+                                            </span>
+                                        </div>
+                                    </ui:repeat>
 
-                    <div class="dashboard-panel">
-                        <div class="panel-header">
-                            <h2>Recent Activity</h2>
-                            <span class="panel-chip muted">Static UI</span>
+                                    <h:panelGroup rendered="#{empty adminCDIBean.recentJobs}">
+                                        <div class="empty-state compact">
+                                            <div class="empty-icon"><i class="fa-solid fa-briefcase"></i></div>
+                                            <p>No jobs found.</p>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
                         </div>
-                        <div class="activity-list">
-                            <div class="activity-item"><i class="fa-solid fa-user-plus"></i><div><strong>New recruiter account created</strong><p>Tech company onboarding request submitted.</p></div></div>
-                            <div class="activity-item"><i class="fa-solid fa-clipboard-check"></i><div><strong>Screening score updated</strong><p>Applications processed by matching rules.</p></div></div>
-                            <div class="activity-item"><i class="fa-solid fa-bell"></i><div><strong>Notifications delivered</strong><p>System alerts sent to candidates and recruiters.</p></div></div>
-                            <div class="activity-item"><i class="fa-solid fa-calendar-check"></i><div><strong>Interview schedule changed</strong><p>Admin reviewed interview round status.</p></div></div>
-                        </div>
-                    </div>
-                </section>
+                    </section>
 
-                <section class="table-grid">
-                    <div class="dashboard-panel">
-                        <div class="panel-header">
-                            <h2>Recent Users</h2>
-                            <span class="panel-chip">Users Table</span>
-                        </div>
-                        <table class="data-table">
-                            <thead>
-                                <tr><th>Name</th><th>Role</th><th>Status</th></tr>
-                            </thead>
-                            <tbody>
-                                <tr><td>Amit Patel</td><td>Candidate</td><td><span class="status active">Active</span></td></tr>
-                                <tr><td>Priya Shah</td><td>Recruiter</td><td><span class="status active">Active</span></td></tr>
-                                <tr><td>Rahul Mehta</td><td>Admin</td><td><span class="status active">Active</span></td></tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <section class="dashboard-grid dashboard-grid-last">
+                        <div class="dashboard-panel applications-panel">
+                            <div class="panel-header">
+                                <h2>Recent Applications</h2>
+                                <span class="panel-chip">Applications</span>
+                            </div>
 
-                    <div class="dashboard-panel">
-                        <div class="panel-header">
-                            <h2>Recruitment Rules</h2>
-                            <span class="panel-chip success">Rule-Based</span>
-                        </div>
-                        <div class="rules-box">
-                            <div class="rule-item"><strong>Skill Match</strong><p>Match candidate skills against job skills and weightage.</p></div>
-                            <div class="rule-item"><strong>Experience Filter</strong><p>Compare candidate experience with required experience.</p></div>
-                            <div class="rule-item"><strong>Resume Status</strong><p>Use uploaded resume records for application tracking.</p></div>
-                            <div class="rule-item"><strong>Interview Flow</strong><p>Track interview rounds and results by application.</p></div>
-                        </div>
-                    </div>
-                </section>
-            </main>
-        </div>
-    </h:panelGroup>
+                            <div class="panel-scroll">
+                                <div class="mini-activity-list">
+                                    <ui:repeat value="#{adminCDIBean.recentApplications}" var="app">
+                                        <div class="mini-activity-item">
+                                            <span class="mini-activity-dot"></span>
+                                            <div class="mini-activity-content">
+                                                <strong>
+                                                    <h:outputText value="#{adminCDIBean.getApplicationCandidateName(app)}" />
+                                                </strong>
+                                                <p class="mini-activity-message">
+                                                    Applied for <h:outputText value="#{adminCDIBean.getApplicationJobTitle(app)}" />
+                                                </p>
+                                                <span class="mini-activity-time">
+                                                    <h:outputText value="#{app.applicationAppliedDate}">
+                                                        <f:convertDateTime pattern="dd MMM yyyy" />
+                                                    </h:outputText>
+                                                </span>
+                                            </div>
+                                            <span class="status #{adminCDIBean.getApplicationStatusClass(app)}">
+                                                <h:outputText value="#{empty app.applicationStatus ? 'Pending' : app.applicationStatus}" />
+                                            </span>
+                                        </div>
+                                    </ui:repeat>
 
-    <h:panelGroup rendered="#{loginBean.role ne 'Admin'}">
-        <div class="access-denied">
-            <h2>Access Denied</h2>
-            <p>You do not have permission to view this page.</p>
-        </div>
-    </h:panelGroup>
+                                    <h:panelGroup rendered="#{empty adminCDIBean.recentApplications}">
+                                        <div class="empty-state compact">
+                                            <div class="empty-icon"><i class="fa-regular fa-file-lines"></i></div>
+                                            <p>No applications found.</p>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+                        </div>
 
-    <ui:include src="/common/footer.xhtml" />
-</h:body>
+                        <div class="dashboard-panel focus-panel">
+                            <div class="panel-header">
+                                <h2>Admin Focus</h2>
+                                <span class="panel-chip success">Rule-Based</span>
+                            </div>
+
+                            <div class="panel-scroll">
+                                <div class="rules-box">
+                                    <div class="rule-item">
+                                        <strong>Skill Approval Queue</strong>
+                                        <p><h:outputText value="#{adminCDIBean.pendingSkillCount}" /> skills and <h:outputText value="#{adminCDIBean.pendingCategoryCount}" /> categories waiting for review.</p>
+                                    </div>
+                                    <div class="rule-item">
+                                        <strong>Candidate Coverage</strong>
+                                        <p><h:outputText value="#{adminCDIBean.candidateCount}" /> candidates are available for recruiter job matching.</p>
+                                    </div>
+                                    <div class="rule-item">
+                                        <strong>Company Health</strong>
+                                        <p><h:outputText value="#{adminCDIBean.activeCompanyCount}" /> active companies can currently post and manage jobs.</p>
+                                    </div>
+                                    <div class="rule-item">
+                                        <strong>Interview Pipeline</strong>
+                                        <p><h:outputText value="#{adminCDIBean.scheduledInterviewCount}" /> interviews are scheduled or in progress.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </main>
+            </div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{loginBean.role ne 'Admin'}">
+            <div class="access-denied">
+                <h2>Access Denied</h2>
+                <p>You do not have permission to view this page.</p>
+            </div>
+        </h:panelGroup>
+
+        <ui:include src="/common/footer.xhtml" />
+    </h:body>
 </html>

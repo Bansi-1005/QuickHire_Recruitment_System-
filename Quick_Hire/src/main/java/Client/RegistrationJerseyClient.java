@@ -45,11 +45,11 @@ public class RegistrationJerseyClient {
         client.close();
     }
 
-    public String registerUser(Object requestEntity) throws ClientErrorException {
+    public Response registerUser(Object requestEntity) throws ClientErrorException {
         return webTarget
                 .path("registerUser")
-                .request(jakarta.ws.rs.core.MediaType.APPLICATION_JSON)
-                .post(jakarta.ws.rs.client.Entity.entity(requestEntity, jakarta.ws.rs.core.MediaType.APPLICATION_JSON), String.class);
+                .request(MediaType.APPLICATION_JSON)
+                .post(jakarta.ws.rs.client.Entity.entity(requestEntity, MediaType.APPLICATION_JSON));
     }
 
     public Collection<Tblcompany> getAllCompanies()

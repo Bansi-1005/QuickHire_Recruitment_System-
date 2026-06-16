@@ -71,8 +71,6 @@ public class Tblskills implements Serializable {
     private String skillStatus;
     @Column(name = "createdByUserId")
     private Integer createdByUserId;
-    @Column(name = "mergedIntoSkillId")
-    private Integer mergedIntoSkillId;
     @Basic(optional = false)
     @NotNull
     @Column(name = "createdDate")
@@ -180,14 +178,6 @@ public class Tblskills implements Serializable {
 
     public void setCreatedByUserId(Integer createdByUserId) {
         this.createdByUserId = createdByUserId;
-    }
-
-    public Integer getMergedIntoSkillId() {
-        return mergedIntoSkillId;
-    }
-
-    public void setMergedIntoSkillId(Integer mergedIntoSkillId) {
-        this.mergedIntoSkillId = mergedIntoSkillId;
     }
 
     public Date getCreatedDate() {

@@ -60,7 +60,6 @@ public class RecruiterBean implements RecruiterBeanLocal {
             Tblrecruiters existing = em.find(Tblrecruiters.class, recruiter.getRecruiterId());
 
             if (existing != null) {
-
                 if (recruiter.getDesignation() != null) {
                     existing.setDesignation(recruiter.getDesignation());
                 }
@@ -69,11 +68,43 @@ public class RecruiterBean implements RecruiterBeanLocal {
                     existing.setRecruiterPhone(recruiter.getRecruiterPhone());
                 }
 
+                if (recruiter.getUserId() != null) {
+                    Tblusers user = em.find(
+                            Tblusers.class,
+                            existing.getUserId().getUserId()
+                    );
+
+                    if (user != null) {
+                        user.setUserName(recruiter.getUserId().getUserName());
+                        user.setUserEmail(recruiter.getUserId().getUserEmail());
+                        em.merge(user);
+                    }
+                }
+
                 em.merge(existing);
             }
 
         } catch (Exception e) {
             e.printStackTrace();
+            throw e;
+        }
+    }
+
+    @Override
+    public void uploadProfilePhoto(Integer userId, String photo) {
+        try {
+            Tblusers user = em.find(Tblusers.class, userId);
+
+            if (user == null) {
+                throw new RuntimeException("User not found");
+            }
+
+            user.setProfilePhoto(photo);
+            em.merge(user);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
         }
     }
 
@@ -142,26 +173,6 @@ public class RecruiterBean implements RecruiterBeanLocal {
             em.persist(job);
 
             // ================= SAVE ACTIVITY =================
-//            Tblnotification activity
-//                    = new Tblnotification();
-//
-//            activity.setUserId(
-//                    recruiter.getUserId()
-//            );
-//
-//            activity.setMessage(
-//                    "New job posted: "
-//                    + job.getJobTitle()
-//            );
-//
-//            activity.setCreatedDate(
-//                    new Date()
-//            );
-//
-//            activity.setNotificationStatus(
-//                    "Read"
-//            );
-            // ================= SAVE ACTIVITY =================
             Tblnotification notification = new Tblnotification();
 
             notification.setSenderUserId(recruiter.getUserId());
@@ -177,7 +188,6 @@ public class RecruiterBean implements RecruiterBeanLocal {
             notification.setIsRead(false);
             notification.setCreatedDate(new Date());
             em.persist(notification);
-//            em.persist(activity);
 
             // ================= SEND EMAIL =================
             Tblusers recruiterUser
@@ -555,162 +565,6 @@ public class RecruiterBean implements RecruiterBeanLocal {
 
         return calendar.getTime();
     }
-//
-//    @Override
-//    public void deleteJob(int jobId, int recruiterId) {
-//        try {
-//            Tbljob j = em.find(Tbljob.class, jobId);
-//            Tblrecruiters r = em.find(Tblrecruiters.class, recruiterId);
-//
-//            if (j != null && r != null && r.getTbljobCollection() != null) {
-//
-//                // Step 1: Remove Job ↔ Skills (tbljob_skills)
-//                if (j.getTblskillsCollection() != null) {
-//                    j.getTblskillsCollection().clear();
-//                }
-//
-//                // Step 2: Remove Job ↔ Candidates (candidate_job)
-//                if (j.getTblcandidatesCollection() != null) {
-//                    j.getTblcandidatesCollection().clear();
-//                }
-//
-//                // Step 3: Delete Applications (VERY IMPORTANT)
-//                if (j.getTblapplicationCollection() != null) {
-//                    for (Tblapplication app : j.getTblapplicationCollection()) {
-//                        em.remove(em.contains(app) ? app : em.merge(app));
-//                    }
-//                }
-//
-//                // DELETE WEIGHTAGE MAPPING
-//                em.createQuery(
-//                        "DELETE FROM Tbljobskillweightage j WHERE j.jobId.jobId = :jobId"
-//                )
-//                        .setParameter("jobId", jobId)
-//                        .executeUpdate();
-//
-//                // Step 4: Remove from recruiter
-//                r.getTbljobCollection().remove(j);
-//                em.merge(r);
-//
-//                // Step 5: Finally delete job
-//                em.remove(em.contains(j) ? j : em.merge(j));
-//            }
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            throw e;
-//        }
-//    }
-//
-
-    ////single,multiple,all job delete logic:
-////@Override
-////public void deleteJob(Integer jobId, Collection<Integer> jobIds, int recruiterId) {
-////    try {
-////        Tblrecruiters r = em.find(Tblrecruiters.class, recruiterId);
-////
-////        if (r == null || r.getTbljobCollection() == null) return;
-////
-////        // 🔥 CASE 1: DELETE ALL JOBS
-////        if (jobId != null && jobId == 0) {
-////
-////            Collection<Tbljob> jobs = new ArrayList<>(r.getTbljobCollection());
-////
-////            for (Tbljob j : jobs) {
-////
-////                // Remove Job ↔ Skills
-////                if (j.getTblskillsCollection() != null) {
-////                    j.getTblskillsCollection().clear();
-////                }
-////
-////                // Remove Job ↔ Candidates
-////                if (j.getTblcandidatesCollection() != null) {
-////                    j.getTblcandidatesCollection().clear();
-////                }
-////
-////                // Remove Applications
-////                if (j.getTblapplicationCollection() != null) {
-////                    for (Tblapplication app : j.getTblapplicationCollection()) {
-////                        em.remove(em.contains(app) ? app : em.merge(app));
-////                    }
-////                }
-////
-////                // Remove from recruiter
-////                r.getTbljobCollection().remove(j);
-////
-////                // Delete job
-////                em.remove(em.contains(j) ? j : em.merge(j));
-////            }
-////
-////            em.merge(r);
-////        }
-////
-////        // 🔥 CASE 2: DELETE MULTIPLE JOBS
-////        else if (jobIds != null && !jobIds.isEmpty()) {
-////
-////            for (Integer id : jobIds) {
-////                Tbljob j = em.find(Tbljob.class, id);
-////
-////                if (j != null) {
-////
-////                    if (j.getTblskillsCollection() != null) {
-////                        j.getTblskillsCollection().clear();
-////                    }
-////
-////                    if (j.getTblcandidatesCollection() != null) {
-////                        j.getTblcandidatesCollection().clear();
-////                    }
-////
-////                    if (j.getTblapplicationCollection() != null) {
-////                        for (Tblapplication app : j.getTblapplicationCollection()) {
-////                            em.remove(em.contains(app) ? app : em.merge(app));
-////                        }
-////                    }
-////
-////                    r.getTbljobCollection().remove(j);
-////
-////                    em.remove(em.contains(j) ? j : em.merge(j));
-////                }
-////            }
-////
-////            em.merge(r);
-////        }
-////
-////        // 🔥 CASE 3: DELETE SINGLE JOB
-////        else if (jobId != null && jobId > 0) {
-////
-////            Tbljob j = em.find(Tbljob.class, jobId);
-////
-////            if (j != null) {
-////
-////                if (j.getTblskillsCollection() != null) {
-////                    j.getTblskillsCollection().clear();
-////                }
-////
-////                if (j.getTblcandidatesCollection() != null) {
-////                    j.getTblcandidatesCollection().clear();
-////                }
-////
-////                if (j.getTblapplicationCollection() != null) {
-////                    for (Tblapplication app : j.getTblapplicationCollection()) {
-////                        em.remove(em.contains(app) ? app : em.merge(app));
-////                    }
-////                }
-////
-////                r.getTbljobCollection().remove(j);
-////                em.merge(r);
-////
-////                em.remove(em.contains(j) ? j : em.merge(j));
-////            }
-////        }
-////
-////    } catch (Exception e) {
-////        e.printStackTrace();
-////        throw e;
-////    }
-///
-    /// @param recruiterId/
-    /// @return 
 
     @Override
     public Collection<Tbljob> getJobs(int recruiterId) {
@@ -739,18 +593,25 @@ public class RecruiterBean implements RecruiterBeanLocal {
 
         try {
 
+//            return em.createQuery(
+//                    "SELECT s FROM Tblskills s "
+//                    + "WHERE ("
+//                    + "s.skillStatus = 'APPROVED' "
+//                    + "OR "
+//                    + "(s.skillStatus = 'PENDING' "
+//                    + "AND s.createdByUserId = :userId)"
+//                    + ") "
+//                    + "ORDER BY s.skillName",
+//                    Tblskills.class
+//            )
+//                    .setParameter("userId", userId)
+//                    .getResultList();
             return em.createQuery(
                     "SELECT s FROM Tblskills s "
-                    + "WHERE ("
-                    + "s.skillStatus = 'APPROVED' "
-                    + "OR "
-                    + "(s.skillStatus = 'PENDING' "
-                    + "AND s.createdByUserId = :userId)"
-                    + ") "
+                    + "WHERE s.skillStatus = 'APPROVED' "
+                    + "AND s.categoryId.categoryStatus = 'APPROVED' "
                     + "ORDER BY s.skillName",
-                    Tblskills.class
-            )
-                    .setParameter("userId", userId)
+                    Tblskills.class)
                     .getResultList();
 
         } catch (Exception e) {
@@ -790,6 +651,12 @@ public class RecruiterBean implements RecruiterBeanLocal {
             )
                     .setParameter("userId", recruiterUserId)
                     .getResultList();
+//            return em.createQuery(
+//                    "SELECT c FROM Tblskillcategory c "
+//                    + "WHERE c.categoryStatus = 'APPROVED' "
+//                    + "ORDER BY c.categoryName",
+//                    Tblskillcategory.class)
+//                    .getResultList();
 
         } catch (Exception e) {
 
@@ -804,20 +671,29 @@ public class RecruiterBean implements RecruiterBeanLocal {
 
         try {
 
+//            return em.createQuery(
+//                    "SELECT s FROM Tblskills s "
+//                    + "WHERE s.categoryId.categoryId = :categoryId "
+//                    + "AND ("
+//                    + "s.skillStatus = 'APPROVED' "
+//                    + "OR "
+//                    + "(s.skillStatus = 'PENDING' "
+//                    + "AND s.createdByUserId = :userId)"
+//                    + ") "
+//                    + "ORDER BY s.skillName",
+//                    Tblskills.class
+//            )
+//                    .setParameter("categoryId", categoryId)
+//                    .setParameter("userId", userId)
+//                    .getResultList();
             return em.createQuery(
                     "SELECT s FROM Tblskills s "
                     + "WHERE s.categoryId.categoryId = :categoryId "
-                    + "AND ("
-                    + "s.skillStatus = 'APPROVED' "
-                    + "OR "
-                    + "(s.skillStatus = 'PENDING' "
-                    + "AND s.createdByUserId = :userId)"
-                    + ") "
+                    + "AND s.skillStatus = 'APPROVED' "
+                    + "AND s.categoryId.categoryStatus = 'APPROVED' "
                     + "ORDER BY s.skillName",
-                    Tblskills.class
-            )
+                    Tblskills.class)
                     .setParameter("categoryId", categoryId)
-                    .setParameter("userId", userId)
                     .getResultList();
 
         } catch (Exception e) {
@@ -863,7 +739,7 @@ public class RecruiterBean implements RecruiterBeanLocal {
                 // CREATE CATEGORY
                 category = new Tblskillcategory();
 
-                category.setCategoryName(trimmedCategory);
+                category.setCategoryName(categoryName.trim());
                 category.setCategoryStatus("PENDING");
                 category.setCreatedByUserId(recruiterUserId);
                 category.setCreatedDate(new Date());
@@ -872,31 +748,40 @@ public class RecruiterBean implements RecruiterBeanLocal {
                 em.flush();
 
                 // NOTIFICATION FOR CATEGORY
-                Tblnotification categoryNotification = new Tblnotification();
+//                Tblnotification categoryNotification = new Tblnotification();
+//
+//                categoryNotification.setSenderUserId(recruiterUser);
+//                categoryNotification.setReceiverUserId(recruiterUser);
+//
+//                categoryNotification.setNotificationTitle(
+//                        "Category Approval Request"
+//                );
+//
+//                categoryNotification.setNotificationMessage(
+//                        "New category pending approval: "
+//                        + trimmedCategory
+//                );
+//
+//                categoryNotification.setNotificationType(
+//                        "CATEGORY_REQUEST"
+//                );
+//
+//                categoryNotification.setIsRead(false);
+//
+//                categoryNotification.setCreatedDate(
+//                        new Date()
+//                );
+//
+//                em.persist(categoryNotification);
+                saveNotification(recruiterUser, recruiterUser,
+                        "Category Request Submitted",
+                        "Your category request is pending admin approval: " + category.getCategoryName(),
+                        "CATEGORY_REQUEST");
 
-                categoryNotification.setSenderUserId(recruiterUser);
-                categoryNotification.setReceiverUserId(recruiterUser);
-
-                categoryNotification.setNotificationTitle(
-                        "Category Approval Request"
-                );
-
-                categoryNotification.setNotificationMessage(
-                        "New category pending approval: "
-                        + trimmedCategory
-                );
-
-                categoryNotification.setNotificationType(
-                        "CATEGORY_REQUEST"
-                );
-
-                categoryNotification.setIsRead(false);
-
-                categoryNotification.setCreatedDate(
-                        new Date()
-                );
-
-                em.persist(categoryNotification);
+                notifyAdmins(recruiterUser,
+                        "New Category Approval Request",
+                        recruiterUser.getUserName() + " requested new category: " + category.getCategoryName(),
+                        "CATEGORY_PENDING");
             }
             // =====================================================
             // USE EXISTING CATEGORY
@@ -954,31 +839,15 @@ public class RecruiterBean implements RecruiterBeanLocal {
 
                     em.persist(skill);
 
-                    Tblnotification skillNotification = new Tblnotification();
+                    saveNotification(recruiterUser, recruiterUser,
+                            "Skill Request Submitted",
+                            "Your skill request is pending admin approval: " + skill.getSkillName(),
+                            "SKILL_REQUEST");
 
-                    skillNotification.setSenderUserId(recruiterUser);
-                    skillNotification.setReceiverUserId(recruiterUser);
-
-                    skillNotification.setNotificationTitle(
-                            "Skill Approval Request"
-                    );
-
-                    skillNotification.setNotificationMessage(
-                            "New skill pending approval: "
-                            + trimmedSkill
-                    );
-
-                    skillNotification.setNotificationType(
-                            "SKILL_REQUEST"
-                    );
-
-                    skillNotification.setIsRead(false);
-
-                    skillNotification.setCreatedDate(
-                            new Date()
-                    );
-
-                    em.persist(skillNotification);
+                    notifyAdmins(recruiterUser,
+                            "New Skill Approval Request",
+                            recruiterUser.getUserName() + " requested new skill: " + skill.getSkillName(),
+                            "SKILL_PENDING");
                 }
             }
             em.flush();
@@ -1504,6 +1373,18 @@ public class RecruiterBean implements RecruiterBeanLocal {
         em.persist(notification);
     }
 
+    private void notifyAdmins(Tblusers recruiterUser, String title, String message, String type) {
+        Collection<Tblusers> admins = em.createQuery(
+                "SELECT u FROM Tblusers u WHERE u.roleId.roleName = :roleName",
+                Tblusers.class)
+                .setParameter("roleName", "Admin")
+                .getResultList();
+
+        for (Tblusers admin : admins) {
+            saveNotification(recruiterUser, admin, title, message, type);
+        }
+    }
+
     // ================= INTERVIEW =================
     @Override
     public void scheduleInterview(Tblinterview interview) {
@@ -1859,8 +1740,8 @@ public class RecruiterBean implements RecruiterBeanLocal {
         newInterview.setInterviewerName(interviewerName);
         newInterview.setInterviewerMode(interviewerMode);
         newInterview.setInterviewStatus("Scheduled");
-        newInterview.setInterviewRound(1);                    
-        newInterview.setInterviewRoundName("Interview Round"); 
+        newInterview.setInterviewRound(1);
+        newInterview.setInterviewRoundName("Interview Round");
         newInterview.setResult("Pending");
         newInterview.setFeedback(null);
 
@@ -2139,24 +2020,49 @@ public class RecruiterBean implements RecruiterBeanLocal {
 
     @Override
     public Collection<Tblnotification> getRecentActivities(int userId) {
-
         try {
-
             return em.createQuery(
                     "SELECT n FROM Tblnotification n "
                     + "WHERE n.receiverUserId.userId = :uid "
+                    + "AND n.senderUserId.userId = :uid "
                     + "ORDER BY n.createdDate DESC",
                     Tblnotification.class)
                     .setParameter("uid", userId)
                     .setMaxResults(6)
                     .getResultList();
-
         } catch (Exception e) {
-
             e.printStackTrace();
-
             return new ArrayList<>();
         }
+    }
+
+    @Override
+    public Collection<Tblnotification> getActivities(int userId) {
+        try {
+            return em.createQuery(
+                    "SELECT n FROM Tblnotification n "
+                    + "WHERE n.receiverUserId.userId = :uid "
+                    + "AND n.senderUserId.userId = :uid "
+                    + "ORDER BY n.createdDate DESC",
+                    Tblnotification.class)
+                    .setParameter("uid", userId)
+                    .getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public void markAllNotificationsAsRead(int userId) {
+        em.createQuery(
+                "UPDATE Tblnotification n "
+                + "SET n.isRead = TRUE, n.readDate = CURRENT_TIMESTAMP "
+                + "WHERE n.receiverUserId.userId = :uid "
+                + "AND (n.senderUserId IS NULL OR n.senderUserId.userId <> :uid) "
+                + "AND (n.isRead = FALSE OR n.isRead IS NULL)")
+                .setParameter("uid", userId)
+                .executeUpdate();
     }
 
     // ================= NOTIFICATION =================
@@ -2166,6 +2072,7 @@ public class RecruiterBean implements RecruiterBeanLocal {
             return em.createQuery(
                     "SELECT n FROM Tblnotification n "
                     + "WHERE n.receiverUserId.userId = :uid "
+                    + "AND (n.senderUserId IS NULL OR n.senderUserId.userId <> :uid) "
                     + "ORDER BY n.createdDate DESC",
                     Tblnotification.class)
                     .setParameter("uid", userId)
@@ -2192,14 +2099,5 @@ public class RecruiterBean implements RecruiterBeanLocal {
         em.merge(notification);
     }
 
-    @Override
-    public void markAllNotificationsAsRead(int userId) {
-        em.createQuery(
-                "UPDATE Tblnotification n "
-                + "SET n.isRead = TRUE, n.readDate = CURRENT_TIMESTAMP "
-                + "WHERE n.receiverUserId.userId = :uid "
-                + "AND (n.isRead = FALSE OR n.isRead IS NULL)")
-                .setParameter("uid", userId)
-                .executeUpdate();
-    }
+    //company
 }

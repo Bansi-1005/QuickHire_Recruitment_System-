@@ -33,11 +33,9 @@ import java.util.Set;
 @ViewScoped
 public class RecruiterNotificationCDIBean implements Serializable {
 
-    /**
-     * Creates a new instance of recruiterNotificationCDIBean
-     */
-   
     private List<Tblnotification> notifications = new ArrayList<>();
+    private Collection<Tblnotification> activities = new ArrayList<>();
+
     private final RecruiterJerseyClient client = new RecruiterJerseyClient();
 
     @Inject
@@ -45,21 +43,49 @@ public class RecruiterNotificationCDIBean implements Serializable {
 
     @PostConstruct
     public void init() {
+        loadNotificationPage();
+    }
+
+    public void loadNotificationPage() {
         loadNotifications();
+        loadActivities();
     }
 
     public void loadNotifications() {
         try {
             client.setToken(loginBean.getToken());
+
             Collection<Tblnotification> data = client.getNotifications(
-                    new GenericType<Collection<Tblnotification>>() {},
+                    new GenericType<Collection<Tblnotification>>() {
+            },
                     String.valueOf(loginBean.getUserId())
             );
+
             notifications = data != null ? new ArrayList<>(data) : new ArrayList<>();
+
         } catch (Exception e) {
             e.printStackTrace();
             notifications = new ArrayList<>();
             addError("Unable to load notifications.");
+        }
+    }
+
+    public void loadActivities() {
+        try {
+            client.setToken(loginBean.getToken());
+
+            Collection<Tblnotification> data = client.getActivities(
+                    new GenericType<Collection<Tblnotification>>() {
+            },
+                    String.valueOf(loginBean.getUserId())
+            );
+
+            activities = data != null ? data : new ArrayList<>();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            activities = new ArrayList<>();
+            addError("Unable to load activities.");
         }
     }
 
@@ -75,10 +101,11 @@ public class RecruiterNotificationCDIBean implements Serializable {
 
             if (response.getStatus() == 200) {
                 addInfo("Notification marked as read.");
-                loadNotifications();
+                loadNotificationPage();
             } else {
                 addError(response.readEntity(String.class));
             }
+
         } catch (Exception e) {
             e.printStackTrace();
             addError("Unable to mark notification as read.");
@@ -92,10 +119,11 @@ public class RecruiterNotificationCDIBean implements Serializable {
 
             if (response.getStatus() == 200) {
                 addInfo("All notifications marked as read.");
-                loadNotifications();
+                loadNotificationPage();
             } else {
                 addError(response.readEntity(String.class));
             }
+
         } catch (Exception e) {
             e.printStackTrace();
             addError("Unable to mark all notifications as read.");
@@ -106,13 +134,21 @@ public class RecruiterNotificationCDIBean implements Serializable {
         return notifications != null ? notifications.size() : 0;
     }
 
+    public int getActivityCount() {
+        return activities != null ? activities.size() : 0;
+    }
+
     public int getUnreadCount() {
         int count = 0;
-        for (Tblnotification item : notifications) {
-            if (item != null && !Boolean.TRUE.equals(item.getIsRead())) {
-                count++;
+
+        if (notifications != null) {
+            for (Tblnotification item : notifications) {
+                if (item != null && !Boolean.TRUE.equals(item.getIsRead())) {
+                    count++;
+                }
             }
         }
+
         return count;
     }
 
@@ -127,27 +163,42 @@ public class RecruiterNotificationCDIBean implements Serializable {
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
         cal.add(Calendar.DATE, -6);
-        Date sevenDaysAgo = cal.getTime();
 
+        Date sevenDaysAgo = cal.getTime();
         int count = 0;
-        for (Tblnotification item : notifications) {
-            if (item != null && item.getCreatedDate() != null
-                    && !item.getCreatedDate().before(sevenDaysAgo)) {
-                count++;
+
+        if (notifications != null) {
+            for (Tblnotification item : notifications) {
+                if (item != null && item.getCreatedDate() != null
+                        && !item.getCreatedDate().before(sevenDaysAgo)) {
+                    count++;
+                }
             }
         }
+
         return count;
     }
 
     public List<String> getNotificationTypes() {
         Set<String> types = new LinkedHashSet<>();
-        for (Tblnotification item : notifications) {
+
+        addTypes(types, notifications);
+        addTypes(types, activities);
+
+        return new ArrayList<>(types);
+    }
+
+    private void addTypes(Set<String> types, Collection<Tblnotification> list) {
+        if (list == null) {
+            return;
+        }
+
+        for (Tblnotification item : list) {
             if (item != null && item.getNotificationType() != null
                     && !item.getNotificationType().trim().isEmpty()) {
                 types.add(item.getNotificationType().trim());
             }
         }
-        return new ArrayList<>(types);
     }
 
     public String formatDisplayDate(Date date) {
@@ -162,8 +213,10 @@ public class RecruiterNotificationCDIBean implements Serializable {
         if (type == null || type.trim().isEmpty()) {
             return "General";
         }
+
         String text = type.trim().replace('_', ' ').toLowerCase(Locale.ENGLISH);
         StringBuilder result = new StringBuilder();
+
         for (String part : text.split("\\s+")) {
             if (!part.isEmpty()) {
                 result.append(Character.toUpperCase(part.charAt(0)))
@@ -171,6 +224,7 @@ public class RecruiterNotificationCDIBean implements Serializable {
                         .append(' ');
             }
         }
+
         return result.toString().trim();
     }
 
@@ -181,21 +235,46 @@ public class RecruiterNotificationCDIBean implements Serializable {
 
     public String getTypeClass(String type) {
         String value = type == null ? "" : type.toLowerCase(Locale.ENGLISH);
-        if (value.contains("application")) return "notification-icon-application";
-        if (value.contains("interview")) return "notification-icon-interview";
-        if (value.contains("job")) return "notification-icon-job";
-        if (value.contains("system")) return "notification-icon-system";
+
+        if (value.contains("application")) {
+            return "notification-icon-application";
+        }
+
+        if (value.contains("interview")) {
+            return "notification-icon-interview";
+        }
+
+        if (value.contains("job")) {
+            return "notification-icon-job";
+        }
+
+        if (value.contains("system")) {
+            return "notification-icon-system";
+        }
+
         return "notification-icon-default";
     }
 
     private void addInfo(String message) {
-        FacesContext.getCurrentInstance().addMessage(null,
-                new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", message));
+        FacesContext.getCurrentInstance().addMessage(
+                null,
+                new FacesMessage(
+                        FacesMessage.SEVERITY_INFO,
+                        message,
+                        message
+                )
+        );
     }
 
     private void addError(String message) {
-        FacesContext.getCurrentInstance().addMessage(null,
-                new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", message));
+        FacesContext.getCurrentInstance().addMessage(
+                null,
+                new FacesMessage(
+                        FacesMessage.SEVERITY_ERROR,
+                        message,
+                        message
+                )
+        );
     }
 
     public List<Tblnotification> getNotifications() {
@@ -205,5 +284,12 @@ public class RecruiterNotificationCDIBean implements Serializable {
     public void setNotifications(List<Tblnotification> notifications) {
         this.notifications = notifications;
     }
+
+    public Collection<Tblnotification> getActivities() {
+        return activities;
+    }
+
+    public void setActivities(Collection<Tblnotification> activities) {
+        this.activities = activities;
+    }
 }
-    
