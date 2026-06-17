@@ -87,7 +87,7 @@ body::-webkit-scrollbar {
 }
 
 /* ========================================
-   HERO SECTION - KEEP SAME FEEL
+   HERO SECTION
 ======================================== */
 
 .hero {
@@ -150,8 +150,8 @@ body::-webkit-scrollbar {
 
 .hero h1 {
     margin: 0 0 10px;
-    font-size: 34px;
-    font-weight: 800;
+    font-size: 32px;
+    font-weight: 750;
     line-height: 1.15;
 }
 
@@ -781,15 +781,9 @@ body::-webkit-scrollbar {
 }
 
 /* ========================================
-   MODALS — HIDDEN/VISIBLE STATES (THE FIX)
+   MODAL OVERLAY — HIDDEN / VISIBLE STATES
 ======================================== */
 
-/*
- * THE ROOT CAUSE OF THE BUG:
- * .modal-hidden and .modal-visible were never defined,
- * so modals were always visible (display: flex from .modal-overlay).
- * These two rules are the ONLY fix needed.
- */
 .modal-overlay {
     position: fixed;
     inset: 0;
@@ -800,7 +794,6 @@ body::-webkit-scrollbar {
     z-index: 2000;
     padding: 20px;
     backdrop-filter: blur(8px);
-    /* Hidden by default — JS adds .modal-visible to show */
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -821,19 +814,22 @@ body::-webkit-scrollbar {
 
 /* ========================================
    JOB MODAL
+   FIX: overflow:hidden was cutting the close button.
+   Changed to overflow:visible on the outer job-modal,
+   scroll handled by inner .job-modal-inner-scroll.
 ======================================== */
 
 .job-modal {
     width: min(940px, 100%);
     max-height: 90vh;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
     background: linear-gradient(180deg, #ffffff, #f8fbff);
     border-radius: 28px;
-    padding: 26px;
     position: relative;
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
     border: 1px solid rgba(255,255,255,0.55);
-    /* Subtle entrance animation */
+    overflow: visible;
     transform: translateY(10px);
     transition: transform 0.3s ease;
 }
@@ -843,27 +839,45 @@ body::-webkit-scrollbar {
     transform: translateY(0);
 }
 
+/* Inner scroll wrapper for job modal content */
+.job-modal-scroll {
+    overflow-y: auto;
+    max-height: 90vh;
+    border-radius: 28px;
+    padding: 26px;
+}
+
+/* ========================================
+   CLOSE BUTTON
+   FIX: was position:absolute inside overflow:hidden container.
+   Now placed outside the scroll area at the modal level.
+======================================== */
+
 .close-btn {
     position: absolute;
-    top: 16px;
-    right: 20px;
-    font-size: 28px;
+    top: -16px;
+    right: -16px;
+    font-size: 22px;
     cursor: pointer;
-    color: #64748b;
+    color: #ffffff;
     width: 38px;
     height: 38px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(241, 245, 249, 0.8);
+    background: linear-gradient(135deg, #334155, #475569);
+    border: 2px solid rgba(255,255,255,0.3);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.28);
     transition: all 0.25s ease;
+    z-index: 10;
+    line-height: 1;
 }
 
 .close-btn:hover {
-    background: #e2e8f0;
-    color: #0f172a;
-    transform: rotate(90deg);
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    border-color: rgba(255,255,255,0.4);
+    transform: rotate(90deg) scale(1.1);
 }
 
 /* ========================================
@@ -1163,14 +1177,20 @@ body::-webkit-scrollbar {
 
 /* ========================================
    RESUME MODAL
+   FIX: was flex-direction:column but resume-area had
+   no min-height so it collapsed. Added proper flex
+   sizing so header, content and footer all show.
 ======================================== */
 
 .modal-box {
-    width: min(860px, 100%);
+    width: min(520px, 100%);
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     background: linear-gradient(180deg, #ffffff, #f9fbff);
     border-radius: 26px;
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
-    overflow: hidden;
     border: 1px solid rgba(255,255,255,0.7);
     transform: translateY(10px);
     transition: transform 0.3s ease;
@@ -1180,9 +1200,10 @@ body::-webkit-scrollbar {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    padding: 22px 24px;
+    padding: 22px 24px 18px;
     border-bottom: 1px solid #e8eef5;
     background: linear-gradient(135deg, #f8fbff, #ffffff);
+    flex-shrink: 0;
 }
 
 .modal-header h3 {
@@ -1214,6 +1235,7 @@ body::-webkit-scrollbar {
     justify-content: center;
     border-radius: 10px;
     transition: all 0.2s ease;
+    flex-shrink: 0;
 }
 
 .modal-close:hover {
@@ -1221,15 +1243,17 @@ body::-webkit-scrollbar {
     color: #132238;
 }
 
+/* FIX: resume-area must flex-grow so it fills space between header and footer */
 .resume-area {
-    padding: 24px;
-    max-height: 48vh;
+    padding: 20px 24px;
+    flex: 1;
     overflow-y: auto;
+    min-height: 0;
 }
 
 .resume-dropdown-wrapper {
     display: grid;
-    gap: 12px;
+    gap: 14px;
 }
 
 .resume-label {
@@ -1247,6 +1271,7 @@ body::-webkit-scrollbar {
     color: #132238;
     font-size: 13.5px;
     transition: 0.25s;
+    box-sizing: border-box;
 }
 
 .resume-dropdown:focus {
@@ -1256,7 +1281,7 @@ body::-webkit-scrollbar {
 }
 
 .resume-viewer {
-    margin-top: 12px;
+    margin-top: 4px;
 }
 
 .resume-selected-card {
@@ -1311,13 +1336,15 @@ body::-webkit-scrollbar {
     color: #ffffff;
 }
 
+/* FIX: footer must never be hidden — flex-shrink:0 keeps it always visible */
 .modal-actions {
     display: flex;
     justify-content: flex-end;
     gap: 12px;
-    padding: 18px 24px 24px;
+    padding: 16px 24px 20px;
     border-top: 1px solid #e8eef5;
     background: rgba(255,255,255,0.75);
+    flex-shrink: 0;
 }
 
 .btn-cancel {
@@ -1665,6 +1692,19 @@ body.modal-open {
     .interview-title h3 {
         white-space: normal;
     }
+
+    .modal-box {
+        width: min(96vw, 100%);
+        max-height: 92vh;
+    }
+
+    .close-btn {
+        top: -12px;
+        right: -12px;
+        width: 34px;
+        height: 34px;
+        font-size: 18px;
+    }
 }
 
 @media (max-width: 640px) {
@@ -1781,8 +1821,7 @@ body.modal-open {
 
     .modal-header,
     .resume-area,
-    .modal-actions,
-    .job-modal {
+    .modal-actions {
         padding-left: 16px;
         padding-right: 16px;
     }

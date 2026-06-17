@@ -345,6 +345,62 @@
     font-weight: 700;
 }
 
+
+/* ===== FIELD-LEVEL ERRORS (h:message per field) ===== */
+.field-error {
+    display: block;
+    color: #dc2626;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 6px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: rgba(239, 68, 68, 0.07);
+}
+
+/* ===== GLOBAL MESSAGES PANEL (h:messages) — ERROR STATE ===== */
+/* JSF renders error severity as class "errorMessage" on the list items */
+.form-messages .errorMessage,
+.form-messages span.errorMessage {
+    color: #dc2626 !important;
+}
+
+/* Override the green panel background when errors exist */
+.form-messages:has(.errorMessage) {
+    background: #fef2f2 !important;
+    border-color: rgba(239, 68, 68, 0.25) !important;
+    color: #dc2626 !important;
+}
+
+/* The ul/li JSF wraps messages in */
+.form-messages ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.form-messages li {
+    margin-bottom: 4px;
+    font-size: 13px;
+}
+
+/* Error severity li */
+.form-messages li.errorMessage,
+.form-messages ul li span.errorMessage {
+    color: #dc2626 !important;
+}
+
+/* ===== INFO / SUCCESS MESSAGES — keep green ===== */
+.form-messages .infoMessage,
+.form-messages span.infoMessage {
+    color: #065f46;
+}
+
+.form-messages:has(.infoMessage) {
+    background: #ecfdf5;
+    border-color: rgba(16, 185, 129, 0.22);
+    color: #065f46;
+}
+
 .applicants-panel {
     animation: panelFadeUp 0.75s ease both;
 }
@@ -602,7 +658,7 @@
     justify-content: flex-start;
     gap: 10px;
     flex-wrap: nowrap;
-    min-width: 220px;   
+    min-width: 220px;
     max-width: 100%;
 }
 .action-btn {

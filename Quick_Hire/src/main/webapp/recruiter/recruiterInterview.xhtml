@@ -151,8 +151,8 @@
                                      data-result="#{empty recruiterApplicationInterviewCDIBean.result ? 'Pending' : recruiterApplicationInterviewCDIBean.result}"
                                      style="display:none;">
                                 </div>
-                                <h:inputHidden id="conductFeedback" value="#{recruiterApplicationInterviewCDIBean.feedback}" />
-                                <h:inputHidden id="conductResult" value="#{recruiterApplicationInterviewCDIBean.result}" />
+                                <h:inputHidden id="conductFeedback" value="#{recruiterApplicationInterviewCDIBean.feedback}" required="true" />
+                                <h:inputHidden id="conductResult" value="#{recruiterApplicationInterviewCDIBean.result}" required="true" />
                             </h:panelGroup>
 
                             <h:panelGroup id="rescheduleInterviewPanel" layout="block">
@@ -161,15 +161,17 @@
                                 <h:inputText id="rescheduleNewDateTime"
                                              value="#{recruiterApplicationInterviewCDIBean.rescheduleDateTime}"
                                              styleClass="hidden-input"
+                                             required="true"
                                              p:type="datetime-local" />
-                                <h:selectOneMenu id="rescheduleNewMode" value="#{recruiterApplicationInterviewCDIBean.selectedInterview.interviewerMode}" styleClass="hidden-input">
+                                <h:selectOneMenu id="rescheduleNewMode" value="#{recruiterApplicationInterviewCDIBean.selectedInterview.interviewerMode}" styleClass="hidden-input" required="true">
                                     <f:selectItem itemLabel="Online" itemValue="Online" />
                                     <f:selectItem itemLabel="Offline" itemValue="Offline" />
                                     <f:selectItem itemLabel="Phone" itemValue="Phone" />
                                 </h:selectOneMenu>
                                 <h:inputText id="rescheduleNewInterviewer"
                                              value="#{recruiterApplicationInterviewCDIBean.selectedInterview.interviewerName}"
-                                             styleClass="hidden-input" />
+                                             styleClass="hidden-input"
+                                             required="true" />
                             </h:panelGroup>
 
                             <h:panelGroup id="viewInterviewHistoryPanel" layout="block" styleClass="history-render-source">
@@ -434,7 +436,7 @@
                         <div class="modal-title-group">
                             <span class="modal-header-icon pi pi-check"></span>
                             <div>
-                                <h2 class="modal-title">Conduct Interview</h2>
+                                <h2 class="modal-title">Interview Evaluation</h2>
                                 <p class="modal-subtitle">Add feedback and select the final decision</p>
                             </div>
                         </div>
@@ -451,11 +453,11 @@
                         <div class="form-field rich-field">
                             <label for="feedbackTextarea">Interview Feedback</label>
                             <textarea id="feedbackTextarea" class="modal-input modal-textarea" rows="6"
-                                      placeholder="Enter feedback about skills, communication, problem solving, and overall fit"></textarea>
+                                      placeholder="Enter feedback about skills, communication, problem solving, and overall fit" required="required"></textarea>
                         </div>
                         <div class="form-field rich-field">
                             <label for="resultSelect">Final Decision</label>
-                            <select id="resultSelect" class="filter-select modal-select">
+                            <select id="resultSelect" class="filter-select modal-select" required="required">
                                 <option value="Pending">Pending</option>
                                 <option value="Selected">Selected</option>
                                 <option value="Rejected">Rejected</option>
@@ -492,11 +494,11 @@
                         <div class="schedule-form-grid rich-form-grid">
                             <div class="form-field rich-field">
                                 <label for="rescheduleDateTime">New Date &amp; Time</label>
-                                <input type="datetime-local" id="rescheduleDateTime" class="modal-input" />
+                                <input type="datetime-local" id="rescheduleDateTime" class="modal-input" required="required" />
                             </div>
                             <div class="form-field rich-field">
                                 <label for="rescheduleMode">Interview Mode</label>
-                                <select id="rescheduleMode" class="filter-select modal-select">
+                                <select id="rescheduleMode" class="filter-select modal-select" required="required">
                                     <option value="Online">Online (Video Call)</option>
                                     <option value="Offline">Offline (In-Person)</option>
                                     <option value="Phone">Phone Call</option>
@@ -504,7 +506,7 @@
                             </div>
                             <div class="form-field rich-field form-field-wide">
                                 <label for="rescheduleInterviewer">Interviewer Name</label>
-                                <input type="text" id="rescheduleInterviewer" class="modal-input" placeholder="Enter interviewer name" />
+                                <input type="text" id="rescheduleInterviewer" class="modal-input" placeholder="Enter interviewer name" required="required" />
                             </div>
                         </div>
                     </div>

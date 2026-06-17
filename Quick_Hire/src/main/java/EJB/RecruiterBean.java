@@ -1331,7 +1331,21 @@ public class RecruiterBean implements RecruiterBeanLocal {
             if (interview == null
                     || interview.getApplicationId() == null
                     || interview.getApplicationId().getApplicationId() == null) {
+                if (interview.getInterviewDate() == null) {
+                    throw new RuntimeException("Interview date is required");
+                }
 
+                if (interview.getInterviewerName() == null
+                        || interview.getInterviewerName().trim().isEmpty()) {
+
+                    throw new RuntimeException("Interviewer name is required");
+                }
+
+                if (interview.getInterviewerMode() == null
+                        || interview.getInterviewerMode().trim().isEmpty()) {
+
+                    throw new RuntimeException("Interview mode is required");
+                }
                 throw new RuntimeException("Application id is required");
             }
 

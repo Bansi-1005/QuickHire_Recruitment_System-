@@ -594,26 +594,66 @@ function openScheduleInterviewAfterAjax(data) {
     }
 }
 
+//function closeScheduleInterviewAfterAjax(data) {
+//    if (!data) {
+//        return;
+//    }
+//
+//    if (data.status === 'success') {
+//        if (isAjaxValidationFailed(data)) {
+//            openScheduleInterviewModal();
+//            return;
+//        }
+//        var row = findRowByAppId(activeScheduleAppId) || activeScheduleRow;
+//        var oldStatus = row ? row.dataset.status : '';
+//        updateRowStatus(row, 'Interview Scheduled');
+//        updateCountsForStatusChange(oldStatus, 'Interview Scheduled');
+//        replaceActionsForScheduled(row);
+//        keepViewAfterAction(row);
+//        closeScheduleInterviewModal();
+//        showToast('Scheduled', 'success');
+//    }
+//}
+
+
+
 function closeScheduleInterviewAfterAjax(data) {
-    if (!data) {
+
+    if (!data)
         return;
+
+    if (data.status !== 'success')
+        return;
+
+    if (isAjaxValidationFailed(data)) {
+        return; // modal stays open
     }
 
-    if (data.status === 'success') {
-        if (isAjaxValidationFailed(data)) {
-            openScheduleInterviewModal();
-            return;
-        }
-        var row = findRowByAppId(activeScheduleAppId) || activeScheduleRow;
-        var oldStatus = row ? row.dataset.status : '';
-        updateRowStatus(row, 'Interview Scheduled');
-        updateCountsForStatusChange(oldStatus, 'Interview Scheduled');
-        replaceActionsForScheduled(row);
-        keepViewAfterAction(row);
-        closeScheduleInterviewModal();
-        showToast('Scheduled', 'success');
-    }
+    var row = findRowByAppId(activeScheduleAppId) || activeScheduleRow;
+
+    var oldStatus = row ? row.dataset.status : '';
+
+    updateRowStatus(row, 'Interview Scheduled');
+    updateCountsForStatusChange(oldStatus, 'Interview Scheduled');
+    replaceActionsForScheduled(row);
+    keepViewAfterAction(row);
+
+    closeScheduleInterviewModal();
+
+    showToast('Scheduled', 'success');
 }
+
+function hasValidationErrors() {
+
+    return Array.from(
+        document.querySelectorAll('.field-error')
+    ).some(function(el) {
+
+        return el.textContent.trim() !== '';
+
+    });
+}
+
 
 function isAjaxValidationFailed(data) {
     try {
@@ -623,6 +663,8 @@ function isAjaxValidationFailed(data) {
         return false;
     }
 }
+
+
 
 function afterApplicantTableAjax(data) {
     if (data && data.status === 'success') {

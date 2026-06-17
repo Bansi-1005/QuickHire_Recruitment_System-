@@ -58,7 +58,7 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
 
     private Tblinterview interview = new Tblinterview();
     private String interviewDateTime;
-    
+
     @Inject
     LoginCDIBean loginBean;
 
@@ -70,6 +70,7 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
     private String selectedCount = "0";
     private String interviewRejectedCount = "0";   // ← renamed
     private String totalInterviewCount = "0";
+    private boolean interviewScheduleSuccess;
 
 // Conduct Interview Fields
     private Integer selectedInterviewId;
@@ -432,105 +433,160 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
         if (applicationId == null) {
             return;
         }
-        selectedApplicationId = applicationId;
-        interview = new Tblinterview();
-        interview.setInterviewStatus("Scheduled");
-        interviewDateTime = null;
+
+        this.interviewScheduleSuccess = false;
+        this.selectedApplicationId = applicationId;
+        this.interview = new Tblinterview();
+        this.interview.setInterviewStatus("Scheduled");
+        this.interviewDateTime = null;
     }
 
+//    public void scheduleInterview() {
+//
+//        try {
+//
+//            if (selectedApplicationId == null
+//                    || selectedApplicationId <= 0) {
+//
+//                FacesContext.getCurrentInstance().addMessage(
+//                        null,
+//                        new FacesMessage(
+//                                FacesMessage.SEVERITY_ERROR,
+//                                "Error",
+//                                "Please select an application."
+//                        )
+//                );
+//
+//                return;
+//            }
+//
+//            Tblapplication application
+//                    = new Tblapplication();
+//
+//            application.setApplicationId(
+//                    selectedApplicationId
+//            );
+//
+//            interview.setApplicationId(
+//                    application
+//            );
+//            interview.setInterviewStatus("Scheduled");
+//
+//            if (interviewDateTime != null
+//                    && !interviewDateTime.trim().isEmpty()) {
+//
+//                interview.setInterviewDate(
+//                        new SimpleDateFormat(
+//                                "yyyy-MM-dd'T'HH:mm"
+//                        ).parse(interviewDateTime)
+//                );
+//            }
+//            interview.setInterviewStatus("Scheduled");
+//
+//            client.setToken(
+//                    loginBean.getToken()
+//            );
+//
+//            Response response
+//                    = client.scheduleInterview(
+//                            interview
+//                    );
+//
+//            if (response.getStatus() == 200) {
+//                lastChangedApplicationId = selectedApplicationId;
+//                updateLocalApplicationStatus(selectedApplicationId, "Interview Scheduled");
+//                interview = new Tblinterview();
+//                interviewDateTime = null;
+//                loadInterviews();
+//
+//            } else {
+//
+//                FacesContext.getCurrentInstance().addMessage(
+//                        null,
+//                        new FacesMessage(
+//                                FacesMessage.SEVERITY_ERROR,
+//                                "Error",
+//                                response.readEntity(String.class)
+//                        )
+//                );
+//            }
+//
+//        } catch (ParseException e) {
+//
+//            FacesContext.getCurrentInstance().addMessage(
+//                    null,
+//                    new FacesMessage(
+//                            FacesMessage.SEVERITY_ERROR,
+//                            "Error",
+//                            "Please select a valid interview date and time."
+//                    )
+//            );
+//
+//        } catch (Exception e) {
+//
+//            e.printStackTrace();
+//
+//            FacesContext.getCurrentInstance().addMessage(
+//                    null,
+//                    new FacesMessage(
+//                            FacesMessage.SEVERITY_ERROR,
+//                            "Error",
+//                            "Unable to schedule interview."
+//                    )
+//            );
+//        }
+//    }
     public void scheduleInterview() {
+        interviewScheduleSuccess = false;
 
         try {
-
-            if (selectedApplicationId == null
-                    || selectedApplicationId <= 0) {
-
-                FacesContext.getCurrentInstance().addMessage(
-                        null,
-                        new FacesMessage(
-                                FacesMessage.SEVERITY_ERROR,
-                                "Error",
-                                "Please select an application."
-                        )
-                );
-
+            if (selectedApplicationId == null || selectedApplicationId <= 0) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Error", "Please select an application."));
                 return;
             }
 
-            Tblapplication application
-                    = new Tblapplication();
+            Tblapplication application = new Tblapplication();
+            application.setApplicationId(selectedApplicationId);
 
-            application.setApplicationId(
-                    selectedApplicationId
-            );
-
-            interview.setApplicationId(
-                    application
-            );
+            interview.setApplicationId(application);
             interview.setInterviewStatus("Scheduled");
 
-            if (interviewDateTime != null
-                    && !interviewDateTime.trim().isEmpty()) {
-
+            if (interviewDateTime != null && !interviewDateTime.trim().isEmpty()) {
                 interview.setInterviewDate(
-                        new SimpleDateFormat(
-                                "yyyy-MM-dd'T'HH:mm"
-                        ).parse(interviewDateTime)
+                        new SimpleDateFormat("yyyy-MM-dd'T'HH:mm").parse(interviewDateTime)
                 );
             }
-            interview.setInterviewStatus("Scheduled");
 
-            client.setToken(
-                    loginBean.getToken()
-            );
-
-            Response response
-                    = client.scheduleInterview(
-                            interview
-                    );
+            client.setToken(loginBean.getToken());
+            Response response = client.scheduleInterview(interview);
 
             if (response.getStatus() == 200) {
+                interviewScheduleSuccess = true;
                 lastChangedApplicationId = selectedApplicationId;
                 updateLocalApplicationStatus(selectedApplicationId, "Interview Scheduled");
                 interview = new Tblinterview();
                 interviewDateTime = null;
                 loadInterviews();
-
             } else {
-
-                FacesContext.getCurrentInstance().addMessage(
-                        null,
-                        new FacesMessage(
-                                FacesMessage.SEVERITY_ERROR,
-                                "Error",
-                                response.readEntity(String.class)
-                        )
-                );
+                interviewScheduleSuccess = false;
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                "Error", response.readEntity(String.class)));
             }
 
         } catch (ParseException e) {
-
-            FacesContext.getCurrentInstance().addMessage(
-                    null,
-                    new FacesMessage(
-                            FacesMessage.SEVERITY_ERROR,
-                            "Error",
-                            "Please select a valid interview date and time."
-                    )
-            );
-
+            interviewScheduleSuccess = false;
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                            "Error", "Please select a valid interview date and time."));
         } catch (Exception e) {
-
+            interviewScheduleSuccess = false;
             e.printStackTrace();
-
-            FacesContext.getCurrentInstance().addMessage(
-                    null,
-                    new FacesMessage(
-                            FacesMessage.SEVERITY_ERROR,
-                            "Error",
-                            "Unable to schedule interview."
-                    )
-            );
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                            "Error", "Unable to schedule interview."));
         }
     }
 
@@ -623,116 +679,6 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
         }
     }
 
-//    public void conductInterview() {
-//
-//        try {
-//
-//            client.setToken(
-//                    loginBean.getToken()
-//            );
-//
-//            Response response
-//                    = client.conductInterview(
-//                            selectedInterviewId,
-//                            feedback,
-//                            result
-//                    );
-//
-//            if (response.getStatus() == 200) {
-//
-//                FacesContext.getCurrentInstance()
-//                        .addMessage(
-//                                null,
-//                                new FacesMessage(
-//                                        FacesMessage.SEVERITY_INFO,
-//                                        "Success",
-//                                        "Interview completed."
-//                                )
-//                        );
-//
-//                loadInterviews();
-//
-//            } else {
-//
-//                FacesContext.getCurrentInstance()
-//                        .addMessage(
-//                                null,
-//                                new FacesMessage(
-//                                        FacesMessage.SEVERITY_ERROR,
-//                                        "Error",
-//                                        response.readEntity(String.class)
-//                                )
-//                        );
-//            }
-//
-//        } catch (Exception e) {
-//
-//            e.printStackTrace();
-//        }
-//    }
-//    public void prepareReschedule(
-//            Tblinterview interview) {
-//
-//        selectedInterview = interview;
-//
-//        if (interview.getInterviewDate() != null) {
-//
-//            rescheduleDateTime
-//                    = new SimpleDateFormat(
-//                            "yyyy-MM-dd'T'HH:mm"
-//                    ).format(
-//                            interview.getInterviewDate()
-//                    );
-//        }
-//    }
-//    public void rescheduleInterview() {
-//
-//        try {
-//
-//            client.setToken(
-//                    loginBean.getToken()
-//            );
-//
-//            Response response
-//                    = client.rescheduleInterview(
-//                            selectedInterview.getInterviewId(),
-//                            selectedInterview.getInterviewerName(),
-//                            selectedInterview.getInterviewerMode(),
-//                            rescheduleDateTime
-//                    );
-//
-//            if (response.getStatus() == 200) {
-//
-//                FacesContext.getCurrentInstance()
-//                        .addMessage(
-//                                null,
-//                                new FacesMessage(
-//                                        FacesMessage.SEVERITY_INFO,
-//                                        "Success",
-//                                        "Interview rescheduled."
-//                                )
-//                        );
-//
-//                loadInterviews();
-//
-//            } else {
-//
-//                FacesContext.getCurrentInstance()
-//                        .addMessage(
-//                                null,
-//                                new FacesMessage(
-//                                        FacesMessage.SEVERITY_ERROR,
-//                                        "Error",
-//                                        response.readEntity(String.class)
-//                                )
-//                        );
-//            }
-//
-//        } catch (Exception e) {
-//
-//            e.printStackTrace();
-//        }
-//    }
     private void refreshApplicationListOnly() {
         try {
             Collection<Tblapplication> applications
@@ -807,7 +753,7 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
 //        sortApplicantList(recruiterApplicationList);
 //    }
 //
-////    private void reloadAllApplicationsFromDatabaseForFiltering() {
+    ////    private void reloadAllApplicationsFromDatabaseForFiltering() {
 ////        try {
 ////            if (recruiter == null || recruiter.getRecruiterId() == null) {
 ////                return;
@@ -1677,6 +1623,14 @@ public class RecruiterApplicationInterviewCDIBean implements Serializable {
 
     public void setSelectedInterviewHistory(List<Tblinterview> selectedInterviewHistory) {
         this.selectedInterviewHistory = selectedInterviewHistory;
+    }
+
+    public boolean isInterviewScheduleSuccess() {
+        return interviewScheduleSuccess;
+    }
+
+    public void setInterviewScheduleSuccess(boolean interviewScheduleSuccess) {
+        this.interviewScheduleSuccess = interviewScheduleSuccess;
     }
 
 }

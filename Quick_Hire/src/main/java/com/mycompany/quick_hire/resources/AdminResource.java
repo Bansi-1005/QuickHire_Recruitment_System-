@@ -847,8 +847,19 @@ public class AdminResource {
     @Produces(MediaType.TEXT_PLAIN)
     public Response approveSkill(@QueryParam("skillId") Integer skillId,
             @QueryParam("adminUserId") Integer adminUserId) {
-        ejb.approveSkill(skillId, adminUserId);
-        return Response.ok("Skill approved").build();
+
+        try {
+
+            ejb.approveSkill(skillId, adminUserId);
+
+            return Response.ok("Skill approved").build();
+
+        } catch (RuntimeException e) {
+
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(e.getMessage())
+                    .build();
+        }
     }
 
     @PUT

@@ -866,8 +866,8 @@ public class AdminBean implements AdminBeanLocal {
     }
 
     @Override
-
     public void approveSkill(Integer skillId, Integer adminUserId) {
+
         Tblskills skill = em.find(Tblskills.class, skillId);
         Tblusers admin = em.find(Tblusers.class, adminUserId);
 
@@ -875,9 +875,19 @@ public class AdminBean implements AdminBeanLocal {
             throw new RuntimeException("Skill not found");
         }
 
+        // Check category approval first
+        if (skill.getCategoryId() == null
+                || !"APPROVED".equalsIgnoreCase(
+                        skill.getCategoryId().getCategoryStatus())) {
+
+            throw new RuntimeException(
+                    "Please approve the category first before approving this skill.");
+        }
+
         skill.setSkillStatus("APPROVED");
         skill.setApprovedByUserId(adminUserId);
         skill.setApprovedDate(new Date());
+
         em.merge(skill);
 
         notifyCreator(skill.getCreatedByUserId(), admin,

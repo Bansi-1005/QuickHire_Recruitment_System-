@@ -170,11 +170,11 @@
                                 <f:selectItem itemLabel="Lowest Score First" itemValue="Lowest Score First"/>
                             </h:selectOneMenu>
 
-<!--                            <button type="button"
-                                    class="filter-apply-btn"
-                                    onclick="applyStaticFilters()">
-                                Apply Filters
-                            </button>-->
+                            <!--                            <button type="button"
+                                                                class="filter-apply-btn"
+                                                                onclick="applyStaticFilters()">
+                                                            Apply Filters
+                                                        </button>-->
 
                             <button type="button"
                                     class="filter-apply-btn"
@@ -404,9 +404,9 @@
 
                                     </div>
 
-                                    <h:messages id="scheduleMessages"
-                                                styleClass="form-messages"
-                                                globalOnly="false"/>
+                                    <!--                                    <h:messages id="scheduleMessages"
+                                                                                    styleClass="form-messages"
+                                                                                    globalOnly="false"/>-->
 
                                     <!-- FORM GRID -->
                                     <div class="schedule-form-grid">
@@ -428,6 +428,7 @@
                                             <h:message for="interviewDate"
                                                        styleClass="field-error"/>
 
+
                                         </div>
 
                                         <!-- INTERVIEWER NAME -->
@@ -440,7 +441,11 @@
                                                 value="#{recruiterApplicationInterviewCDIBean.interview.interviewerName}"
                                                 styleClass="modal-input modal-input-large"
                                                 required="true"
-                                                requiredMessage="Interviewer name is required"/>
+                                                requiredMessage="Interview name is required">
+                                                <f:ajax event="keyup"
+                                                        execute="@this"
+                                                        render="interviewerName"/>
+                                            </h:inputText>
 
                                             <h:message for="interviewerName"
                                                        styleClass="field-error"/>
@@ -472,6 +477,10 @@
                                                 <f:selectItem itemLabel="Phone Call"
                                                               itemValue="Phone"/>
 
+                                                <f:ajax event="change"
+                                                        execute="@this"
+                                                        render="interviewMode"/>
+
                                             </h:selectOneMenu>
 
                                             <h:message for="interviewMode"
@@ -502,15 +511,15 @@
                                             Cancel
                                         </button>
 
+
                                         <h:commandButton
                                             value="Schedule Interview"
                                             styleClass="btn-main btn-main-large"
                                             action="#{recruiterApplicationInterviewCDIBean.scheduleInterview}">
 
                                             <f:ajax execute="@form"
-                                                    render=":applicantsForm:scheduleInterviewPanel"
+                                                    render="interviewDate interviewerName interviewMode"
                                                     onevent="closeScheduleInterviewAfterAjax"/>
-
                                         </h:commandButton>
 
                                     </div>
