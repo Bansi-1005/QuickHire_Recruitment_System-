@@ -492,14 +492,68 @@ function openRescheduleModal(event) {
     setText('rescheduleCandidateName', name || 'Candidate');
     setText('rescheduleJobTitle', getValue('interviewForm:rescheduleJobTitleHidden') || 'Job title');
     setText('rescheduleCandidateAvatar', getInitial(name));
-    setValue('rescheduleDateTime', getValue('interviewForm:rescheduleNewDateTime') || '');
     setValue('rescheduleMode', getValue('interviewForm:rescheduleNewMode') || 'Online');
     setValue('rescheduleInterviewer', getValue('interviewForm:rescheduleNewInterviewer') || '');
-    setMinDateTime('rescheduleDateTime');
+
+    // Set min date to today
+    setRescheduleDateMin();
+
+    // Read existing datetime from bean e.g. "2026-06-20T10:30"
+    var existingDateTime = getValue('interviewForm:rescheduleNewDateTime') || '';
+    setValue('rescheduleDateTime', existingDateTime);
+
+    // Pre-fill date input
+    var dateInput = document.getElementById('rescheduleDateInput');
+    var existingDate = '';
+    var existingHour24 = -1;
+    var existingMinute = -1;
+
+    if (existingDateTime && existingDateTime.indexOf('T') !== -1) {
+        var parts = existingDateTime.split('T');
+        existingDate = parts[0];          // "2026-06-20"
+        var timeParts = parts[1].split(':');
+        existingHour24 = parseInt(timeParts[0], 10);   // 0-23
+        existingMinute = parseInt(timeParts[1], 10);   // 0-59
+    }
+
+    if (dateInput) {
+        dateInput.value = existingDate;
+    }
+
+    // Populate hours first
+    populateRescheduleHourOptions();
+
+    // Now pre-select the correct hour and AM/PM
+    if (existingHour24 >= 0) {
+        var ampm = existingHour24 >= 12 ? 'PM' : 'AM';
+        var hour12 = existingHour24 % 12;
+        if (hour12 === 0) hour12 = 12;
+
+        var ampmSel = document.getElementById('rescheduleAmPmInput');
+        if (ampmSel) {
+            ampmSel.value = ampm;
+        }
+
+        var hourSel = document.getElementById('rescheduleHourInput');
+        if (hourSel) {
+            hourSel.value = String(hour12);
+        }
+
+        // Populate minutes based on selected hour
+        populateRescheduleMinuteOptions();
+
+        // Pre-select the minute
+        var minuteSel = document.getElementById('rescheduleMinuteInput');
+        if (minuteSel && existingMinute >= 0) {
+            minuteSel.value = pad2(existingMinute);
+        }
+
+        // Sync the hidden input
+        syncRescheduleHiddenInput();
+    }
 
     openModal(document.getElementById('rescheduleModal'));
 }
-
 function closeRescheduleModal() {
     closeModal(document.getElementById('rescheduleModal'));
 }
