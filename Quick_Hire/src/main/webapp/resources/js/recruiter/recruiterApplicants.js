@@ -10,6 +10,195 @@ var activeActionAppId = null;
 var activeScheduleRow = null;
 var activeScheduleAppId = null;
 var drawerResumeUrl = '';
+var INTERVIEW_SLOT_MINUTES = 15;
+function pad2(n) {
+    return String(n).padStart(2, '0');
+}
+
+function formatTimeLabel(h, m) {
+    var period = h >= 12 ? 'PM' : 'AM';
+    var hour12 = h % 12;
+    if (hour12 === 0)
+        hour12 = 12;
+    return pad2(hour12) + ':' + pad2(m) + ' ' + period;
+}
+
+function todayDateValue() {
+    var now = new Date();
+    return now.getFullYear() + '-' + pad2(now.getMonth() + 1) + '-' + pad2(now.getDate());
+}
+
+function populateInterviewTimeOptions() {
+    var dateInput = document.getElementById('interviewDateInput');
+    var timeSelect = document.getElementById('interviewTimeInput');
+    if (!dateInput || !timeSelect) {
+        return;
+    }
+
+    timeSelect.innerHTML = '<option value="">Select Time</option>';
+
+    var selectedDate = dateInput.value;
+    var isToday = selectedDate && selectedDate === todayDateValue();
+
+    // If no date selected, show all 24-hour slots so dropdown isn't empty
+    for (var h = 0; h < 24; h++) {
+        for (var m = 0; m < 60; m += INTERVIEW_SLOT_MINUTES) {
+
+            // Only filter past times when today is explicitly selected
+            if (isToday) {
+                var now = new Date();
+                if (h < now.getHours()) continue;
+                if (h === now.getHours() && m <= now.getMinutes()) continue;
+            }
+
+            var opt = document.createElement('option');
+            opt.value = pad2(h) + ':' + pad2(m);
+            opt.textContent = formatTimeLabel(h, m);
+            timeSelect.appendChild(opt);
+        }
+    }
+}
+function initInterviewTimePastBlock() {
+    var timeInput = document.getElementById('interviewTimeInput');
+    if (!timeInput) return;
+    
+    timeInput.addEventListener('change', function () {
+        var dateInput = document.getElementById('interviewDateInput');
+        if (!dateInput || !dateInput.value) return;
+        
+        var isToday = dateInput.value === todayDateValue();
+        if (!isToday) return;
+        
+        var now = new Date();
+        var minTime = pad2(now.getHours()) + ':' + pad2(now.getMinutes());
+        
+        if (this.value && this.value <= minTime) {
+            showToast('Please select a future time — that slot has already passed.', 'error');
+            this.value = '';  // Clear the invalid selection
+        }
+    });
+}
+function onInterviewDateChanged() {
+    populateHourOptions();
+    // Clear minute and time selections
+    var minuteSel = document.getElementById('interviewMinuteInput');
+    if (minuteSel) minuteSel.innerHTML = '<option value="">MM</option>';
+    var hidden = document.getElementById('interviewTimeInput');
+    if (hidden) hidden.value = '';
+}
+
+function onInterviewTimeChanged() {
+    populateMinuteOptions(); 
+    syncHiddenTimeInput();
+}
+function populateHourOptions() {
+    var hourSel = document.getElementById('interviewHourInput');
+    if (!hourSel) return;
+
+    var dateInput = document.getElementById('interviewDateInput');
+    var isToday = dateInput && dateInput.value === todayDateValue();
+    var now = new Date();
+    var currentHour = now.getHours(); // 0-23
+
+    hourSel.innerHTML = '<option value="">HH</option>';
+
+    for (var h = 1; h <= 12; h++) {
+        // Convert 12-hour to 24-hour for comparison
+        // We check both AM and PM by seeing if ANY minute in that slot is valid
+        // Just populate all hours — minute filtering handles the rest
+        var opt = document.createElement('option');
+        opt.value = String(h);
+        opt.textContent = pad2(h);
+
+        // For today: disable hours that are completely in the past
+        if (isToday) {
+            // Check if this hour in AM is past
+            // We'll handle this in minute population — just show all hours
+        }
+
+        hourSel.appendChild(opt);
+    }
+
+    // Repopulate minutes for current selection
+    populateMinuteOptions();
+}
+
+function populateMinuteOptions() {
+    var hourSel   = document.getElementById('interviewHourInput');
+    var minuteSel = document.getElementById('interviewMinuteInput');
+    var ampmSel   = document.getElementById('interviewAmPmInput');
+    if (!hourSel || !minuteSel || !ampmSel) return;
+
+    var selectedHour12 = parseInt(hourSel.value, 10);
+    var selectedAmPm   = ampmSel.value;
+
+    minuteSel.innerHTML = '<option value="">MM</option>';
+
+    if (!selectedHour12 || !selectedAmPm) return;
+
+    var hour24 = selectedHour12;
+    if (selectedAmPm === 'AM' && selectedHour12 === 12) hour24 = 0;
+    if (selectedAmPm === 'PM' && selectedHour12 !== 12) hour24 = selectedHour12 + 12;
+
+    var dateInput = document.getElementById('interviewDateInput');
+    var isToday   = dateInput && dateInput.value === todayDateValue();
+    var now       = new Date();
+
+    for (var m = 0; m < 60; m++) {
+        if (isToday) {
+            if (hour24 < now.getHours()) continue;
+            if (hour24 === now.getHours() && m <= now.getMinutes()) continue;
+        }
+
+        var opt = document.createElement('option');
+        opt.value = pad2(m);
+        opt.textContent = pad2(m);
+        minuteSel.appendChild(opt);
+    }
+
+    if (minuteSel.options.length === 1) {
+        minuteSel.innerHTML = '<option value="">Past hour</option>';
+    }
+    // DO NOT call syncHiddenTimeInput() here
+}
+function syncHiddenTimeInput() {
+    var hourSel   = document.getElementById('interviewHourInput');
+    var minuteSel = document.getElementById('interviewMinuteInput');
+    var ampmSel   = document.getElementById('interviewAmPmInput');
+    var hidden    = document.getElementById('interviewTimeInput');
+    if (!hourSel || !minuteSel || !ampmSel || !hidden) return;
+
+    var h = parseInt(hourSel.value, 10);
+    var m = minuteSel.value;
+    var ampm = ampmSel.value;
+
+    if (!h || !m || m === '' || m === 'MM') {
+        hidden.value = '';
+        return;
+    }
+
+    // Convert to 24-hour HH:mm for the bean
+    var hour24 = h;
+    if (ampm === 'AM' && h === 12) hour24 = 0;
+    if (ampm === 'PM' && h !== 12) hour24 = h + 12;
+
+    hidden.value = pad2(hour24) + ':' + m;
+}
+function validateTimeForToday(input) {
+    var dateInput = document.getElementById('interviewDateInput');
+    if (!dateInput || !input) return;
+
+    var isToday = dateInput.value === todayDateValue();
+    if (!isToday) return; // future date, all times valid
+
+    var now = new Date();
+    var currentTime = pad2(now.getHours()) + ':' + pad2(now.getMinutes());
+
+    if (input.value && input.value <= currentTime) {
+        showToast('Selected time has already passed. Please choose a future time.', 'error');
+        input.value = '';
+    }
+}
 function byIdSuffix(id) {
     return document.getElementById(id) || document.querySelector('[id$="' + id + '"]');
 }
@@ -564,13 +753,13 @@ function submitRejectConfirm() {
     btn.click();
 }
 
+// Update openScheduleInterviewModal
 function openScheduleInterviewModal() {
     var modal = document.getElementById('scheduleInterviewModal');
-    if (modal) {
-        modal.classList.add('open');
-    }
+    if (modal) modal.classList.add('open');
+    setInterviewDateMin();
+    populateHourOptions();
 }
-
 function closeScheduleInterviewModal() {
     var modal = document.getElementById('scheduleInterviewModal');
     if (modal) {
@@ -591,6 +780,8 @@ function openScheduleInterviewAfterAjax(data) {
     if (data.status === 'success') {
         setTimeout(openScheduleInterviewModal, 60);
         setInterviewDateMin();
+        initInterviewTimePastBlock();  
+
     }
 }
 
@@ -615,46 +806,32 @@ function openScheduleInterviewAfterAjax(data) {
 //    }
 //}
 
-
-
 function closeScheduleInterviewAfterAjax(data) {
-
-    if (!data)
+    if (!data) {
         return;
-
-    if (data.status !== 'success')
-        return;
-
-    if (isAjaxValidationFailed(data)) {
-        return; // modal stays open
     }
 
-    var row = findRowByAppId(activeScheduleAppId) || activeScheduleRow;
+    if (data.status === 'success') {
+        var errorEls = document.querySelectorAll('.field-error');
+        var hasErrors = Array.prototype.some.call(errorEls, function (el) {
+            return el.textContent.trim() !== '';
+        });
 
-    var oldStatus = row ? row.dataset.status : '';
+        if (hasErrors) {
+            setInterviewDateMin(); // the date field was re-rendered, so re-apply the min restriction
+            return; // modal is already open, errors are already visible
+        }
 
-    updateRowStatus(row, 'Interview Scheduled');
-    updateCountsForStatusChange(oldStatus, 'Interview Scheduled');
-    replaceActionsForScheduled(row);
-    keepViewAfterAction(row);
-
-    closeScheduleInterviewModal();
-
-    showToast('Scheduled', 'success');
+        var row = findRowByAppId(activeScheduleAppId) || activeScheduleRow;
+        var oldStatus = row ? row.dataset.status : '';
+        updateRowStatus(row, 'Interview Scheduled');
+        updateCountsForStatusChange(oldStatus, 'Interview Scheduled');
+        replaceActionsForScheduled(row);
+        keepViewAfterAction(row);
+        closeScheduleInterviewModal();
+        showToast('Scheduled', 'success');
+    }
 }
-
-function hasValidationErrors() {
-
-    return Array.from(
-        document.querySelectorAll('.field-error')
-    ).some(function(el) {
-
-        return el.textContent.trim() !== '';
-
-    });
-}
-
-
 function isAjaxValidationFailed(data) {
     try {
         var xml = data.responseXML;
@@ -663,8 +840,6 @@ function isAjaxValidationFailed(data) {
         return false;
     }
 }
-
-
 
 function afterApplicantTableAjax(data) {
     if (data && data.status === 'success') {
@@ -694,19 +869,44 @@ document.addEventListener('click', function (e) {
 });
 function setInterviewDateMin() {
     const input = document.getElementById('interviewDateInput')
-            || document.querySelector('input[type="datetime-local"]');
+            || document.querySelector('input[type="date"]');
     if (!input)
         return;
 
     const now = new Date();
-
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const mins = String(now.getMinutes()).padStart(2, '0');
 
-    input.min = `${year}-${month}-${day}T${hours}:${mins}`;
+    input.min = `${year}-${month}-${day}`; // date only now
+}
+function validateInterviewDateBeforeSubmit() {
+    var dateInput = document.getElementById('interviewDateInput');
+    var hidden    = document.getElementById('interviewTimeInput');
+    var errSpan   = document.getElementById('interviewTimeError');
+
+    if (errSpan) errSpan.style.display = 'none';
+
+    if (!dateInput || !dateInput.value) return true;
+    if (!hidden || !hidden.value) {
+        if (errSpan) { errSpan.textContent = 'Please select a time.'; errSpan.style.display = 'block'; }
+        return false;
+    }
+
+    var selected = new Date(dateInput.value + 'T' + hidden.value);
+    var now = new Date();
+
+    if (selected <= now) {
+        if (errSpan) { errSpan.textContent = 'Selected time is in the past. Please choose a future time.'; errSpan.style.display = 'block'; }
+        showToast('Please select a future time.', 'error');
+        return false;
+    }
+
+    return true;
+}
+function onHourOrAmPmChanged() {
+    populateMinuteOptions();
+    syncHiddenTimeInput();
 }
 document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {

@@ -15,6 +15,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.security.enterprise.identitystore.Pbkdf2PasswordHash;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -40,6 +41,14 @@ public class RecruiterBean implements RecruiterBeanLocal {
 
     @Inject
     Pbkdf2PasswordHash hash;
+
+    private String formatNotificationDate(Date date) {
+        if (date == null) {
+            return "";
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy, hh:mm a");
+        return sdf.format(date);
+    }
 
     // ================= PROFILE =================
     @Override
@@ -657,11 +666,7 @@ public class RecruiterBean implements RecruiterBeanLocal {
 
                 saveNotification(recruiterUser, recruiterUser,
                         "Category Request Submitted — Pending Approval",
-                        "Your request to add the skill category \""
-                        + category.getCategoryName()
-                        + "\" has been submitted successfully. "
-                        + "It is currently pending review by the QuickHire admin team. "
-                        + "You will be notified once a decision has been made.",
+                        category.getCategoryName() + " has been successfully sent for approval.",
                         "CATEGORY_REQUEST");
 
                 notifyAdmins(recruiterUser,
@@ -729,11 +734,7 @@ public class RecruiterBean implements RecruiterBeanLocal {
 
                     saveNotification(recruiterUser, recruiterUser,
                             "Skill Request Submitted — Pending Approval",
-                            "Your request to add the skill \""
-                            + skill.getSkillName()
-                            + "\" has been submitted successfully. "
-                            + "It is currently pending review by the QuickHire admin team. "
-                            + "You will be notified once a decision has been made.",
+                            skill.getSkillName() + " has been successfully sent for approval.",
                             "SKILL_REQUEST");
 
                     notifyAdmins(recruiterUser,
@@ -1416,7 +1417,7 @@ public class RecruiterBean implements RecruiterBeanLocal {
                     + " for the position of \""
                     + app.getJobId().getJobTitle()
                     + "\" on "
-                    + interview.getInterviewDate() + ".",
+                    + formatNotificationDate(interview.getInterviewDate()) + ".",
                     "INTERVIEW"
             );
 
@@ -1464,7 +1465,7 @@ public class RecruiterBean implements RecruiterBeanLocal {
                         + app.getJobId().getJobTitle()
                         + "\" at QuickHire has been scheduled.\n\n"
                         + "Interview Details:\n"
-                        + "  Date & Time  : " + interview.getInterviewDate() + "\n"
+                        + "  Date & Time  : " + formatNotificationDate(interview.getInterviewDate()) + "\n"
                         + "  Interviewer  : " + interview.getInterviewerName() + "\n"
                         + modeDetails + "\n\n"
                         + "Tips to prepare:\n"
@@ -1789,7 +1790,7 @@ public class RecruiterBean implements RecruiterBeanLocal {
                 + " for \""
                 + app.getJobId().getJobTitle()
                 + "\" has been rescheduled to "
-                + interviewDate + ".",
+                + formatNotificationDate(interviewDate) + ".",
                 "INTERVIEW"
         );
 
@@ -1803,7 +1804,7 @@ public class RecruiterBean implements RecruiterBeanLocal {
                     + app.getJobId().getJobTitle()
                     + "\" at QuickHire has been rescheduled.\n\n"
                     + "Updated Interview Details:\n"
-                    + "  New Date & Time : " + interviewDate + "\n"
+                    + "  New Date & Time : " + formatNotificationDate(interviewDate) + "\n"
                     + "  Interviewer      : " + interviewerName + "\n"
                     + "  Mode             : " + interviewerMode + "\n\n"
                     + "We apologise for any inconvenience this change may have caused. "

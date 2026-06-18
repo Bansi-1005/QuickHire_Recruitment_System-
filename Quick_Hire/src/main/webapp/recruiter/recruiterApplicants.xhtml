@@ -404,103 +404,104 @@
 
                                     </div>
 
-                                    <!--                                    <h:messages id="scheduleMessages"
-                                                                                    styleClass="form-messages"
-                                                                                    globalOnly="false"/>-->
 
-                                    <!-- FORM GRID -->
-                                    <div class="schedule-form-grid">
+                                    <h:panelGroup id="scheduleFormFields" layout="block">
+                                        <small style="grid-column: 1 / -1; color:#6b7280; font-size:12px;">
+                                            💡 Begin by picking a <strong>date</strong> — available time slots will adjust automatically. For today, only future times will be shown.
+                                        </small>
+                                        <div class="schedule-form-grid">
 
-                                        <!-- INTERVIEW DATE -->
-                                        <div class="form-field">
+                                            <!-- INTERVIEW DATE -->
+                                            <div class="form-field">
+                                                <h5>Interview Date</h5>
+                                                <h:inputText
+                                                    id="interviewDate"
+                                                    value="#{recruiterApplicationInterviewCDIBean.interviewDateOnly}"
+                                                    styleClass="modal-input modal-input-large"
+                                                    p:type="date"
+                                                    p:id="interviewDateInput"
+                                                    p:onkeydown="return false;"
+                                                    p:onpaste="return false;"
+                                                    p:onchange="onInterviewDateChanged()"
+                                                    required="true"
+                                                    requiredMessage="Interview date is required"/>
+                                                <h:message for="interviewDate" styleClass="field-error"/>
+                                            </div>
 
-                                            <h5>Interview Date &amp; Time</h5>
+                                            <div class="form-field">
+                                                <h5>Interview Time</h5>
+                                                <div style="display:flex; gap:8px; align-items:center;">
+                                                    <select id="interviewHourInput"
+                                                            onchange="onHourOrAmPmChanged()"
+                                                            style="flex:1; padding:10px; border:1px solid #d1d5db; border-radius:8px; font-size:14px;">
+                                                        <option value="">HH</option>
+                                                    </select>
+                                                    <span style="font-weight:bold; font-size:18px;">:</span>
+                                                    <select id="interviewMinuteInput"
+                                                            onchange="syncHiddenTimeInput()"
+                                                            style="flex:1; padding:10px; border:1px solid #d1d5db; border-radius:8px; font-size:14px;">
+                                                        <option value="">MM</option>
+                                                    </select>
+                                                    <select id="interviewAmPmInput"
+                                                            onchange="onHourOrAmPmChanged()"
+                                                            style="flex:1; padding:10px; border:1px solid #d1d5db; border-radius:8px; font-size:14px;">
+                                                        <option value="AM">AM</option>
+                                                        <option value="PM">PM</option>
+                                                    </select>
+                                                </div>
+                                                <!-- Hidden input that holds the actual HH:mm value for JSF bean -->
+                                                <h:inputText
+                                                    id="interviewTime"
+                                                    value="#{recruiterApplicationInterviewCDIBean.interviewTimeOnly}"
+                                                    styleClass="modal-input modal-input-large"
+                                                    style="display:none;"
+                                                    p:id="interviewTimeInput"
+                                                    required="true"
+                                                    requiredMessage="Interview time is required"/>
+                                                <h:message for="interviewTime" styleClass="field-error"/>
+                                                <span id="interviewTimeError" style="color:#dc2626; font-size:12px; display:none;">
+                                                    Please select a valid future time.
+                                                </span>
+                                            </div>
 
-                                            <!-- TO THIS — remove required + add min via JS on render -->
-                                            <h:inputText
-                                                id="interviewDate"
-                                                value="#{recruiterApplicationInterviewCDIBean.interviewDateTime}"
-                                                styleClass="modal-input modal-input-large"
-                                                p:type="datetime-local"
-                                                p:id="interviewDateInput"
-                                                required="true"
-                                                requiredMessage="Interview date &amp; time is required"/>
-                                            <h:message for="interviewDate"
-                                                       styleClass="field-error"/>
 
+                                            <!-- INTERVIEWER NAME -->
+                                            <div class="form-field">
+                                                <h5>Interviewer Name</h5>
+                                                <h:inputText
+                                                    id="interviewerName"
+                                                    value="#{recruiterApplicationInterviewCDIBean.interview.interviewerName}"
+                                                    styleClass="modal-input modal-input-large"
+                                                    required="true"
+                                                    requiredMessage="Interview name is required"/>
+                                                <h:message for="interviewerName" styleClass="field-error"/>
+                                            </div>
+
+                                            <!-- INTERVIEW MODE -->
+                                            <div class="form-field">
+                                                <h5>Interview Mode</h5>
+                                                <h:selectOneMenu
+                                                    id="interviewMode"
+                                                    value="#{recruiterApplicationInterviewCDIBean.interview.interviewerMode}"
+                                                    styleClass="filter-select modal-select modal-select-large"
+                                                    required="true"
+                                                    requiredMessage="Interview mode is required">
+                                                    <f:selectItem itemLabel="Select Interview Mode" itemValue="" noSelectionOption="true"/>
+                                                    <f:selectItem itemLabel="Online (Video Call)" itemValue="Online"/>
+                                                    <f:selectItem itemLabel="Offline (In-Person)" itemValue="Offline"/>
+                                                    <f:selectItem itemLabel="Phone Call" itemValue="Phone"/>
+                                                </h:selectOneMenu>
+                                                <h:message for="interviewMode" styleClass="field-error"/>
+                                            </div>
+
+                                            <!-- STATUS -->
+                                            <div class="form-field">
+                                                <h5>Interview Status</h5>
+                                                <h:inputText value="Scheduled" styleClass="modal-input modal-input-large" readonly="true"/>
+                                            </div>
 
                                         </div>
-
-                                        <!-- INTERVIEWER NAME -->
-                                        <div class="form-field">
-
-                                            <h5>Interviewer Name</h5>
-
-                                            <h:inputText
-                                                id="interviewerName"
-                                                value="#{recruiterApplicationInterviewCDIBean.interview.interviewerName}"
-                                                styleClass="modal-input modal-input-large"
-                                                required="true"
-                                                requiredMessage="Interview name is required">
-                                                <f:ajax event="keyup"
-                                                        execute="@this"
-                                                        render="interviewerName"/>
-                                            </h:inputText>
-
-                                            <h:message for="interviewerName"
-                                                       styleClass="field-error"/>
-
-                                        </div>
-
-                                        <!-- INTERVIEW MODE -->
-                                        <div class="form-field">
-
-                                            <h5>Interview Mode</h5>
-
-                                            <h:selectOneMenu
-                                                id="interviewMode"
-                                                value="#{recruiterApplicationInterviewCDIBean.interview.interviewerMode}"
-                                                styleClass="filter-select modal-select modal-select-large"
-                                                required="true"
-                                                requiredMessage="Interview mode is required">
-
-                                                <f:selectItem itemLabel="Select Interview Mode"
-                                                              itemValue=""
-                                                              noSelectionOption="true"/>
-
-                                                <f:selectItem itemLabel="Online (Video Call)"
-                                                              itemValue="Online"/>
-
-                                                <f:selectItem itemLabel="Offline (In-Person)"
-                                                              itemValue="Offline"/>
-
-                                                <f:selectItem itemLabel="Phone Call"
-                                                              itemValue="Phone"/>
-
-                                                <f:ajax event="change"
-                                                        execute="@this"
-                                                        render="interviewMode"/>
-
-                                            </h:selectOneMenu>
-
-                                            <h:message for="interviewMode"
-                                                       styleClass="field-error"/>
-
-                                        </div>
-
-                                        <!-- STATUS -->
-                                        <div class="form-field">
-
-                                            <h5>Interview Status</h5>
-
-                                            <h:inputText
-                                                value="Scheduled"
-                                                styleClass="modal-input modal-input-large"
-                                                readonly="true"/>
-
-                                        </div>
-
-                                    </div>
+                                    </h:panelGroup>
 
                                     <!-- ACTION BUTTONS -->
                                     <div class="profile-actions schedule-modal-actions">
@@ -515,11 +516,13 @@
                                         <h:commandButton
                                             value="Schedule Interview"
                                             styleClass="btn-main btn-main-large"
+                                            onclick="return validateInterviewDateBeforeSubmit();"
                                             action="#{recruiterApplicationInterviewCDIBean.scheduleInterview}">
 
                                             <f:ajax execute="@form"
-                                                    render="interviewDate interviewerName interviewMode"
+                                                    render=":applicantsForm:scheduleFormFields"
                                                     onevent="closeScheduleInterviewAfterAjax"/>
+
                                         </h:commandButton>
 
                                     </div>

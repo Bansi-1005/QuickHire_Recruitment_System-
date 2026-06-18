@@ -484,6 +484,9 @@
                         <button type="button" class="close-btn" onclick="closeRescheduleModal()">X</button>
                     </div>
                     <div class="modal-body">
+                        <small style="grid-column: 1 / -1; color:#6b7280; font-size:12px;">
+                            💡 Choose your <strong>interview date</strong> first — time options will update based on your selection. Past hours and minutes are restricted for today.
+                        </small>
                         <div class="modal-candidate-hero">
                             <div class="candidate-avatar modal-avatar" id="rescheduleCandidateAvatar">C</div>
                             <div>
@@ -493,8 +496,43 @@
                         </div>
                         <div class="schedule-form-grid rich-form-grid">
                             <div class="form-field rich-field">
-                                <label for="rescheduleDateTime">New Date &amp; Time</label>
-                                <input type="datetime-local" id="rescheduleDateTime" class="modal-input" required="required" />
+                                <label>New Interview Date</label>
+                                <input type="date" id="rescheduleDateInput"
+                                       class="modal-input"
+                                       onchange="onRescheduleDateChanged()"
+                                       onkeydown="return false;"
+                                       onpaste="return false;"
+                                       required="required" />
+                            </div>
+
+                            <div class="form-field rich-field">
+                                <label>New Interview Time</label>
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <select id="rescheduleHourInput"
+                                            onchange="onRescheduleHourOrAmPmChanged()"
+                                            style="flex:1; padding:10px; border:1px solid #d1d5db; border-radius:8px; font-size:14px;">
+                                        <option value="">HH</option>
+                                    </select>
+                                    <span style="font-weight:bold; font-size:18px;">:</span>
+                                    <select id="rescheduleMinuteInput"
+                                            onchange="syncRescheduleHiddenInput()"
+                                            style="flex:1; padding:10px; border:1px solid #d1d5db; border-radius:8px; font-size:14px;">
+                                        <option value="">MM</option>
+                                    </select>
+                                    <select id="rescheduleAmPmInput"
+                                            onchange="onRescheduleHourOrAmPmChanged()"
+                                            style="flex:1; padding:10px; border:1px solid #d1d5db; border-radius:8px; font-size:14px;">
+                                        <option value="AM">AM</option>
+                                        <option value="PM">PM</option>
+                                    </select>
+                                </div>
+                                <!-- Hidden datetime-local input that the bean reads -->
+                                <input type="text" id="rescheduleDateTime"
+                                       style="display:none;"
+                                       required="required" />
+                                <span id="rescheduleTimeError"
+                                      style="color:#dc2626; font-size:12px; display:none; margin-top:4px; display:none;">
+                                </span>
                             </div>
                             <div class="form-field rich-field">
                                 <label for="rescheduleMode">Interview Mode</label>
@@ -504,7 +542,7 @@
                                     <option value="Phone">Phone Call</option>
                                 </select>
                             </div>
-                            <div class="form-field rich-field form-field-wide">
+                            <div class="form-field rich-field">
                                 <label for="rescheduleInterviewer">Interviewer Name</label>
                                 <input type="text" id="rescheduleInterviewer" class="modal-input" placeholder="Enter interviewer name" required="required" />
                             </div>

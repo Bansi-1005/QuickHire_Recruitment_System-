@@ -503,14 +503,151 @@ function openRescheduleModal(event) {
 function closeRescheduleModal() {
     closeModal(document.getElementById('rescheduleModal'));
 }
+function todayDateValue() {
+    var now = new Date();
+    return now.getFullYear() + '-' +
+           String(now.getMonth() + 1).padStart(2, '0') + '-' +
+           String(now.getDate()).padStart(2, '0');
+}
 
+function pad2(n) {
+    return String(n).padStart(2, '0');
+}
+
+function onRescheduleDateChanged() {
+    // Clear time selections when date changes
+    var minuteSel = document.getElementById('rescheduleMinuteInput');
+    if (minuteSel) minuteSel.innerHTML = '<option value="">MM</option>';
+    var hidden = document.getElementById('rescheduleDateTime');
+    if (hidden) hidden.value = '';
+    populateRescheduleHourOptions();
+}
+
+function onRescheduleHourOrAmPmChanged() {
+    populateRescheduleMinuteOptions();
+    syncRescheduleHiddenInput();
+}
+
+function populateRescheduleHourOptions() {
+    var hourSel = document.getElementById('rescheduleHourInput');
+    if (!hourSel) return;
+
+    hourSel.innerHTML = '<option value="">HH</option>';
+    for (var h = 1; h <= 12; h++) {
+        var opt = document.createElement('option');
+        opt.value = String(h);
+        opt.textContent = pad2(h);
+        hourSel.appendChild(opt);
+    }
+    populateRescheduleMinuteOptions();
+}
+
+function populateRescheduleMinuteOptions() {
+    var hourSel   = document.getElementById('rescheduleHourInput');
+    var minuteSel = document.getElementById('rescheduleMinuteInput');
+    var ampmSel   = document.getElementById('rescheduleAmPmInput');
+    var errSpan   = document.getElementById('rescheduleTimeError');
+    if (!hourSel || !minuteSel || !ampmSel) return;
+
+    var selectedHour12 = parseInt(hourSel.value, 10);
+    var selectedAmPm   = ampmSel.value;
+
+    minuteSel.innerHTML = '<option value="">MM</option>';
+
+    if (!selectedHour12 || !selectedAmPm) return;
+
+    // Convert to 24-hour
+    var hour24 = selectedHour12;
+    if (selectedAmPm === 'AM' && selectedHour12 === 12) hour24 = 0;
+    if (selectedAmPm === 'PM' && selectedHour12 !== 12) hour24 = selectedHour12 + 12;
+
+    var dateInput = document.getElementById('rescheduleDateInput');
+    var isToday   = dateInput && dateInput.value === todayDateValue();
+    var now       = new Date();
+
+    for (var m = 0; m < 60; m++) {
+        if (isToday) {
+            if (hour24 < now.getHours()) continue;
+            if (hour24 === now.getHours() && m <= now.getMinutes()) continue;
+        }
+        var opt = document.createElement('option');
+        opt.value = pad2(m);
+        opt.textContent = pad2(m);
+        minuteSel.appendChild(opt);
+    }
+
+    if (minuteSel.options.length === 1) {
+        minuteSel.innerHTML = '<option value="">Past hour</option>';
+        if (errSpan) {
+            errSpan.textContent = 'This hour has already passed. Please select a future hour.';
+            errSpan.style.display = 'block';
+        }
+    } else {
+        if (errSpan) errSpan.style.display = 'none';
+    }
+}
+
+function syncRescheduleHiddenInput() {
+    var hourSel   = document.getElementById('rescheduleHourInput');
+    var minuteSel = document.getElementById('rescheduleMinuteInput');
+    var ampmSel   = document.getElementById('rescheduleAmPmInput');
+    var dateInput = document.getElementById('rescheduleDateInput');
+    var hidden    = document.getElementById('rescheduleDateTime');
+    if (!hourSel || !minuteSel || !ampmSel || !dateInput || !hidden) return;
+
+    var h    = parseInt(hourSel.value, 10);
+    var m    = minuteSel.value;
+    var ampm = ampmSel.value;
+    var date = dateInput.value;
+
+    if (!h || !m || m === '' || m === 'MM' || !date) {
+        hidden.value = '';
+        return;
+    }
+
+    var hour24 = h;
+    if (ampm === 'AM' && h === 12) hour24 = 0;
+    if (ampm === 'PM' && h !== 12) hour24 = h + 12;
+
+    // Format as yyyy-MM-ddTHH:mm for the bean
+    hidden.value = date + 'T' + pad2(hour24) + ':' + m;
+}
+
+function setRescheduleDateMin() {
+    var input = document.getElementById('rescheduleDateInput');
+    if (!input) return;
+    var now = new Date();
+    input.min = now.getFullYear() + '-' +
+                pad2(now.getMonth() + 1) + '-' +
+                pad2(now.getDate());
+}
 function submitReschedule() {
-    var date = getValue('rescheduleDateTime');
-    var mode = getValue('rescheduleMode') || 'Online';
+    var hidden      = document.getElementById('rescheduleDateTime');
+    var dateInput   = document.getElementById('rescheduleDateInput');
+    var mode        = getValue('rescheduleMode') || 'Online';
     var interviewer = (getValue('rescheduleInterviewer') || '').trim();
+    var errSpan     = document.getElementById('rescheduleTimeError');
 
-    if (!date) {
-        showToast('Please select a new date and time.', 'error');
+    if (errSpan) errSpan.style.display = 'none';
+
+    if (!dateInput || !dateInput.value) {
+        showToast('Please select a new date.', 'error');
+        return;
+    }
+
+    if (!hidden || !hidden.value) {
+        showToast('Please select a valid time.', 'error');
+        return;
+    }
+
+    // Validate not in past
+    var selected = new Date(hidden.value);
+    if (selected <= new Date()) {
+        if (errSpan) {
+            errSpan.textContent = 'Selected time is in the past. Please choose a future time.';
+            errSpan.style.display = 'block';
+        }
+        showToast('Please select a future date and time.', 'error');
         return;
     }
 
@@ -519,12 +656,11 @@ function submitReschedule() {
         return;
     }
 
-    setValue('interviewForm:rescheduleNewDateTime', date);
+    setValue('interviewForm:rescheduleNewDateTime', hidden.value);
     setValue('interviewForm:rescheduleNewMode', mode);
     setValue('interviewForm:rescheduleNewInterviewer', interviewer);
     clickById('interviewForm:submitRescheduleBtn');
 }
-
 function handleRescheduleSubmitEvent(event) {
     if (!event || event.status === 'success') {
         closeRescheduleModal();
