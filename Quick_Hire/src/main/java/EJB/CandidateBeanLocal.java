@@ -44,6 +44,7 @@ public interface CandidateBeanLocal {
 
     
     // ---------- Candidate Aducation ----------
+    public Collection<Tbleducation> getAllEducations();
     public Collection<Tblcandidateeducation> getCandidateEducation(Integer candidateId);
     public Tblcandidateeducation addCandidateEducation(Tblcandidateeducation edu, Integer candidateId);
     public Tblcandidateeducation updateCandidateEducation(Tblcandidateeducation edu);

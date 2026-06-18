@@ -58,17 +58,17 @@ public class CandidateValidator implements Validator<Object> {
                 validateDOB(value);
                 break;
 
-            case "educationName":
-                validateEducationName(value);
-                break;
+//            case "educationName":
+//                validateEducationName(value);
+//                break;
 
-            case "institute":
-                validateInstitute(value);
-                break;
-
-            case "specialization":
-                validateSpecialization(value);
-                break;
+//            case "institute":
+//                validateInstitute(value);
+//                break;
+//
+//            case "specialization":
+//                validateSpecialization(value);
+//                break;
 
             case "grade":
                 validateGrade(value);
@@ -172,56 +172,56 @@ public class CandidateValidator implements Validator<Object> {
         }
     }
 
-    private void validateEducationName(Object value) {
+//    private void validateEducationName(Object value) {
+//
+//        String education = value.toString().trim();
+//
+//        if (education.length() < 2 || education.length() > 150) {
+//            throw new ValidatorException(
+//                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+//                    "Degree name must be between 2 and 150 characters",
+//                    null));
+//        }
+//
+//        if (!education.matches("^[A-Za-z0-9 .,/()-]+$")) {
+//            throw new ValidatorException(
+//                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+//                    "Degree name contains invalid characters",
+//                    null));
+//        }
+//    }
 
-        String education = value.toString().trim();
-
-        if (education.length() < 2 || education.length() > 150) {
-            throw new ValidatorException(
-                new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "Degree name must be between 2 and 150 characters",
-                    null));
-        }
-
-        if (!education.matches("^[A-Za-z0-9 .,/()-]+$")) {
-            throw new ValidatorException(
-                new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "Degree name contains invalid characters",
-                    null));
-        }
-    }
-
-    private void validateInstitute(Object value) {
-
-        String institute = value.toString().trim();
-
-        if (institute.length() < 2 || institute.length() > 200) {
-            throw new ValidatorException(
-                new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "Institute name must be between 2 and 200 characters",
-                    null));
-        }
-        
-        if (!institute.matches("^[A-Za-z0-9 .,/()-]+$")) {
-            throw new ValidatorException(
-                new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Institute name contains invalid characters",
-                    null));
-        }
-    }
-
-    private void validateSpecialization(Object value) {
-
-        String specialization = value.toString().trim();
-
-        if (specialization.length() > 150) {
-            throw new ValidatorException(
-                new FacesMessage(FacesMessage.SEVERITY_ERROR,
-                    "Specialization cannot exceed 150 characters",
-                    null));
-        }
-    }
+//    private void validateInstitute(Object value) {
+//
+//        String institute = value.toString().trim();
+//
+//        if (institute.length() < 2 || institute.length() > 200) {
+//            throw new ValidatorException(
+//                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+//                    "Institute name must be between 2 and 200 characters",
+//                    null));
+//        }
+//        
+//        if (!institute.matches("^[A-Za-z0-9 .,/()-]+$")) {
+//            throw new ValidatorException(
+//                new FacesMessage(
+//                    FacesMessage.SEVERITY_ERROR,
+//                    "Institute name contains invalid characters",
+//                    null));
+//        }
+//    }
+//
+//    private void validateSpecialization(Object value) {
+//
+//        String specialization = value.toString().trim();
+//
+//        if (specialization.length() > 150) {
+//            throw new ValidatorException(
+//                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+//                    "Specialization cannot exceed 150 characters",
+//                    null));
+//        }
+//    }
 
     private void validateGrade(Object value) {
 

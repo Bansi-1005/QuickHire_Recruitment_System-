@@ -448,10 +448,6 @@
             <!-- ================== EDUCATION TAB ================== -->
             <div id="educationTab" class="tab-content">
                 <h:form id="educationForm" styleClass="profile-form">
-                    <h:messages id="educationMessages"
-                                showDetail="true"
-                                showSummary="false"
-                                errorClass="field-error"/>
 
                     <div class="profile-section">
                         <!-- HEADER -->
@@ -476,20 +472,28 @@
                                 <div class="form-col-full">
                                     <div class="form-group">
                                         <label for="educationName">
-                                            Degree / Certificate <span class="required">*</span>
+                                            Select Degree / Education <span class="required">*</span>
                                         </label>
-                                        <h:inputText value="#{candidateCDIBean.selectedEducation.educationName}"
-                                                     id="educationName"
-                                                     styleClass="form-input"
-                                                     pt:placeholder="e.g. B.Tech, MCA, Diploma, B.Com"
-                                                     required="true"
-                                                     requiredMessage="Degree is required"
-                                                     validator="candidateValidator">
-                                            
-                                            <f:attribute name="type" value="educationName"/>
-                                            <f:ajax event="keyup" execute="@this" render="educationNameMsg"/>
-                                            
-                                        </h:inputText>
+                                        <h:selectOneMenu value="#{candidateCDIBean.selectedEducation.educationName}"
+                                                        id="educationName"
+                                                        styleClass="form-input"
+                                                        required="true"
+                                                        requiredMessage="Please select Degree/Education">
+
+                                            <f:selectItem itemLabel="-- Select Degree/Education --"
+                                                          itemValue=""
+                                                          noSelectionOption="true"/>
+
+                                            <f:selectItems value="#{candidateCDIBean.educationDropdownList}"
+                                                           var="edu"
+                                                           itemValue="#{edu.educationName}"
+                                                           itemLabel="#{edu.educationName}"/>
+
+                                            <f:ajax event="change"
+                                                execute="@this"
+                                                render="educationNameMsg"/>
+                                        </h:selectOneMenu>
+
                                         <h:message id="educationNameMsg" for="educationName" styleClass="field-error"/>
                                     </div>
                                 </div>
@@ -497,40 +501,111 @@
                                 <!-- INSTITUTE -->
                                 <div class="form-col-full">
                                     <div class="form-group">
+
                                         <label for="instituteName">
-                                            Institute / University <span class="required">*</span>
+                                            Institute / University
+                                            <span class="required">*</span>
                                         </label>
-                                        <h:inputText value="#{candidateCDIBean.selectedEducation.instituteName}"
-                                                     id="instituteName"
-                                                     styleClass="form-input"
-                                                     pt:placeholder="e.g. Gujarat University, GTU, IIT Bombay"
-                                                     required="true"
-                                                    requiredMessage="Institute name is required"
-                                                    validator="candidateValidator">
-                                            
+
+                                        <h:selectOneMenu value="#{candidateCDIBean.selectedEducation.instituteName}"
+                                                         id="instituteName"
+                                                         styleClass="form-input"
+                                                         required="true"
+                                                         requiredMessage="Please select Institute"
+                                                         >
+
                                             <f:attribute name="type" value="institute"/>
-                                            <f:ajax event="keyup" execute="@this" render="instituteMsg"/>
-                                        
-                                        </h:inputText>
-                                        <h:message id="instituteMsg" for="instituteName" styleClass="field-error"/>
+
+                                            <f:selectItem itemLabel="-- Select Institute --"
+                                                          itemValue=""
+                                                          noSelectionOption="true"/>
+
+                                            <f:selectItem itemValue="Gujarat University"
+                                                          itemLabel="Gujarat University"/>
+
+                                            <f:selectItem itemValue="GTU"
+                                                          itemLabel="GTU"/>
+
+                                            <f:selectItem itemValue="IIT Bombay"
+                                                          itemLabel="IIT Bombay"/>
+
+                                            <f:selectItem itemValue="VNSGU"
+                                                          itemLabel="VNSGU"/>
+
+                                            <f:selectItem itemValue="Parul University"
+                                                          itemLabel="Parul University"/>
+
+                                            <f:selectItem itemValue="Other"
+                                                          itemLabel="Other"/>
+
+                                            <f:ajax event="change"
+                                                    execute="@this"
+                                                    render="instituteMsg"/>
+
+                                        </h:selectOneMenu>
+
+                                        <h:message id="instituteMsg"
+                                                   for="instituteName"
+                                                   styleClass="field-error"/>
+
                                     </div>
                                 </div>
 
                                 <!-- SPECIALIZATION -->
                                 <div class="form-col-full">
                                     <div class="form-group">
-                                        <label for="specialization">Specialization</label>
-                                        <h:inputText value="#{candidateCDIBean.selectedEducation.specialization}"
-                                                     id="specialization"
-                                                     styleClass="form-input"
-                                                     pt:placeholder="e.g. Computer Science, IT, Electronics"
-                                                     validator="candidateValidator">
-                                            
+
+                                        <label for="specialization">
+                                            Specialization
+                                        </label>
+
+                                        <h:selectOneMenu value="#{candidateCDIBean.selectedEducation.specialization}"
+                                                         id="specialization"
+                                                         styleClass="form-input"
+                                                         required="true"
+                                                         requiredMessage="Please select Specialization"
+                                                         >
+
                                             <f:attribute name="type" value="specialization"/>
-                                            <f:ajax event="keyup" execute="@this" render="specializationMsg"/>
-                                            
-                                        </h:inputText>
-                                        <h:message id="specializationMsg" for="specialization" styleClass="field-error"/>
+
+                                            <f:selectItem itemLabel="-- Select Specialization --"
+                                                          itemValue=""
+                                                          noSelectionOption="true"/>
+
+                                            <f:selectItem itemValue="Computer Science"
+                                                          itemLabel="Computer Science"/>
+
+                                            <f:selectItem itemValue="Information Technology"
+                                                          itemLabel="Information Technology"/>
+
+                                            <f:selectItem itemValue="Artificial Intelligence"
+                                                          itemLabel="Artificial Intelligence"/>
+
+                                            <f:selectItem itemValue="Data Science"
+                                                          itemLabel="Data Science"/>
+
+                                            <f:selectItem itemValue="Cyber Security"
+                                                          itemLabel="Cyber Security"/>
+
+                                            <f:selectItem itemValue="Electronics"
+                                                          itemLabel="Electronics"/>
+
+                                            <f:selectItem itemValue="Mechanical Engineering"
+                                                          itemLabel="Mechanical Engineering"/>
+
+                                            <f:selectItem itemValue="Other"
+                                                          itemLabel="Other"/>
+
+                                            <f:ajax event="change"
+                                                    execute="@this"
+                                                    render="specializationMsg"/>
+
+                                        </h:selectOneMenu>
+
+                                        <h:message id="specializationMsg"
+                                                   for="specialization"
+                                                   styleClass="field-error"/>
+
                                     </div>
                                 </div>
 
@@ -543,11 +618,11 @@
                                                      styleClass="form-input"
                                                      pt:placeholder="2018"
                                                      pt:type="number"
-                                                     validatorMessage="Please enter a valid year between 1900 and 2100"
                                                      validator="#{candidateCDIBean.validateStartYear}">
                                              
                                             <f:validateLongRange minimum="1900" maximum="2100"/>
-                                            <f:ajax event="change" execute="@this" render="startYearMsg"/>
+                                            <f:ajax event="keyup" execute="@this" render="startYearMsg"
+                                                    />
                                             
                                         </h:inputText>
                                         <h:message id="startYearMsg" for="startYear" styleClass="field-error"/>
@@ -562,11 +637,10 @@
                                                      styleClass="form-input"
                                                      pt:placeholder="2022"
                                                      pt:type="number"
-                                                     validatorMessage="Please enter a valid year between 1900 and 2100"
                                                      validator="#{candidateCDIBean.validateEndYear}">
 
                                             <f:validateLongRange minimum="1900" maximum="2100"/>
-                                            <f:ajax event="change" execute="@this" render="endYearMsg"/>
+                                            <f:ajax event="keyup" execute="@this" render="endYearMsg"/>
                                             
                                         </h:inputText>
                                         <h:message id="endYearMsg" for="endYear" styleClass="field-error"/>
@@ -728,9 +802,12 @@
                                                         action="#{candidateCDIBean.deleteEducation(edu.candidateEducationId)}"
                                                         styleClass="action-icon delete-icon"
                                                         title="Delete"
-                                                        onclick="return confirm('Are you sure?')">
+                                                        >
                                                         <i class="fa-solid fa-trash"></i>
-                                                        <f:ajax execute="@this" render="@form"/>
+                                                        <f:ajax execute="@this"
+                                                            render="@form :profileMsgForm:profileMessages"
+                                                            onevent="showToast"/>
+                                                    
                                                     </h:commandLink>
                                                 </div>
 

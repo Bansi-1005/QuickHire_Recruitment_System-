@@ -85,6 +85,7 @@ public class CandidateCDIBean implements Serializable {
     private Collection<Tblskills> filteredSkills = new ArrayList<>();
 
     // ================= Education =================
+    private Collection<Tbleducation> educationDropdownList = new ArrayList<>();
     private Collection<Tblcandidateeducation> educationList = new ArrayList<>();
     private Tblcandidateeducation selectedEducation = new Tblcandidateeducation();
     private Integer editEducationId;
@@ -159,6 +160,7 @@ public class CandidateCDIBean implements Serializable {
                 loadInterviews();
                 loadResumes();
                 loadEducation();
+                loadEducationDropdown(); // dropdown values
             }
 
             notificationList = loadAllNotifications(userId);
@@ -1318,6 +1320,37 @@ public class CandidateCDIBean implements Serializable {
     }
 
     // ================= CANDIDATE EDUCATION METHODS =========================
+    public void loadEducationDropdown() {
+
+        try {
+
+            WebTarget target = getClient()
+                    .target(BASE_URL + "/getAllEducations");
+
+            Response response = target.request(
+                    MediaType.APPLICATION_JSON)
+                    .get();
+
+            if (response.getStatus() == 200) {
+
+                educationDropdownList = response.readEntity(
+                        new GenericType<Collection<Tbleducation>>() {
+                        });
+
+            } else {
+
+                educationDropdownList = new ArrayList<>();
+
+                System.out.println(
+                        "Education dropdown API failed : "
+                        + response.getStatus());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
     public void loadEducation() {
         try {
             WebTarget target = getClient()
@@ -1429,16 +1462,46 @@ public class CandidateCDIBean implements Serializable {
     }
 
     public void deleteEducation(int id) {
+
         try {
+
             WebTarget target = getClient()
                     .target(BASE_URL + "/removeCandidateEducation/" + id);
 
-            target.request().delete();
+            Response response = target.request().delete();
+
+            if (response.getStatus() != 200
+                    && response.getStatus() != 204) {
+
+                FacesContext.getCurrentInstance().addMessage(
+                        null,
+                        new FacesMessage(
+                                FacesMessage.SEVERITY_ERROR,
+                                "Delete failed",
+                                null));
+
+                return;
+            }
 
             loadEducation();
 
+            FacesContext.getCurrentInstance().addMessage(
+                    null,
+                    new FacesMessage(
+                            FacesMessage.SEVERITY_INFO,
+                            "Education deleted successfully",
+                            null));
+
         } catch (Exception e) {
+
             e.printStackTrace();
+
+            FacesContext.getCurrentInstance().addMessage(
+                    null,
+                    new FacesMessage(
+                            FacesMessage.SEVERITY_ERROR,
+                            "Delete failed",
+                            null));
         }
     }
 
@@ -1741,30 +1804,30 @@ public class CandidateCDIBean implements Serializable {
             );
         }
     }
-
+    
     public String formatExperience(Integer totalMonths) {
-    if (totalMonths == null || totalMonths <= 0) {
-        return "Fresher";
-    }
-
-    int years = totalMonths / 12;
-    int months = totalMonths % 12;
-
-    StringBuilder sb = new StringBuilder();
-
-    if (years > 0) {
-        sb.append(years).append(years == 1 ? " year" : " years");
-    }
-
-    if (months > 0) {
-        if (sb.length() > 0) {
-            sb.append(" ");
+        if (totalMonths == null || totalMonths <= 0) {
+            return "Fresher";
         }
-        sb.append(months).append(months == 1 ? " month" : " months");
-    }
 
-    return sb.toString();
-}
+        int years = totalMonths / 12;
+        int months = totalMonths % 12;
+
+        StringBuilder sb = new StringBuilder();
+
+        if (years > 0) {
+            sb.append(years).append(years == 1 ? " year" : " years");
+        }
+
+        if (months > 0) {
+            if (sb.length() > 0) {
+                sb.append(" ");
+            }
+            sb.append(months).append(months == 1 ? " month" : " months");
+        }
+
+        return sb.toString();
+    }
     // ================= GETTERS & SETTERS =================
     public int getCandidateId() {
         return candidateId;
@@ -1972,6 +2035,15 @@ public class CandidateCDIBean implements Serializable {
 
     public void setFilteredSkills(Collection<Tblskills> filteredSkills) {
         this.filteredSkills = filteredSkills;
+    }
+    
+    public Collection<Tbleducation> getEducationDropdownList() {
+        return educationDropdownList;
+    }
+
+    public void setEducationDropdownList(
+            Collection<Tbleducation> educationDropdownList) {
+        this.educationDropdownList = educationDropdownList;
     }
 
     public Collection<Tblcandidateeducation> getEducationList() {

@@ -411,6 +411,15 @@ public class CandidateResource {
     
     // ================= EDUCATION =================
     @GET
+    @Path("/getAllEducations")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Collection<Tbleducation> getAllEducations() {
+
+        return ejb.getAllEducations();
+    }
+    
+    
+    @GET
     @Path("getCandidateEducation")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getCandidateEducation(@QueryParam("candidateId") Integer candidateId) {

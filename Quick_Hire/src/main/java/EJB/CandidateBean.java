@@ -406,6 +406,15 @@ public class CandidateBean implements CandidateBeanLocal {
 
     // ================= EDUCATION =================
     @Override
+    public Collection<Tbleducation> getAllEducations() {
+
+        return em.createNamedQuery(
+                "Tbleducation.findAll",
+                Tbleducation.class)
+                .getResultList();
+    }
+    
+    @Override
     public Collection<Tblcandidateeducation> getCandidateEducation(Integer candidateId) {
 
         if (candidateId == null) {
@@ -491,7 +500,7 @@ public class CandidateBean implements CandidateBeanLocal {
     @Override
     public Collection<Tbljob> getAllJobs() {
         try {
-            return em.createNamedQuery("Tbljob.findAll", Tbljob.class)
+            return em.createNamedQuery("Tbljob.findActiveJobs", Tbljob.class)
                     .getResultList();
         } catch (Exception e) {
             return new ArrayList<>();

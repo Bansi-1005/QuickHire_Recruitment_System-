@@ -541,6 +541,23 @@ body{
     font-weight: 600;
 }
 
+.btn-reset {
+    background: #f1f1f1;
+    color: #444444;
+    border: 2px solid #dbe4ee;
+    padding: 11px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 13.5px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.btn-reset:hover {
+    background: #e7edf6;
+    border-color: #2962ff;
+    color: #2962ff;
+}
 
 .menu-link i{
     width:22px;
